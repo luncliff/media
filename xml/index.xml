@@ -50,4 +50,6 @@
     <member refid="socket_8hpp_1a8a082d28ab13d3f27efd086e16303c6a" kind="function"><name>socket_set_option_recv_timout</name></member>
     <member refid="socket_8hpp_1a901db3d71d4a694562fda404e8a8e547" kind="function"><name>socket_would_block</name></member>
   </compound>
+  <compound refid="dir_68267d1309a1af8e8297ef4c3efbcdba" kind="dir"><name>src</name>
+  </compound>
 </doxygenindex>

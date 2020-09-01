@@ -14,7 +14,7 @@
         <label>cstdint</label>
       </node>
       <node id="0">
-        <label>socket.cpp</label>
+        <label>src/socket.cpp</label>
         <link refid="socket_8cpp"/>
         <childnode refid="1" relation="include">
         </childnode>
@@ -24,6 +24,9 @@
         </childnode>
         <childnode refid="4" relation="include">
         </childnode>
+      </node>
+      <node id="6">
+        <label>gsl/gsl</label>
       </node>
       <node id="1">
         <label>cerrno</label>
@@ -35,6 +38,8 @@
         <label>socket.hpp</label>
         <link refid="socket_8hpp_source"/>
         <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
         </childnode>
       </node>
     </incdepgraph>
@@ -55,7 +60,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="29" column="1" bodyfile="socket.cpp" bodystart="29" bodyend="32"/>
+        <location file="src/socket.cpp" line="29" column="1" bodyfile="src/socket.cpp" bodystart="29" bodyend="32"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1adc5a948d26ca8d969205da03143cf676" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -92,7 +97,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="34" column="1" bodyfile="socket.cpp" bodystart="34" bodyend="37"/>
+        <location file="src/socket.cpp" line="34" column="1" bodyfile="src/socket.cpp" bodystart="34" bodyend="37"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1a57276ab3060b2acbb78378e321718415" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -129,7 +134,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="39" column="1" bodyfile="socket.cpp" bodystart="39" bodyend="43"/>
+        <location file="src/socket.cpp" line="39" column="1" bodyfile="src/socket.cpp" bodystart="39" bodyend="43"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1ab411d3fbc9c4e7763aedf7153b0f053d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -166,7 +171,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="44" column="1" bodyfile="socket.cpp" bodystart="44" bodyend="49"/>
+        <location file="src/socket.cpp" line="44" column="1" bodyfile="src/socket.cpp" bodystart="44" bodyend="49"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1a72ad64c8745e48923e497b8aec216d87" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -192,7 +197,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="51" column="1" bodyfile="socket.cpp" bodystart="51" bodyend="54"/>
+        <location file="src/socket.cpp" line="51" column="1" bodyfile="src/socket.cpp" bodystart="51" bodyend="54"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1a7589801a6bd5cc25c87ecd9f849d8281" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -229,7 +234,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="56" column="1" bodyfile="socket.cpp" bodystart="56" bodyend="61"/>
+        <location file="src/socket.cpp" line="56" column="1" bodyfile="src/socket.cpp" bodystart="56" bodyend="61"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1a6f812e13495c77a708e2c822434fdea8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -266,7 +271,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="63" column="1" bodyfile="socket.cpp" bodystart="63" bodyend="68"/>
+        <location file="src/socket.cpp" line="63" column="1" bodyfile="src/socket.cpp" bodystart="63" bodyend="68"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1aa125c1c2710ac6ceee78b695f30d034b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -303,7 +308,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="70" column="1" bodyfile="socket.cpp" bodystart="70" bodyend="73"/>
+        <location file="src/socket.cpp" line="70" column="1" bodyfile="src/socket.cpp" bodystart="70" bodyend="73"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1a031ce6ea7f741e6a5ecf4f711478c19e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -340,7 +345,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="75" column="1" bodyfile="socket.cpp" bodystart="75" bodyend="80"/>
+        <location file="src/socket.cpp" line="75" column="1" bodyfile="src/socket.cpp" bodystart="75" bodyend="80"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1ac81fc21babd2bc72b739ae064e077439" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -377,7 +382,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="82" column="1" bodyfile="socket.cpp" bodystart="82" bodyend="87"/>
+        <location file="src/socket.cpp" line="82" column="1" bodyfile="src/socket.cpp" bodystart="82" bodyend="87"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1a1f32dff752b392575d4f07355231f9a8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -415,7 +420,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="89" column="1" bodyfile="socket.cpp" bodystart="89" bodyend="94"/>
+        <location file="src/socket.cpp" line="89" column="1" bodyfile="src/socket.cpp" bodystart="89" bodyend="94"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1a3d677b115c9bb0e63a7550b903536a3c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -453,7 +458,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="96" column="1" bodyfile="socket.cpp" bodystart="96" bodyend="101"/>
+        <location file="src/socket.cpp" line="96" column="1" bodyfile="src/socket.cpp" bodystart="96" bodyend="101"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1ac38c5ed28135ecd13934fa08933205f3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -512,7 +517,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="103" column="1" bodyfile="socket.cpp" bodystart="103" bodyend="108"/>
+        <location file="src/socket.cpp" line="103" column="1" bodyfile="src/socket.cpp" bodystart="103" bodyend="108"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1ad9e60a284fa6fd28dde3f57d28532404" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -530,7 +535,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="110" column="1" bodyfile="socket.cpp" bodystart="110" bodyend="112"/>
+        <location file="src/socket.cpp" line="110" column="1" bodyfile="src/socket.cpp" bodystart="110" bodyend="112"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1aa6e8317a0c5c0255606c5e5260b5dc00" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -548,7 +553,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="114" column="1" bodyfile="socket.cpp" bodystart="114" bodyend="116"/>
+        <location file="src/socket.cpp" line="114" column="1" bodyfile="src/socket.cpp" bodystart="114" bodyend="116"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1a31f3fd04fb05988a7a3e6c5d1126badd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -573,7 +578,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="118" column="1" bodyfile="socket.cpp" bodystart="118" bodyend="131"/>
+        <location file="src/socket.cpp" line="118" column="1" bodyfile="src/socket.cpp" bodystart="118" bodyend="131"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1a11c23e9acbbffaf3f6c6861f8429d02a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -598,7 +603,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="133" column="1" bodyfile="socket.cpp" bodystart="133" bodyend="136"/>
+        <location file="src/socket.cpp" line="133" column="1" bodyfile="src/socket.cpp" bodystart="133" bodyend="136"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1a4ea73aaf08802fdca753351ef3227487" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -635,7 +640,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="138" column="1" bodyfile="socket.cpp" bodystart="138" bodyend="141"/>
+        <location file="src/socket.cpp" line="138" column="1" bodyfile="src/socket.cpp" bodystart="138" bodyend="141"/>
       </memberdef>
       <memberdef kind="function" id="socket_8cpp_1a8a082d28ab13d3f27efd086e16303c6a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>uint32_t</type>
@@ -672,7 +677,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="socket.cpp" line="142" column="1" bodyfile="socket.cpp" bodystart="142" bodyend="145"/>
+        <location file="src/socket.cpp" line="142" column="1" bodyfile="src/socket.cpp" bodystart="142" bodyend="145"/>
       </memberdef>
       </sectiondef>
     <briefdescription>
@@ -901,6 +906,6 @@
 <codeline lineno="222"><highlight class="normal"></highlight></codeline>
 <codeline lineno="223"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight></codeline>
     </programlisting>
-    <location file="socket.cpp"/>
+    <location file="src/socket.cpp"/>
   </compounddef>
 </doxygen>

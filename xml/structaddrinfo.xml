@@ -7,7 +7,7 @@
 <para>identify an Internet host and a service </para>    </briefdescription>
     <detaileddescription>
 <para><ref refid="" kindref="compound"><ulink url="https://docs.microsoft.com/en-us/windows/win32/api/ws2def/">https://docs.microsoft.com/en-us/windows/win32/api/ws2def/</ulink> </ref></para>    </detaileddescription>
-    <location file="socket.hpp" line="6" column="1"/>
+    <location file="src/socket.hpp" line="7" column="1"/>
     <listofallmembers>
     </listofallmembers>
   </compounddef>
