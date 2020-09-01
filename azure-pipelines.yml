@@ -26,6 +26,8 @@ jobs:
           platform: x64
           toolset: v142
 
+  # Microsoft STL doesn't allow combination of Clang-cl and <experimental/coroutine> which is in WinRT
+  # This job is expected to be failed
   - job: vs2019_cmake_ninja_clang
     pool:
       vmImage: "windows-2019"

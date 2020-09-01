@@ -31,3 +31,4 @@ steps:
       CXX: clang-cl
       BUILD_TYPE: $(configuration)
       CMAKE_TOOLCHAIN: $(cmake_toolchain)
+    continueOnError: true

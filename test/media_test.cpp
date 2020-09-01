@@ -8,6 +8,14 @@
 using namespace std;
 namespace fs = std::filesystem;
 
+fs::path get_asset_dir() noexcept {
+#if defined(ASSET_DIR)
+    return {ASSET_DIR};
+#else
+    return fs::current_path();
+#endif
+}
+
 TEST_CASE("get_devices") {
     auto on_return = startup();
     ComPtr<IMFAttributes> attrs{};
@@ -90,7 +98,7 @@ struct reader_context_t : public IMFSourceReaderCallback {
     }
 };
 
-void consume_source(ComPtr<IMFMediaSource> source) {
+void consume_source(ComPtr<IMFMediaSource> source, reader_context_t& context) {
     ComPtr<IMFPresentationDescriptor> presentation{};
     if (auto hr = source->CreatePresentationDescriptor(presentation.GetAddressOf()))
         REQUIRE(SUCCEEDED(hr));
@@ -100,7 +108,6 @@ void consume_source(ComPtr<IMFMediaSource> source) {
     if (auto hr = configure(stream))
         REQUIRE(SUCCEEDED(hr));
 
-    reader_context_t context{};
     ComPtr<IMFAttributes> attrs{};
     if (auto hr = MFCreateAttributes(attrs.GetAddressOf(), 1))
         REQUIRE(SUCCEEDED(hr));
@@ -134,7 +141,8 @@ TEST_CASE("IMFMediaSource(IMFActivate)") {
     if (auto hr = device->ActivateObject(__uuidof(IMFMediaSource), (void**)source.GetAddressOf()))
         REQUIRE(SUCCEEDED(hr));
 
-    return consume_source(source);
+    reader_context_t context{};
+    return consume_source(source, context);
 }
 
 TEST_CASE("IMFMediaSource(IMFSourceResolver)") {
@@ -143,7 +151,7 @@ TEST_CASE("IMFMediaSource(IMFSourceResolver)") {
     ComPtr<IMFMediaSession> session{};
     REQUIRE(MFCreateMediaSession(attrs.Get(), session.GetAddressOf()) == S_OK);
 
-    const auto fpath = fs::path{ASSET_DIR} / "MOT17-02-SDP-raw.mp4";
+    const auto fpath = get_asset_dir() / "MOT17-02-SDP-raw.mp4";
     LPCWSTR url = fpath.c_str();
     REQUIRE(PathFileExistsW(url));
 
@@ -158,5 +166,6 @@ TEST_CASE("IMFMediaSource(IMFSourceResolver)") {
     ComPtr<IMFMediaSource> source{};
     REQUIRE(proxy->QueryInterface(IID_PPV_ARGS(source.GetAddressOf())) == S_OK);
 
-    return consume_source(source);
+    reader_context_t context{};
+    return consume_source(source, context);
 }
