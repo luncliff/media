@@ -1,0 +1,48 @@
+#
+# Author: github.com/luncliff (luncliff@gmail.com)
+# References:
+#   https://www.mkdocs.org/
+#   https://github.com/squidfunk/mkdocs-material
+#   https://material.io/resources/icons/?icon=call_split&style=twotone
+#   https://fonts.google.com/
+#
+site_name: Simple Socket Functions
+site_url: https://luncliff.github.io/ssf
+
+repo_name: luncliff/ssf
+repo_url: https://github.com/luncliff/ssf
+
+nav:
+  - All In One: socket_8cpp.md
+  - Organization:
+      - Namespaces: namespaces.md
+      - Functions: functions.md
+      - Classes: classes.md
+
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - toc:
+      permalink: true
+
+theme:
+  name: "material"
+  extra:
+    search:
+      language: "en, kr"
+  # font:
+  #   text: "Nanum Gothic"
+  #   code: "Nanum Gothic Coding"
+  palette:
+    primary: "blue grey"
+    accent: "blue"
+  logo:
+    icon: "call_split"
+  # feature:
+  #   tabs: true
+
+extra:
+  social:
+    - type: "github"
+      link: "https://github.com/luncliff"
