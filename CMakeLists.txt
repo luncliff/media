@@ -1,22 +1,32 @@
 cmake_minimum_required(VERSION 3.13)
 project(media VERSION 0.0 LANGUAGES CXX)
-
+if(NOT WIN32)
+    message(FATAL_ERROR "the project is only for Windows Platform")
+endif()
 if(NOT DEFINED BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS true)
 endif()
+set(CMAKE_VS_WINRT_BY_DEFAULT true)
 
 find_package(Microsoft.GSL CONFIG REQUIRED)
 
-add_library(media
-    src/socket.hpp
-    src/socket.cpp
+# see https://docs.microsoft.com/en-us/windows/win32/medfound/media-foundation-headers-and-libraries
+include(CheckIncludeFileCXX)
+check_include_file_cxx("codecapi.h"         found_codecapi)
+check_include_file_cxx("mfapi.h"            found_mfapi)
+check_include_file_cxx("wmcontainer.h"      found_wmcontainer)
+check_include_file_cxx("shlwapi.h"          found_shlwapi)
+check_include_file_cxx("wrl/client.h"       found_wrl)
+
+add_library(media STATIC
+    src/media.hpp
+    src/media.cpp
 )
 
 set_target_properties(media
 PROPERTIES
-    CXX_STANDARD 20
-    # PUBLIC_HEADER src/socket.hpp
-    WINDOWS_EXPORT_ALL_SYMBOLS True # todo: remove this
+    PUBLIC_HEADER src/media.hpp
+    WINDOWS_EXPORT_ALL_SYMBOLS False
 )
 
 target_include_directories(media
@@ -26,26 +36,25 @@ PUBLIC
 
 target_link_libraries(media
 PUBLIC
-    ws2_32
+    dxva2 evr mf mfplat mfplay mfreadwrite mfuuid shlwapi
     Microsoft.GSL::GSL
 )
 
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-    if(NOT WIN32)
-        message(FATAL_ERROR "the project is only for Windows OS")
-    endif()
     target_compile_options(media
     PUBLIC
-        /Wall
+        /W4 /std:c++17
     )
 elseif(MSVC)
     target_compile_options(media
     PUBLIC
-        /W4
+        /W4 /std:c++17 /Zc:__cplusplus
+    PRIVATE
+        /await
     )
 endif()
 
-install(FILES           src/socket.hpp
+install(FILES           src/media.hpp
         DESTINATION     ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}
 )
 install(TARGETS         media
@@ -78,7 +87,7 @@ add_executable(media_test_suite
 
 set_target_properties(media_test_suite
 PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 17
 )
 
 find_package(Catch2 CONFIG REQUIRED)
