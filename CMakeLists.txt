@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.13)
 project(media VERSION 0.0 LANGUAGES CXX)
 
+if(NOT DEFINED BUILD_SHARED_LIBS)
+    set(BUILD_SHARED_LIBS true)
+endif()
+
 find_package(Microsoft.GSL CONFIG REQUIRED)
 
 add_library(media
