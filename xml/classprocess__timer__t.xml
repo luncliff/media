@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="50" column="1" bodyfile="src/media.hpp" bodystart="50" bodyend="-1"/>
+        <location file="src/media.hpp" line="37" column="1" bodyfile="src/media.hpp" bodystart="37" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="public-func">
@@ -32,7 +32,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="56" column="1" bodyfile="src/media.hpp" bodystart="56" bodyend="59"/>
+        <location file="src/media.hpp" line="43" column="1" bodyfile="src/media.hpp" bodystart="43" bodyend="46"/>
       </memberdef>
       <memberdef kind="function" id="classprocess__timer__t_1a31c3d5af066ec12a9e47355ff72d3800" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>float</type>
@@ -45,7 +45,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="60" column="1" bodyfile="src/media.hpp" bodystart="60" bodyend="64"/>
+        <location file="src/media.hpp" line="47" column="1" bodyfile="src/media.hpp" bodystart="47" bodyend="51"/>
       </memberdef>
       </sectiondef>
     <briefdescription>
@@ -53,7 +53,7 @@
     <detaileddescription>
 <para><simplesect kind="see"><para>clock_gettime, CLOCKS_PER_SEC </para></simplesect>
 </para>    </detaileddescription>
-    <location file="src/media.hpp" line="49" column="1" bodyfile="src/media.hpp" bodystart="49" bodyend="65"/>
+    <location file="src/media.hpp" line="36" column="1" bodyfile="src/media.hpp" bodystart="36" bodyend="52"/>
     <listofallmembers>
       <member refid="classprocess__timer__t_1a63d79dc52088cd10d9a45135ef990157" prot="public" virt="non-virtual"><scope>process_timer_t</scope><name>pick</name></member>
       <member refid="classprocess__timer__t_1a31c3d5af066ec12a9e47355ff72d3800" prot="public" virt="non-virtual"><scope>process_timer_t</scope><name>reset</name></member>

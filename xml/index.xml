@@ -7,22 +7,10 @@
     <member refid="structcritical__section__t_1a61c19534112127c589bfff7eaaabd7cc" kind="function"><name>lock</name></member>
     <member refid="structcritical__section__t_1a9ef301a81b8715367f66d9867b0e4221" kind="function"><name>unlock</name></member>
   </compound>
-  <compound refid="classdevice__group__t" kind="class"><name>device_group_t</name>
-    <member refid="classdevice__group__t_1a22e86312dab5307f1c91dd762f3e9d41" kind="variable"><name>attrs</name></member>
-    <member refid="classdevice__group__t_1a927c8e0c084b1b2acf8b57f372ded43f" kind="variable"><name>devices</name></member>
-    <member refid="classdevice__group__t_1a1bf927238df70ef48fdecfe392ceb3be" kind="function"><name>device_group_t</name></member>
-  </compound>
   <compound refid="classprocess__timer__t" kind="class"><name>process_timer_t</name>
     <member refid="classprocess__timer__t_1a679830497a5ec98b3fda5a1ee343ce53" kind="variable"><name>start</name></member>
     <member refid="classprocess__timer__t_1a63d79dc52088cd10d9a45135ef990157" kind="function"><name>pick</name></member>
     <member refid="classprocess__timer__t_1a31c3d5af066ec12a9e47355ff72d3800" kind="function"><name>reset</name></member>
-  </compound>
-  <compound refid="structread__item__t" kind="struct"><name>read_item_t</name>
-    <member refid="structread__item__t_1a888e2e344c708dd9eef32db54f01c869" kind="variable"><name>status</name></member>
-    <member refid="structread__item__t_1ac02344ce2333d86eaefb2392c354d2da" kind="variable"><name>index</name></member>
-    <member refid="structread__item__t_1a7e794a49d2ecb659671b65ccaf74e238" kind="variable"><name>flags</name></member>
-    <member refid="structread__item__t_1aa657e0c6f61cf41c3bfd20c27217008f" kind="variable"><name>timestamp</name></member>
-    <member refid="structread__item__t_1ab8222e8570a30975c9108f51c37bae52" kind="variable"><name>sample</name></member>
   </compound>
   <compound refid="namespaceMicrosoft_1_1WRL" kind="namespace"><name>Microsoft::WRL</name>
   </compound>
@@ -33,8 +21,10 @@
     <member refid="media_8cpp_1a747082ef949615992911c0308565b83e" kind="function"><name>get_devices</name></member>
     <member refid="media_8cpp_1a043959776c4955e4499979fbd61a7c2d" kind="function"><name>get_name</name></member>
     <member refid="media_8cpp_1a6791b11ab050c4addac5b15ea7d36beb" kind="function"><name>get_stream_descriptor</name></member>
+    <member refid="media_8cpp_1a64f6aa5150e9468117289f2ff8988fbb" kind="function"><name>configure_video</name></member>
     <member refid="media_8cpp_1a64cf8ebe28215fd213b9603391f95bcd" kind="function"><name>print</name></member>
     <member refid="media_8cpp_1a4d439ee9ee5b9f516c805c8bb8507b9b" kind="function"><name>configure</name></member>
+    <member refid="media_8cpp_1ab2c51d7c6d3f219239b75b2893ca6f3b" kind="function"><name>print_video</name></member>
   </compound>
   <compound refid="media_8hpp" kind="file"><name>media.hpp</name>
     <member refid="media_8hpp_1afff57e09d13a87eb34d8b8a0e0d01b75" kind="function"><name>startup</name></member>

@@ -311,6 +311,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#function-configure_video" class="md-nav__link">
+    function configure_video
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#function-get_devices" class="md-nav__link">
     function get_devices
   </a>
@@ -334,6 +341,13 @@
           <li class="md-nav__item">
   <a href="#function-print" class="md-nav__link">
     function print
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-print_video" class="md-nav__link">
+    function print_video
   </a>
   
 </li>
@@ -374,6 +388,7 @@
 <p><a href="../media_8cpp_source/">Go to the source code of this file.</a></p>
 <ul>
 <li><code>#include "media.hpp"</code></li>
+<li><code>#include &lt;dshowasf.h&gt;</code></li>
 </ul>
 <h2 id="namespaces">Namespaces<a class="headerlink" href="#namespaces" title="Permanent link">&para;</a></h2>
 <table>
@@ -424,6 +439,10 @@
 </tr>
 <tr>
 <td align="right">HRESULT</td>
+<td align="left"><a href="./#function-configure-video"><strong>configure_video</strong></a> (ComPtr&lt; IMFMediaType &gt; type) <br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
 <td align="left"><a href="./#function-get-devices"><strong>get_devices</strong></a> (IMFAttributes * attrs, vector&lt; ComPtr&lt; IMFActivate &gt;&gt; &amp; devices) noexcept<br></td>
 </tr>
 <tr>
@@ -437,6 +456,10 @@
 <tr>
 <td align="right">void</td>
 <td align="left"><a href="./#function-print"><strong>print</strong></a> (IMFMediaType * media) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="./#function-print-video"><strong>print_video</strong></a> (FILE * fout, IMFMediaType * media) noexcept<br></td>
 </tr>
 <tr>
 <td align="right">auto</td>
@@ -455,6 +478,13 @@
 <p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft">https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft</a> </p>
 <p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types">https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types</a> </p>
 <p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video">https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video</a> </p>
+<h3 id="function-configure_video">function configure_video<a class="headerlink" href="#function-configure_video" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">HRESULT</span> <span class="n">configure_video</span> <span class="p">(</span>
+    <span class="n">ComPtr</span><span class="o">&lt;</span> <span class="n">IMFMediaType</span> <span class="o">&gt;</span> <span class="n">type</span>
+<span class="p">)</span> 
+</code></pre></div>
+
+
 <h3 id="function-get_devices">function get_devices<a class="headerlink" href="#function-get_devices" title="Permanent link">&para;</a></h3>
 <div class="codehilite"><pre><span></span><code><span class="n">HRESULT</span> <span class="n">get_devices</span> <span class="p">(</span>
     <span class="n">IMFAttributes</span> <span class="o">*</span> <span class="n">attrs</span><span class="p">,</span>
@@ -488,11 +518,27 @@
 
 <p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids">https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids</a> </p>
 <p><strong>See also:</strong> <a href="https://stackoverflow.com/a/9681384">https://stackoverflow.com/a/9681384</a> </p>
+<h3 id="function-print_video">function print_video<a class="headerlink" href="#function-print_video" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="kt">void</span> <span class="n">print_video</span> <span class="p">(</span>
+    <span class="kt">FILE</span> <span class="o">*</span> <span class="n">fout</span><span class="p">,</span>
+    <span class="n">IMFMediaType</span> <span class="o">*</span> <span class="n">media</span>
+<span class="p">)</span> <span class="k">noexcept</span>
+</code></pre></div>
+
+
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/wmformat/media-type-identifiers">https://docs.microsoft.com/en-us/windows/win32/wmformat/media-type-identifiers</a> </p>
 <h3 id="function-startup">function startup<a class="headerlink" href="#function-startup" title="Permanent link">&para;</a></h3>
 <div class="codehilite"><pre><span></span><code><span class="k">auto</span> <span class="n">startup</span> <span class="p">()</span> 
 </code></pre></div>
 
 
+<p><strong>See also:</strong> CoInitializeEx </p>
+<p><strong>See also:</strong> MFStartup </p>
+<p><strong>See also:</strong> MFShutdown </p>
+<p><strong>Exception:</strong></p>
+<ul>
+<li><code>std::runtime_error</code> </li>
+</ul>
 <hr />
 <p>The documentation for this class was generated from the following file <code>src/media.cpp</code></p>
                 

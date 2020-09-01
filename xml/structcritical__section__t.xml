@@ -15,7 +15,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.cpp" line="11" column="1" bodyfile="src/media.cpp" bodystart="11" bodyend="13"/>
+        <location file="src/media.cpp" line="12" column="1" bodyfile="src/media.cpp" bodystart="12" bodyend="14"/>
       </memberdef>
       <memberdef kind="function" id="structcritical__section__t_1ab2a4f2b7648fa516c7fb5a5d7faa3162" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type></type>
@@ -28,7 +28,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.cpp" line="14" column="1" bodyfile="src/media.cpp" bodystart="14" bodyend="16"/>
+        <location file="src/media.cpp" line="15" column="1" bodyfile="src/media.cpp" bodystart="15" bodyend="17"/>
       </memberdef>
       <memberdef kind="function" id="structcritical__section__t_1a38e7b05094a4d84762110549157b24cc" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>bool</type>
@@ -41,7 +41,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.cpp" line="17" column="1" bodyfile="src/media.cpp" bodystart="17" bodyend="19"/>
+        <location file="src/media.cpp" line="18" column="1" bodyfile="src/media.cpp" bodystart="18" bodyend="20"/>
       </memberdef>
       <memberdef kind="function" id="structcritical__section__t_1a61c19534112127c589bfff7eaaabd7cc" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -54,7 +54,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.cpp" line="20" column="1" bodyfile="src/media.cpp" bodystart="20" bodyend="22"/>
+        <location file="src/media.cpp" line="21" column="1" bodyfile="src/media.cpp" bodystart="21" bodyend="23"/>
       </memberdef>
       <memberdef kind="function" id="structcritical__section__t_1a9ef301a81b8715367f66d9867b0e4221" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -67,7 +67,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.cpp" line="23" column="1" bodyfile="src/media.cpp" bodystart="23" bodyend="25"/>
+        <location file="src/media.cpp" line="24" column="1" bodyfile="src/media.cpp" bodystart="24" bodyend="26"/>
       </memberdef>
       </sectiondef>
     <briefdescription>
@@ -96,7 +96,7 @@
         </childnode>
       </node>
     </collaborationgraph>
-    <location file="src/media.cpp" line="9" column="1" bodyfile="src/media.cpp" bodystart="9" bodyend="26"/>
+    <location file="src/media.cpp" line="10" column="1" bodyfile="src/media.cpp" bodystart="10" bodyend="27"/>
     <listofallmembers>
       <member refid="structcritical__section__t_1aa0c17e50f8655195ea549e0d0abb2642" prot="public" virt="non-virtual"><scope>critical_section_t</scope><name>critical_section_t</name></member>
       <member refid="structcritical__section__t_1a61c19534112127c589bfff7eaaabd7cc" prot="public" virt="non-virtual"><scope>critical_section_t</scope><name>lock</name></member>

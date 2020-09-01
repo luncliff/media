@@ -311,23 +311,7 @@
 
 <span class="n">HRESULT</span> <span class="nf">configure</span><span class="p">(</span><span class="n">ComPtr</span><span class="o">&lt;</span><span class="n">IMFStreamDescriptor</span><span class="o">&gt;</span> <span class="n">stream</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
 
-<span class="k">class</span> <span class="nc">device_group_t</span> <span class="k">final</span> <span class="p">{</span>
-  <span class="k">public</span><span class="o">:</span>
-    <span class="n">ComPtr</span><span class="o">&lt;</span><span class="n">IMFAttributes</span><span class="o">&gt;</span> <span class="n">attrs</span><span class="p">{};</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">ComPtr</span><span class="o">&lt;</span><span class="n">IMFActivate</span><span class="o">&gt;&gt;</span> <span class="n">devices</span><span class="p">{};</span>
 
-  <span class="k">public</span><span class="o">:</span>
-    <span class="n">device_group_t</span><span class="p">()</span> <span class="k">noexcept</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
-<span class="p">};</span>
-
-<span class="k">struct</span> <span class="n">read_item_t</span> <span class="k">final</span> <span class="p">{</span>
-    <span class="n">HRESULT</span> <span class="n">status</span><span class="p">;</span>
-    <span class="n">DWORD</span> <span class="n">index</span><span class="p">;</span>
-    <span class="n">DWORD</span> <span class="n">flags</span><span class="p">;</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">nanoseconds</span> <span class="n">timestamp</span><span class="p">;</span> <span class="c1">// unit: 100 nanosecond</span>
-    <span class="n">ComPtr</span><span class="o">&lt;</span><span class="n">IMFSample</span><span class="o">&gt;</span> <span class="n">sample</span><span class="p">;</span>
-<span class="p">};</span>
-<span class="k">static_assert</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">read_item_t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">32</span><span class="p">);</span>
 
 <span class="k">class</span> <span class="nc">process_timer_t</span> <span class="k">final</span> <span class="p">{</span>
     <span class="kt">clock_t</span> <span class="n">start</span> <span class="o">=</span> <span class="n">clock</span><span class="p">();</span>

@@ -291,6 +291,7 @@
 <span class="cp">#include</span> <span class="cpf">&lt;winrt/Windows.Foundation.h&gt;</span><span class="cp"></span>
 <span class="cp">#endif</span>
 <span class="cp">#include</span> <span class="cpf">&quot;media.hpp&quot;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;dshowasf.h&gt;</span><span class="cp"></span>
 
 <span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 <span class="k">using</span> <span class="k">namespace</span> <span class="n">Microsoft</span><span class="o">::</span><span class="n">WRL</span><span class="p">;</span>
@@ -354,13 +355,36 @@
         <span class="k">return</span> <span class="n">hr</span><span class="p">;</span>
     <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0u</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_stream</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
         <span class="n">BOOL</span> <span class="n">selected</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">presentation</span><span class="o">-&gt;</span><span class="n">GetStreamDescriptorByIndex</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">selected</span><span class="p">,</span> <span class="n">ptr</span><span class="p">);</span> <span class="n">FAILED</span><span class="p">(</span><span class="n">hr</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">presentation</span><span class="o">-&gt;</span><span class="n">GetStreamDescriptorByIndex</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">selected</span><span class="p">,</span> <span class="n">ptr</span><span class="p">);</span> <span class="n">FAILED</span><span class="p">(</span><span class="n">hr</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">hr</span><span class="p">;</span>
-        <span class="p">}</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">selected</span><span class="p">)</span>
             <span class="k">break</span><span class="p">;</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">S_OK</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">HRESULT</span> <span class="nf">configure_video</span><span class="p">(</span><span class="n">ComPtr</span><span class="o">&lt;</span><span class="n">IMFMediaType</span><span class="o">&gt;</span> <span class="n">type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">GUID</span> <span class="n">subtype</span><span class="p">{};</span>
+    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetGUID</span><span class="p">(</span><span class="n">MF_MT_SUBTYPE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">subtype</span><span class="p">);</span>
+
+    <span class="n">UINT32</span> <span class="n">interlace</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT32</span><span class="p">(</span><span class="n">MF_MT_INTERLACE_MODE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">interlace</span><span class="p">);</span>
+    <span class="k">const</span> <span class="k">auto</span> <span class="n">imode</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">MFVideoInterlaceMode</span><span class="o">&gt;</span><span class="p">(</span><span class="n">interlace</span><span class="p">);</span>
+
+    <span class="n">UINT32</span> <span class="n">stride</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT32</span><span class="p">(</span><span class="n">MF_MT_DEFAULT_STRIDE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">stride</span><span class="p">);</span>
+
+    <span class="n">UINT32</span> <span class="n">ycbcr2rgb</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT32</span><span class="p">(</span><span class="n">MF_MT_YUV_MATRIX</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ycbcr2rgb</span><span class="p">);</span>
+    <span class="k">const</span> <span class="k">auto</span> <span class="n">matrix</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">MFVideoTransferMatrix</span><span class="o">&gt;</span><span class="p">(</span><span class="n">ycbcr2rgb</span><span class="p">);</span>
+
+    <span class="n">UINT64</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_SIZE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">size</span><span class="p">);</span> <span class="c1">// MFGetAttributeSize</span>
+    <span class="n">UINT32</span> <span class="n">w</span> <span class="o">=</span> <span class="n">size</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">size</span> <span class="o">&amp;</span> <span class="n">UINT32_MAX</span><span class="p">;</span>
+
+    <span class="n">UINT64</span> <span class="n">framerate</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// framerate &gt;&gt; 32;</span>
+    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_RATE_RANGE_MAX</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">framerate</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">type</span><span class="o">-&gt;</span><span class="n">SetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_RATE</span><span class="p">,</span> <span class="n">framerate</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="kt">void</span> <span class="nf">print</span><span class="p">(</span><span class="n">IMFMediaType</span><span class="o">*</span> <span class="n">media</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
@@ -382,112 +406,83 @@
 
         <span class="n">print</span><span class="p">(</span><span class="n">current</span><span class="p">.</span><span class="n">Get</span><span class="p">());</span>
     <span class="p">}</span>
-
-    <span class="n">GUID</span> <span class="n">subtype</span><span class="p">{};</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetGUID</span><span class="p">(</span><span class="n">MF_MT_SUBTYPE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">subtype</span><span class="p">);</span>
-
-    <span class="n">UINT32</span> <span class="n">interlace</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT32</span><span class="p">(</span><span class="n">MF_MT_INTERLACE_MODE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">interlace</span><span class="p">);</span>
-    <span class="k">const</span> <span class="k">auto</span> <span class="n">imode</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">MFVideoInterlaceMode</span><span class="o">&gt;</span><span class="p">(</span><span class="n">interlace</span><span class="p">);</span>
-
-    <span class="n">UINT32</span> <span class="n">stride</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT32</span><span class="p">(</span><span class="n">MF_MT_DEFAULT_STRIDE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">stride</span><span class="p">);</span>
-
-    <span class="n">UINT32</span> <span class="n">ycbcr2rgb</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT32</span><span class="p">(</span><span class="n">MF_MT_YUV_MATRIX</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ycbcr2rgb</span><span class="p">);</span>
-    <span class="k">const</span> <span class="k">auto</span> <span class="n">matrix</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">MFVideoTransferMatrix</span><span class="o">&gt;</span><span class="p">(</span><span class="n">ycbcr2rgb</span><span class="p">);</span>
-
-    <span class="n">UINT64</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_SIZE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">size</span><span class="p">);</span> <span class="c1">// MFGetAttributeSize</span>
-    <span class="n">UINT32</span> <span class="n">w</span> <span class="o">=</span> <span class="n">size</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">size</span> <span class="o">&amp;</span> <span class="n">UINT32_MAX</span><span class="p">;</span>
-
-    <span class="n">UINT64</span> <span class="n">framerate</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_RATE_RANGE_MAX</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">framerate</span><span class="p">);</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">SetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_RATE</span><span class="p">,</span> <span class="n">framerate</span><span class="p">);</span>
-    <span class="n">framerate</span> <span class="o">=</span> <span class="n">framerate</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">;</span>
     <span class="k">return</span> <span class="n">handler</span><span class="o">-&gt;</span><span class="n">SetCurrentMediaType</span><span class="p">(</span><span class="n">type</span><span class="p">.</span><span class="n">Get</span><span class="p">());</span>
 <span class="p">}</span>
 
-<span class="n">device_group_t</span><span class="o">::</span><span class="n">device_group_t</span><span class="p">()</span> <span class="k">noexcept</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">MFCreateAttributes</span><span class="p">(</span><span class="n">attrs</span><span class="p">.</span><span class="n">GetAddressOf</span><span class="p">(),</span> <span class="mi">1</span><span class="p">);</span> <span class="c1">//</span>
-        <span class="n">FAILED</span><span class="p">(</span><span class="n">hr</span><span class="p">))</span>
-        <span class="k">throw</span> <span class="n">_com_error</span><span class="p">{</span><span class="n">hr</span><span class="p">};</span>
-    <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">-&gt;</span><span class="n">SetGUID</span><span class="p">(</span><span class="n">MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE</span><span class="p">,</span> <span class="c1">//</span>
-                                 <span class="n">MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID</span><span class="p">);</span>
-        <span class="n">FAILED</span><span class="p">(</span><span class="n">hr</span><span class="p">))</span>
-        <span class="k">throw</span> <span class="n">_com_error</span><span class="p">{</span><span class="n">hr</span><span class="p">};</span>
-    <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">get_devices</span><span class="p">(</span><span class="n">attrs</span><span class="p">.</span><span class="n">Get</span><span class="p">(),</span> <span class="n">devices</span><span class="p">);</span> <span class="c1">//</span>
-        <span class="n">FAILED</span><span class="p">(</span><span class="n">hr</span><span class="p">))</span>
-        <span class="k">throw</span> <span class="n">_com_error</span><span class="p">{</span><span class="n">hr</span><span class="p">};</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">print</span><span class="p">(</span><span class="n">IMFMediaType</span><span class="o">*</span> <span class="n">media</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
-    <span class="n">GUID</span> <span class="n">major</span><span class="p">{};</span>
-    <span class="n">media</span><span class="o">-&gt;</span><span class="n">GetGUID</span><span class="p">(</span><span class="n">MF_MT_MAJOR_TYPE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">major</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">major</span> <span class="o">==</span> <span class="n">MFMediaType_Default</span><span class="p">)</span>
-        <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot;default</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">major</span> <span class="o">==</span> <span class="n">MFMediaType_Video</span><span class="p">)</span>
-        <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot;video</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">major</span> <span class="o">==</span> <span class="n">MFMediaType_Stream</span><span class="p">)</span>
-        <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot;stream</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
-    <span class="k">else</span>
-        <span class="nf">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot;unknown</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
-
-    <span class="n">UINT64</span> <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">media</span><span class="o">-&gt;</span><span class="n">GetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_SIZE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">);</span>
-    <span class="n">UINT32</span> <span class="n">w</span> <span class="o">=</span> <span class="n">value</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">value</span> <span class="o">&amp;</span> <span class="n">UINT32_MAX</span><span class="p">;</span>
-    <span class="n">media</span><span class="o">-&gt;</span><span class="n">GetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_RATE_RANGE_MAX</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">);</span>
-    <span class="n">UINT32</span> <span class="n">framerate</span> <span class="o">=</span> <span class="n">value</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">;</span>
-    <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot; - width: %u</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">w</span><span class="p">);</span>
-    <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot; - height: %u</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
-    <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot; - fps: %u</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">framerate</span><span class="p">);</span>
-
+<span class="kt">void</span> <span class="nf">print_video</span><span class="p">(</span><span class="kt">FILE</span><span class="o">*</span> <span class="n">fout</span><span class="p">,</span> <span class="n">IMFMediaType</span><span class="o">*</span> <span class="n">media</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
+    <span class="n">fprintf</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="s">&quot; - video:</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
     <span class="n">GUID</span> <span class="n">subtype</span><span class="p">{};</span>
     <span class="n">media</span><span class="o">-&gt;</span><span class="n">GetGUID</span><span class="p">(</span><span class="n">MF_MT_SUBTYPE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">subtype</span><span class="p">);</span>
     <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Unknown&quot;</span><span class="p">;</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_RGB32</span><span class="p">)</span> <span class="c1">// 444 (32 bpp)</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;D3DFMT_X8R8G8B8&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_ARGB32</span><span class="p">)</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_ARGB32</span><span class="p">)</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;D3DFMT_A8R8G8B8&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_RGB24</span><span class="p">)</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_RGB24</span><span class="p">)</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;D3DFMT_R8G8B8&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_I420</span><span class="p">)</span> <span class="c1">// 420 (16 bpp)</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_I420</span><span class="p">)</span> <span class="c1">// 420 (16 bpp)</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;I420&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_NV12</span><span class="p">)</span> <span class="c1">// 420 (12 bpp)</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_NV12</span><span class="p">)</span> <span class="c1">// 420 (12 bpp)</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;NV12&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_UYVY</span><span class="p">)</span> <span class="c1">// 422 (12 bpp)</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_UYVY</span><span class="p">)</span> <span class="c1">// 422 (12 bpp)</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;UYVY&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_MJPG</span><span class="p">)</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_MJPG</span><span class="p">)</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;MJPG&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_AI44</span><span class="p">)</span> <span class="c1">// 4:4:4 Packed P</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_AI44</span><span class="p">)</span> <span class="c1">// 4:4:4 Packed P</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;AI44&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_AYUV</span><span class="p">)</span> <span class="c1">// 4:4:4 Packed 8</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_AYUV</span><span class="p">)</span> <span class="c1">// 4:4:4 Packed 8</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;AYUV&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_I420</span><span class="p">)</span> <span class="c1">// 4:2:0 Planar 8</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_I420</span><span class="p">)</span> <span class="c1">// 4:2:0 Planar 8</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;I420&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_IYUV</span><span class="p">)</span> <span class="c1">// 4:2:0 Planar 8</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_IYUV</span><span class="p">)</span> <span class="c1">// 4:2:0 Planar 8</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;IYUV&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_NV11</span><span class="p">)</span> <span class="c1">// 4:1:1 Planar 8</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_NV11</span><span class="p">)</span> <span class="c1">// 4:1:1 Planar 8</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;NV11&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_NV12</span><span class="p">)</span> <span class="c1">// 4:2:0 Planar 8</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_NV12</span><span class="p">)</span> <span class="c1">// 4:2:0 Planar 8</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;NV12&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_UYVY</span><span class="p">)</span> <span class="c1">// 4:2:2 Packed 8</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_UYVY</span><span class="p">)</span> <span class="c1">// 4:2:2 Packed 8</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;UYVY&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_Y41P</span><span class="p">)</span> <span class="c1">// 4:1:1 Packed 8</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_Y41P</span><span class="p">)</span> <span class="c1">// 4:1:1 Packed 8</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Y41P&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_Y41T</span><span class="p">)</span> <span class="c1">// 4:1:1 Packed 8</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_Y41T</span><span class="p">)</span> <span class="c1">// 4:1:1 Packed 8</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Y41T&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_Y42T</span><span class="p">)</span> <span class="c1">// 4:2:2 Packed 8</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_Y42T</span><span class="p">)</span> <span class="c1">// 4:2:2 Packed 8</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Y42T&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_YUY2</span><span class="p">)</span> <span class="c1">// 4:2:2 Packed 8</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_YUY2</span><span class="p">)</span> <span class="c1">// 4:2:2 Packed 8</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;YUY2&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_YVU9</span><span class="p">)</span> <span class="c1">// 8:4:4 Planar 9</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_YVU9</span><span class="p">)</span> <span class="c1">// 8:4:4 Planar 9</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;YVU9&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_YV12</span><span class="p">)</span> <span class="c1">// 4:2:0 Planar 8</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_YV12</span><span class="p">)</span> <span class="c1">// 4:2:0 Planar 8</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;YV12&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_YVYU</span><span class="p">)</span> <span class="c1">// 4:2:2 Packed 8</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_YVYU</span><span class="p">)</span> <span class="c1">// 4:2:2 Packed 8</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;YVYU&quot;</span><span class="p">;</span>
-    <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot; - format: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+
+    <span class="n">fprintf</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="s">&quot;   - format: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+    <span class="n">UINT64</span> <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">media</span><span class="o">-&gt;</span><span class="n">GetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_SIZE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">);</span> <span class="n">SUCCEEDED</span><span class="p">(</span><span class="n">hr</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">UINT32</span> <span class="n">w</span> <span class="o">=</span> <span class="n">value</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">value</span> <span class="o">&amp;</span> <span class="n">UINT32_MAX</span><span class="p">;</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="s">&quot;   - width: %u</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">w</span><span class="p">);</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="s">&quot;   - height: %u</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">media</span><span class="o">-&gt;</span><span class="n">GetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_RATE_RANGE_MAX</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">);</span> <span class="n">SUCCEEDED</span><span class="p">(</span><span class="n">hr</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">UINT32</span> <span class="n">framerate</span> <span class="o">=</span> <span class="n">value</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">;</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="s">&quot;   - fps: %u</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">framerate</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">print</span><span class="p">(</span><span class="n">IMFMediaType</span><span class="o">*</span> <span class="n">media</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
+    <span class="n">GUID</span> <span class="n">major</span><span class="p">{};</span>
+    <span class="n">media</span><span class="o">-&gt;</span><span class="n">GetGUID</span><span class="p">(</span><span class="n">MF_MT_MAJOR_TYPE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">major</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">major</span> <span class="o">==</span> <span class="n">MFMediaType_Default</span><span class="p">)</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot; - default</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">major</span> <span class="o">==</span> <span class="n">MFMediaType_Audio</span><span class="p">)</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot; - audio</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">major</span> <span class="o">==</span> <span class="n">MFMediaType_Stream</span><span class="p">)</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot; - stream</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">major</span> <span class="o">==</span> <span class="n">MFMediaType_Video</span><span class="p">)</span>
+        <span class="n">print_video</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">media</span><span class="p">);</span>
+    <span class="k">else</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot; - unknown</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div>
                 
