@@ -13,8 +13,13 @@
 
 using Microsoft::WRL::ComPtr;
 
+/// @see CoInitializeEx
+/// @see MFStartup
+/// @see MFShutdown
+/// @throw std::runtime_error
 auto startup() -> gsl::final_action<HRESULT(WINAPI*)()>;
 
+/// @see MFEnumDeviceSources
 HRESULT get_devices(IMFAttributes* attrs, std::vector<ComPtr<IMFActivate>>& devices) noexcept;
 HRESULT get_name(IMFActivate* device, std::wstring& name) noexcept;
 
@@ -25,25 +30,7 @@ HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStream
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video
 HRESULT configure(ComPtr<IMFStreamDescriptor> stream) noexcept;
 
-class device_group_t final {
-  public:
-    ComPtr<IMFAttributes> attrs{};
-    std::vector<ComPtr<IMFActivate>> devices{};
 
-  public:
-    /// @throw _com_error
-    device_group_t() noexcept(false);
-};
-
-/// @see OnReadSample
-struct read_item_t final {
-    HRESULT status;
-    DWORD index;
-    DWORD flags;
-    std::chrono::nanoseconds timestamp; // unit: 100 nanosecond
-    ComPtr<IMFSample> sample;
-};
-static_assert(sizeof(read_item_t) == 32);
 
 /// @see clock_gettime, CLOCKS_PER_SEC
 class process_timer_t final {

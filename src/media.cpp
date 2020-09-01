@@ -2,6 +2,7 @@
 #include <winrt/Windows.Foundation.h>
 #endif
 #include "media.hpp"
+#include <dshowasf.h>
 
 using namespace std;
 using namespace Microsoft::WRL;
@@ -65,13 +66,36 @@ HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStream
         return hr;
     for (auto i = 0u; i < num_stream; ++i) {
         BOOL selected = false;
-        if (auto hr = presentation->GetStreamDescriptorByIndex(i, &selected, ptr); FAILED(hr)) {
+        if (auto hr = presentation->GetStreamDescriptorByIndex(i, &selected, ptr); FAILED(hr))
             return hr;
-        }
         if (selected)
             break;
     }
     return S_OK;
+}
+
+HRESULT configure_video(ComPtr<IMFMediaType> type) {
+    GUID subtype{};
+    type->GetGUID(MF_MT_SUBTYPE, &subtype);
+
+    UINT32 interlace = 0;
+    type->GetUINT32(MF_MT_INTERLACE_MODE, &interlace);
+    const auto imode = static_cast<MFVideoInterlaceMode>(interlace);
+
+    UINT32 stride = 0;
+    type->GetUINT32(MF_MT_DEFAULT_STRIDE, &stride);
+
+    UINT32 ycbcr2rgb = 0;
+    type->GetUINT32(MF_MT_YUV_MATRIX, &ycbcr2rgb);
+    const auto matrix = static_cast<MFVideoTransferMatrix>(ycbcr2rgb);
+
+    UINT64 size = 0;
+    type->GetUINT64(MF_MT_FRAME_SIZE, &size); // MFGetAttributeSize
+    UINT32 w = size >> 32, h = size & UINT32_MAX;
+
+    UINT64 framerate = 0; // framerate >> 32;
+    type->GetUINT64(MF_MT_FRAME_RATE_RANGE_MAX, &framerate);
+    return type->SetUINT64(MF_MT_FRAME_RATE, framerate);
 }
 
 void print(IMFMediaType* media) noexcept;
@@ -96,68 +120,12 @@ HRESULT configure(ComPtr<IMFStreamDescriptor> stream) noexcept {
 
         print(current.Get());
     }
-
-    GUID subtype{};
-    type->GetGUID(MF_MT_SUBTYPE, &subtype);
-
-    UINT32 interlace = 0;
-    type->GetUINT32(MF_MT_INTERLACE_MODE, &interlace);
-    const auto imode = static_cast<MFVideoInterlaceMode>(interlace);
-
-    UINT32 stride = 0;
-    type->GetUINT32(MF_MT_DEFAULT_STRIDE, &stride);
-
-    UINT32 ycbcr2rgb = 0;
-    type->GetUINT32(MF_MT_YUV_MATRIX, &ycbcr2rgb);
-    const auto matrix = static_cast<MFVideoTransferMatrix>(ycbcr2rgb);
-
-    UINT64 size = 0;
-    type->GetUINT64(MF_MT_FRAME_SIZE, &size); // MFGetAttributeSize
-    UINT32 w = size >> 32, h = size & UINT32_MAX;
-
-    UINT64 framerate = 0;
-    type->GetUINT64(MF_MT_FRAME_RATE_RANGE_MAX, &framerate);
-    type->SetUINT64(MF_MT_FRAME_RATE, framerate);
-    framerate = framerate >> 32;
     return handler->SetCurrentMediaType(type.Get());
 }
 
-device_group_t::device_group_t() noexcept(false) {
-    if (auto hr = MFCreateAttributes(attrs.GetAddressOf(), 1); //
-        FAILED(hr))
-        throw _com_error{hr};
-    if (auto hr = attrs->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, //
-                                 MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
-        FAILED(hr))
-        throw _com_error{hr};
-    if (auto hr = get_devices(attrs.Get(), devices); //
-        FAILED(hr))
-        throw _com_error{hr};
-}
-
-/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids
-/// @see https://stackoverflow.com/a/9681384
-void print(IMFMediaType* media) noexcept {
-    GUID major{};
-    media->GetGUID(MF_MT_MAJOR_TYPE, &major);
-    if (major == MFMediaType_Default)
-        fprintf(stdout, "default\n");
-    else if (major == MFMediaType_Video)
-        fprintf(stdout, "video\n");
-    else if (major == MFMediaType_Stream)
-        fprintf(stdout, "stream\n");
-    else
-        fprintf(stdout, "unknown\n");
-
-    UINT64 value = 0;
-    media->GetUINT64(MF_MT_FRAME_SIZE, &value);
-    UINT32 w = value >> 32, h = value & UINT32_MAX;
-    media->GetUINT64(MF_MT_FRAME_RATE_RANGE_MAX, &value);
-    UINT32 framerate = value >> 32;
-    fprintf(stdout, " - width: %u\n", w);
-    fprintf(stdout, " - height: %u\n", h);
-    fprintf(stdout, " - fps: %u\n", framerate);
-
+/// @see https://docs.microsoft.com/en-us/windows/win32/wmformat/media-type-identifiers
+void print_video(FILE* fout, IMFMediaType* media) noexcept {
+    fprintf(fout, " - video:\n");
     GUID subtype{};
     media->GetGUID(MF_MT_SUBTYPE, &subtype);
     const char* name = "Unknown";
@@ -203,5 +171,33 @@ void print(IMFMediaType* media) noexcept {
         name = "YV12";
     else if (subtype == MFVideoFormat_YVYU) // 4:2:2 Packed 8
         name = "YVYU";
-    fprintf(stdout, " - format: %s\n", name);
+
+    fprintf(fout, "   - format: %s\n", name);
+    UINT64 value = 0;
+    if (auto hr = media->GetUINT64(MF_MT_FRAME_SIZE, &value); SUCCEEDED(hr)) {
+        UINT32 w = value >> 32, h = value & UINT32_MAX;
+        fprintf(fout, "   - width: %u\n", w);
+        fprintf(fout, "   - height: %u\n", h);
+    }
+    if (auto hr = media->GetUINT64(MF_MT_FRAME_RATE_RANGE_MAX, &value); SUCCEEDED(hr)) {
+        UINT32 framerate = value >> 32;
+        fprintf(fout, "   - fps: %u\n", framerate);
+    }
+}
+
+/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids
+/// @see https://stackoverflow.com/a/9681384
+void print(IMFMediaType* media) noexcept {
+    GUID major{};
+    media->GetGUID(MF_MT_MAJOR_TYPE, &major);
+    if (major == MFMediaType_Default)
+        fprintf(stdout, " - default\n");
+    else if (major == MFMediaType_Audio)
+        fprintf(stdout, " - audio\n");
+    else if (major == MFMediaType_Stream)
+        fprintf(stdout, " - stream\n");
+    else if (major == MFMediaType_Video)
+        print_video(stdout, media);
+    else
+        fprintf(stdout, " - unknown\n");
 }
