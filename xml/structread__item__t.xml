@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="structread__item__t" kind="struct" language="C++" prot="public" final="yes">
+    <compoundname>read_item_t</compoundname>
+    <includes refid="media_8hpp" local="no">media.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structread__item__t_1a888e2e344c708dd9eef32db54f01c869" prot="public" static="no" mutable="no">
+        <type>HRESULT</type>
+        <definition>HRESULT read_item_t::status</definition>
+        <argsstring></argsstring>
+        <name>status</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="40" column="1" bodyfile="src/media.hpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structread__item__t_1ac02344ce2333d86eaefb2392c354d2da" prot="public" static="no" mutable="no">
+        <type>DWORD</type>
+        <definition>DWORD read_item_t::index</definition>
+        <argsstring></argsstring>
+        <name>index</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="41" column="1" bodyfile="src/media.hpp" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structread__item__t_1a7e794a49d2ecb659671b65ccaf74e238" prot="public" static="no" mutable="no">
+        <type>DWORD</type>
+        <definition>DWORD read_item_t::flags</definition>
+        <argsstring></argsstring>
+        <name>flags</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="42" column="1" bodyfile="src/media.hpp" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structread__item__t_1aa657e0c6f61cf41c3bfd20c27217008f" prot="public" static="no" mutable="no">
+        <type>std::chrono::nanoseconds</type>
+        <definition>std::chrono::nanoseconds read_item_t::timestamp</definition>
+        <argsstring></argsstring>
+        <name>timestamp</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="43" column="1" bodyfile="src/media.hpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structread__item__t_1ab8222e8570a30975c9108f51c37bae52" prot="public" static="no" mutable="no">
+        <type>ComPtr&lt; IMFSample &gt;</type>
+        <definition>ComPtr&lt;IMFSample&gt; read_item_t::sample</definition>
+        <argsstring></argsstring>
+        <name>sample</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="44" column="1" bodyfile="src/media.hpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="see"><para>OnReadSample </para></simplesect>
+</para>    </detaileddescription>
+    <collaborationgraph>
+      <node id="10">
+        <label>read_item_t</label>
+        <link refid="structread__item__t"/>
+        <childnode refid="11" relation="usage">
+          <edgelabel>sample</edgelabel>
+        </childnode>
+      </node>
+      <node id="11">
+        <label>ComPtr&lt; IMFSample &gt;</label>
+      </node>
+    </collaborationgraph>
+    <location file="src/media.hpp" line="39" column="1" bodyfile="src/media.hpp" bodystart="39" bodyend="45"/>
+    <listofallmembers>
+      <member refid="structread__item__t_1a7e794a49d2ecb659671b65ccaf74e238" prot="public" virt="non-virtual"><scope>read_item_t</scope><name>flags</name></member>
+      <member refid="structread__item__t_1ac02344ce2333d86eaefb2392c354d2da" prot="public" virt="non-virtual"><scope>read_item_t</scope><name>index</name></member>
+      <member refid="structread__item__t_1ab8222e8570a30975c9108f51c37bae52" prot="public" virt="non-virtual"><scope>read_item_t</scope><name>sample</name></member>
+      <member refid="structread__item__t_1a888e2e344c708dd9eef32db54f01c869" prot="public" virt="non-virtual"><scope>read_item_t</scope><name>status</name></member>
+      <member refid="structread__item__t_1aa657e0c6f61cf41c3bfd20c27217008f" prot="public" virt="non-virtual"><scope>read_item_t</scope><name>timestamp</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,54 +1,47 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.8.13">
-  <compound refid="structaddrinfo" kind="struct"><name>addrinfo</name>
+  <compound refid="structcritical__section__t" kind="struct"><name>critical_section_t</name>
+    <member refid="structcritical__section__t_1aa0c17e50f8655195ea549e0d0abb2642" kind="function"><name>critical_section_t</name></member>
+    <member refid="structcritical__section__t_1ab2a4f2b7648fa516c7fb5a5d7faa3162" kind="function"><name>~critical_section_t</name></member>
+    <member refid="structcritical__section__t_1a38e7b05094a4d84762110549157b24cc" kind="function"><name>try_lock</name></member>
+    <member refid="structcritical__section__t_1a61c19534112127c589bfff7eaaabd7cc" kind="function"><name>lock</name></member>
+    <member refid="structcritical__section__t_1a9ef301a81b8715367f66d9867b0e4221" kind="function"><name>unlock</name></member>
+  </compound>
+  <compound refid="classdevice__group__t" kind="class"><name>device_group_t</name>
+    <member refid="classdevice__group__t_1a22e86312dab5307f1c91dd762f3e9d41" kind="variable"><name>attrs</name></member>
+    <member refid="classdevice__group__t_1a927c8e0c084b1b2acf8b57f372ded43f" kind="variable"><name>devices</name></member>
+    <member refid="classdevice__group__t_1a1bf927238df70ef48fdecfe392ceb3be" kind="function"><name>device_group_t</name></member>
+  </compound>
+  <compound refid="classprocess__timer__t" kind="class"><name>process_timer_t</name>
+    <member refid="classprocess__timer__t_1a679830497a5ec98b3fda5a1ee343ce53" kind="variable"><name>start</name></member>
+    <member refid="classprocess__timer__t_1a63d79dc52088cd10d9a45135ef990157" kind="function"><name>pick</name></member>
+    <member refid="classprocess__timer__t_1a31c3d5af066ec12a9e47355ff72d3800" kind="function"><name>reset</name></member>
+  </compound>
+  <compound refid="structread__item__t" kind="struct"><name>read_item_t</name>
+    <member refid="structread__item__t_1a888e2e344c708dd9eef32db54f01c869" kind="variable"><name>status</name></member>
+    <member refid="structread__item__t_1ac02344ce2333d86eaefb2392c354d2da" kind="variable"><name>index</name></member>
+    <member refid="structread__item__t_1a7e794a49d2ecb659671b65ccaf74e238" kind="variable"><name>flags</name></member>
+    <member refid="structread__item__t_1aa657e0c6f61cf41c3bfd20c27217008f" kind="variable"><name>timestamp</name></member>
+    <member refid="structread__item__t_1ab8222e8570a30975c9108f51c37bae52" kind="variable"><name>sample</name></member>
+  </compound>
+  <compound refid="namespaceMicrosoft_1_1WRL" kind="namespace"><name>Microsoft::WRL</name>
   </compound>
   <compound refid="namespacestd" kind="namespace"><name>std</name>
   </compound>
-  <compound refid="socket_8cpp" kind="file"><name>socket.cpp</name>
-    <member refid="socket_8cpp_1a2a069c7121e09a6fc4fba28178577e1c" kind="function"><name>socket_create</name></member>
-    <member refid="socket_8cpp_1adc5a948d26ca8d969205da03143cf676" kind="function"><name>socket_create</name></member>
-    <member refid="socket_8cpp_1a57276ab3060b2acbb78378e321718415" kind="function"><name>socket_bind</name></member>
-    <member refid="socket_8cpp_1ab411d3fbc9c4e7763aedf7153b0f053d" kind="function"><name>socket_bind</name></member>
-    <member refid="socket_8cpp_1a72ad64c8745e48923e497b8aec216d87" kind="function"><name>socket_listen</name></member>
-    <member refid="socket_8cpp_1a7589801a6bd5cc25c87ecd9f849d8281" kind="function"><name>socket_connect</name></member>
-    <member refid="socket_8cpp_1a6f812e13495c77a708e2c822434fdea8" kind="function"><name>socket_connect</name></member>
-    <member refid="socket_8cpp_1aa125c1c2710ac6ceee78b695f30d034b" kind="function"><name>socket_accept</name></member>
-    <member refid="socket_8cpp_1a031ce6ea7f741e6a5ecf4f711478c19e" kind="function"><name>socket_get_name</name></member>
-    <member refid="socket_8cpp_1ac81fc21babd2bc72b739ae064e077439" kind="function"><name>socket_get_name</name></member>
-    <member refid="socket_8cpp_1a1f32dff752b392575d4f07355231f9a8" kind="function"><name>socket_get_peer</name></member>
-    <member refid="socket_8cpp_1a3d677b115c9bb0e63a7550b903536a3c" kind="function"><name>socket_get_peer</name></member>
-    <member refid="socket_8cpp_1ac38c5ed28135ecd13934fa08933205f3" kind="function"><name>socket_set_option</name></member>
-    <member refid="socket_8cpp_1ad9e60a284fa6fd28dde3f57d28532404" kind="function"><name>socket_set_option_reuse_address</name></member>
-    <member refid="socket_8cpp_1aa6e8317a0c5c0255606c5e5260b5dc00" kind="function"><name>socket_set_option_nodelay</name></member>
-    <member refid="socket_8cpp_1a31f3fd04fb05988a7a3e6c5d1126badd" kind="function"><name>socket_set_option_timout</name></member>
-    <member refid="socket_8cpp_1a11c23e9acbbffaf3f6c6861f8429d02a" kind="function"><name>socket_set_option_timout</name></member>
-    <member refid="socket_8cpp_1a4ea73aaf08802fdca753351ef3227487" kind="function"><name>socket_set_option_send_timout</name></member>
-    <member refid="socket_8cpp_1a8a082d28ab13d3f27efd086e16303c6a" kind="function"><name>socket_set_option_recv_timout</name></member>
+  <compound refid="media_8cpp" kind="file"><name>media.cpp</name>
+    <member refid="media_8cpp_1afff57e09d13a87eb34d8b8a0e0d01b75" kind="function"><name>startup</name></member>
+    <member refid="media_8cpp_1a747082ef949615992911c0308565b83e" kind="function"><name>get_devices</name></member>
+    <member refid="media_8cpp_1a043959776c4955e4499979fbd61a7c2d" kind="function"><name>get_name</name></member>
+    <member refid="media_8cpp_1a6791b11ab050c4addac5b15ea7d36beb" kind="function"><name>get_stream_descriptor</name></member>
+    <member refid="media_8cpp_1a64cf8ebe28215fd213b9603391f95bcd" kind="function"><name>print</name></member>
+    <member refid="media_8cpp_1a4d439ee9ee5b9f516c805c8bb8507b9b" kind="function"><name>configure</name></member>
   </compound>
-  <compound refid="socket_8hpp" kind="file"><name>socket.hpp</name>
-    <member refid="socket_8hpp_1ad019c4466fd89e629acf64801e8d0885" kind="function"><name>socket_setup</name></member>
-    <member refid="socket_8hpp_1a77f25219e6e9039834edc7ca4e7507f6" kind="function"><name>socket_teardown</name></member>
-    <member refid="socket_8hpp_1a7a59135fe52e91d37ef54b74a155174e" kind="function"><name>socket_recent</name></member>
-    <member refid="socket_8hpp_1a080f80d234bca59ac52d59738c314246" kind="function"><name>socket_is_valid</name></member>
-    <member refid="socket_8hpp_1adc5a948d26ca8d969205da03143cf676" kind="function"><name>socket_create</name></member>
-    <member refid="socket_8hpp_1ac875491f2445520c5ac8b9ddfc55ad57" kind="function"><name>socket_close</name></member>
-    <member refid="socket_8hpp_1a57276ab3060b2acbb78378e321718415" kind="function"><name>socket_bind</name></member>
-    <member refid="socket_8hpp_1ab411d3fbc9c4e7763aedf7153b0f053d" kind="function"><name>socket_bind</name></member>
-    <member refid="socket_8hpp_1a72ad64c8745e48923e497b8aec216d87" kind="function"><name>socket_listen</name></member>
-    <member refid="socket_8hpp_1a7589801a6bd5cc25c87ecd9f849d8281" kind="function"><name>socket_connect</name></member>
-    <member refid="socket_8hpp_1a6f812e13495c77a708e2c822434fdea8" kind="function"><name>socket_connect</name></member>
-    <member refid="socket_8hpp_1aa125c1c2710ac6ceee78b695f30d034b" kind="function"><name>socket_accept</name></member>
-    <member refid="socket_8hpp_1a031ce6ea7f741e6a5ecf4f711478c19e" kind="function"><name>socket_get_name</name></member>
-    <member refid="socket_8hpp_1ac81fc21babd2bc72b739ae064e077439" kind="function"><name>socket_get_name</name></member>
-    <member refid="socket_8hpp_1a24bb544db5c840caf9fccd20c628cb61" kind="function"><name>socket_get_peer</name></member>
-    <member refid="socket_8hpp_1a34d1fb5bb98fa31fca52b88d81534276" kind="function"><name>socket_get_peer</name></member>
-    <member refid="socket_8hpp_1ac38c5ed28135ecd13934fa08933205f3" kind="function"><name>socket_set_option</name></member>
-    <member refid="socket_8hpp_1aab48cce81295876864e04fb3638a8408" kind="function"><name>socket_set_option_nonblock</name></member>
-    <member refid="socket_8hpp_1ad9e60a284fa6fd28dde3f57d28532404" kind="function"><name>socket_set_option_reuse_address</name></member>
-    <member refid="socket_8hpp_1aa6e8317a0c5c0255606c5e5260b5dc00" kind="function"><name>socket_set_option_nodelay</name></member>
-    <member refid="socket_8hpp_1a4ea73aaf08802fdca753351ef3227487" kind="function"><name>socket_set_option_send_timout</name></member>
-    <member refid="socket_8hpp_1a8a082d28ab13d3f27efd086e16303c6a" kind="function"><name>socket_set_option_recv_timout</name></member>
-    <member refid="socket_8hpp_1a901db3d71d4a694562fda404e8a8e547" kind="function"><name>socket_would_block</name></member>
+  <compound refid="media_8hpp" kind="file"><name>media.hpp</name>
+    <member refid="media_8hpp_1afff57e09d13a87eb34d8b8a0e0d01b75" kind="function"><name>startup</name></member>
+    <member refid="media_8hpp_1ae47c84bf57ff97e71578eecee2b9f8ae" kind="function"><name>get_devices</name></member>
+    <member refid="media_8hpp_1a0f188ed056176ce6098ccae92d943dde" kind="function"><name>get_name</name></member>
+    <member refid="media_8hpp_1a6791b11ab050c4addac5b15ea7d36beb" kind="function"><name>get_stream_descriptor</name></member>
+    <member refid="media_8hpp_1a4d439ee9ee5b9f516c805c8bb8507b9b" kind="function"><name>configure</name></member>
   </compound>
   <compound refid="dir_68267d1309a1af8e8297ef4c3efbcdba" kind="dir"><name>src</name>
   </compound>

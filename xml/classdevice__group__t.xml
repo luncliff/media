@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="classdevice__group__t" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>device_group_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classdevice__group__t_1a22e86312dab5307f1c91dd762f3e9d41" prot="public" static="no" mutable="no">
+        <type>ComPtr&lt; IMFAttributes &gt;</type>
+        <definition>ComPtr&lt;IMFAttributes&gt; device_group_t::attrs</definition>
+        <argsstring></argsstring>
+        <name>attrs</name>
+        <initializer>{}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="30" column="1" bodyfile="src/media.hpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdevice__group__t_1a927c8e0c084b1b2acf8b57f372ded43f" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; ComPtr&lt; IMFActivate &gt; &gt;</type>
+        <definition>std::vector&lt;ComPtr&lt;IMFActivate&gt; &gt; device_group_t::devices</definition>
+        <argsstring></argsstring>
+        <name>devices</name>
+        <initializer>{}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="31" column="1" bodyfile="src/media.hpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdevice__group__t_1a1bf927238df70ef48fdecfe392ceb3be" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>device_group_t::device_group_t</definition>
+        <argsstring>() noexcept(false)</argsstring>
+        <name>device_group_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="exception"><parameteritem>
+<parameternamelist>
+<parametername>_com_error</parametername>
+</parameternamelist>
+<parameterdescription>
+<para></para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="35" column="1" bodyfile="src/media.cpp" bodystart="124" bodyend="135"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="6">
+        <label>ComPtr&lt; IMFAttributes &gt;</label>
+      </node>
+      <node id="5">
+        <label>device_group_t</label>
+        <link refid="classdevice__group__t"/>
+        <childnode refid="6" relation="usage">
+          <edgelabel>attrs</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="src/media.hpp" line="28" column="1" bodyfile="src/media.hpp" bodystart="28" bodyend="36"/>
+    <listofallmembers>
+      <member refid="classdevice__group__t_1a22e86312dab5307f1c91dd762f3e9d41" prot="public" virt="non-virtual"><scope>device_group_t</scope><name>attrs</name></member>
+      <member refid="classdevice__group__t_1a1bf927238df70ef48fdecfe392ceb3be" prot="public" virt="non-virtual"><scope>device_group_t</scope><name>device_group_t</name></member>
+      <member refid="classdevice__group__t_1a927c8e0c084b1b2acf8b57f372ded43f" prot="public" virt="non-virtual"><scope>device_group_t</scope><name>devices</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

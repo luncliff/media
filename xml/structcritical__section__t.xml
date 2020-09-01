@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="structcritical__section__t" kind="struct" language="C++" prot="public" final="yes">
+    <compoundname>critical_section_t</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">CRITICAL_SECTION</basecompoundref>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structcritical__section__t_1aa0c17e50f8655195ea549e0d0abb2642" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>critical_section_t::critical_section_t</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>critical_section_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.cpp" line="10" column="1" bodyfile="src/media.cpp" bodystart="10" bodyend="12"/>
+      </memberdef>
+      <memberdef kind="function" id="structcritical__section__t_1ab2a4f2b7648fa516c7fb5a5d7faa3162" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>critical_section_t::~critical_section_t</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>~critical_section_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.cpp" line="13" column="1" bodyfile="src/media.cpp" bodystart="13" bodyend="15"/>
+      </memberdef>
+      <memberdef kind="function" id="structcritical__section__t_1a38e7b05094a4d84762110549157b24cc" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool critical_section_t::try_lock</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>try_lock</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.cpp" line="16" column="1" bodyfile="src/media.cpp" bodystart="16" bodyend="18"/>
+      </memberdef>
+      <memberdef kind="function" id="structcritical__section__t_1a61c19534112127c589bfff7eaaabd7cc" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void critical_section_t::lock</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>lock</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.cpp" line="19" column="1" bodyfile="src/media.cpp" bodystart="19" bodyend="21"/>
+      </memberdef>
+      <memberdef kind="function" id="structcritical__section__t_1a9ef301a81b8715367f66d9867b0e4221" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void critical_section_t::unlock</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>unlock</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.cpp" line="22" column="1" bodyfile="src/media.cpp" bodystart="22" bodyend="24"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>CRITICAL_SECTION</label>
+      </node>
+      <node id="0">
+        <label>critical_section_t</label>
+        <link refid="structcritical__section__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="3">
+        <label>CRITICAL_SECTION</label>
+      </node>
+      <node id="2">
+        <label>critical_section_t</label>
+        <link refid="structcritical__section__t"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="src/media.cpp" line="8" column="1" bodyfile="src/media.cpp" bodystart="8" bodyend="25"/>
+    <listofallmembers>
+      <member refid="structcritical__section__t_1aa0c17e50f8655195ea549e0d0abb2642" prot="public" virt="non-virtual"><scope>critical_section_t</scope><name>critical_section_t</name></member>
+      <member refid="structcritical__section__t_1a61c19534112127c589bfff7eaaabd7cc" prot="public" virt="non-virtual"><scope>critical_section_t</scope><name>lock</name></member>
+      <member refid="structcritical__section__t_1a38e7b05094a4d84762110549157b24cc" prot="public" virt="non-virtual"><scope>critical_section_t</scope><name>try_lock</name></member>
+      <member refid="structcritical__section__t_1a9ef301a81b8715367f66d9867b0e4221" prot="public" virt="non-virtual"><scope>critical_section_t</scope><name>unlock</name></member>
+      <member refid="structcritical__section__t_1ab2a4f2b7648fa516c7fb5a5d7faa3162" prot="public" virt="non-virtual"><scope>critical_section_t</scope><name>~critical_section_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

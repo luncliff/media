@@ -11,7 +11,7 @@
       <meta http-equiv="x-ua-compatible" content="ie=edge">
       
       
-        <link rel="canonical" href="https://luncliff.github.io/media/socket_8hpp_source/">
+        <link rel="canonical" href="https://luncliff.github.io/media/media_8hpp/">
       
       
       
@@ -38,7 +38,7 @@
     
     
       
-        <title>File socket.hpp - luncliff-media</title>
+        <title>File media.hpp - luncliff-media</title>
       
     
     
@@ -87,7 +87,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#file-sockethpp" tabindex="0" class="md-skip">
+      <a href="#file-mediahpp" tabindex="0" class="md-skip">
         Skip to content
       </a>
     
@@ -113,7 +113,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                File socket.hpp
+                File media.hpp
               
             </span>
           
@@ -271,6 +271,77 @@
     
   
   
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#classes" class="md-nav__link">
+    Classes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-functions" class="md-nav__link">
+    Public Functions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-functions-documentation" class="md-nav__link">
+    Public Functions Documentation
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#function-configure" class="md-nav__link">
+    function configure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_devices" class="md-nav__link">
+    function get_devices
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_name" class="md-nav__link">
+    function get_name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_stream_descriptor" class="md-nav__link">
+    function get_stream_descriptor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-startup" class="md-nav__link">
+    function startup
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -281,71 +352,119 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/luncliff/media/edit/master/docs/socket_8hpp_source.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/luncliff/media/edit/master/docs/media_8hpp.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                <h1 id="file-sockethpp">File socket.hpp<a class="headerlink" href="#file-sockethpp" title="Permanent link">&para;</a></h1>
-<p><a href="../files/"><strong>File List</strong></a> <strong>&gt;</strong> <a href="../dir_68267d1309a1af8e8297ef4c3efbcdba/"><strong>src</strong></a> <strong>&gt;</strong> <a href="../socket_8hpp/"><strong>socket.hpp</strong></a></p>
-<p><a href="../socket_8hpp/">Go to the documentation of this file.</a> </p>
-<div class="codehilite"><pre><span></span><code><span class="cp">#pragma once</span>
-
-<span class="cp">#include</span> <span class="cpf">&lt;cstdint&gt;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;gsl/gsl&gt;</span><span class="cp"></span>
-
-<span class="k">struct</span> <span class="n">addrinfo</span><span class="p">;</span>
-
-<span class="k">struct</span> <span class="n">sockaddr_in</span><span class="p">;</span>
-<span class="k">struct</span> <span class="n">sockaddr_in6</span><span class="p">;</span>
-
-<span class="kt">void</span> <span class="nf">socket_setup</span><span class="p">()</span> <span class="k">noexcept</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
-
-<span class="kt">void</span> <span class="nf">socket_teardown</span><span class="p">()</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_recent</span><span class="p">()</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">bool</span> <span class="nf">socket_is_valid</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_create</span><span class="p">(</span><span class="k">const</span> <span class="n">addrinfo</span><span class="o">&amp;</span> <span class="n">hint</span><span class="p">,</span> <span class="kt">int64_t</span><span class="o">&amp;</span> <span class="n">sd</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_close</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_bind</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">,</span> <span class="k">const</span> <span class="n">sockaddr_in</span><span class="o">&amp;</span> <span class="n">local</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_bind</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">,</span> <span class="k">const</span> <span class="n">sockaddr_in6</span><span class="o">&amp;</span> <span class="n">local</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_listen</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_connect</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">,</span> <span class="k">const</span> <span class="n">sockaddr_in</span><span class="o">&amp;</span> <span class="n">remote</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_connect</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">,</span> <span class="k">const</span> <span class="n">sockaddr_in6</span><span class="o">&amp;</span> <span class="n">remote</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_accept</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">ln</span><span class="p">,</span> <span class="kt">int64_t</span><span class="o">&amp;</span> <span class="n">sd</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_get_name</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">,</span> <span class="n">sockaddr_in</span><span class="o">&amp;</span> <span class="n">local</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_get_name</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">,</span> <span class="n">sockaddr_in6</span><span class="o">&amp;</span> <span class="n">local</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_get_peer</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">,</span> <span class="n">sockaddr_in</span><span class="o">&amp;</span> <span class="n">remote</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_get_peer</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">,</span> <span class="n">sockaddr_in6</span><span class="o">&amp;</span> <span class="n">remote</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_set_option</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">level</span><span class="p">,</span> <span class="c1">//</span>
-                           <span class="kt">int64_t</span> <span class="n">option</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">value</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_set_option_nonblock</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_set_option_reuse_address</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_set_option_nodelay</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_set_option_send_timout</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">,</span> <span class="c1">//</span>
-                                       <span class="kt">uint32_t</span> <span class="n">us</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">uint32_t</span> <span class="nf">socket_set_option_recv_timout</span><span class="p">(</span><span class="kt">int64_t</span> <span class="n">sd</span><span class="p">,</span> <span class="c1">//</span>
-                                       <span class="kt">uint32_t</span> <span class="n">us</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
-
-<span class="kt">bool</span> <span class="nf">socket_would_block</span><span class="p">(</span><span class="kt">uint32_t</span> <span class="n">ec</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
+                <h1 id="file-mediahpp">File media.hpp<a class="headerlink" href="#file-mediahpp" title="Permanent link">&para;</a></h1>
+<p><a href="../files/"><strong>File List</strong></a> <strong>&gt;</strong> <a href="../dir_68267d1309a1af8e8297ef4c3efbcdba/"><strong>src</strong></a> <strong>&gt;</strong> <a href="./"><strong>media.hpp</strong></a></p>
+<p><a href="../media_8hpp_source/">Go to the source code of this file.</a></p>
+<ul>
+<li><code>#include &lt;chrono&gt;</code></li>
+<li><code>#include &lt;ctime&gt;</code></li>
+<li><code>#include &lt;gsl/gsl&gt;</code></li>
+<li><code>#include &lt;comdef.h&gt;</code></li>
+<li><code>#include &lt;shlwapi.h&gt;</code></li>
+<li><code>#include &lt;wrl/client.h&gt;</code></li>
+<li><code>#include &lt;mfapi.h&gt;</code></li>
+<li><code>#include &lt;mfidl.h&gt;</code></li>
+<li><code>#include &lt;mfreadwrite.h&gt;</code></li>
+</ul>
+<h2 id="classes">Classes<a class="headerlink" href="#classes" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th align="right">Type</th>
+<th align="left">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classdevice__group__t/"><strong>device_group_t</strong></a> <br></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classprocess__timer__t/"><strong>process_timer_t</strong></a> <br></td>
+</tr>
+<tr>
+<td align="right">struct</td>
+<td align="left"><a href="../structread__item__t/"><strong>read_item_t</strong></a> <br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-functions">Public Functions<a class="headerlink" href="#public-functions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th align="right">Type</th>
+<th align="left">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-configure"><strong>configure</strong></a> (ComPtr&lt; IMFStreamDescriptor &gt; stream) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-get-devices"><strong>get_devices</strong></a> (IMFAttributes * attrs, std::vector&lt; ComPtr&lt; IMFActivate &gt;&gt; &amp; devices) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-get-name"><strong>get_name</strong></a> (IMFActivate * device, std::wstring &amp; name) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-get-stream-descriptor"><strong>get_stream_descriptor</strong></a> (IMFPresentationDescriptor * presentation, IMFStreamDescriptor ** ptr) <br></td>
+</tr>
+<tr>
+<td align="right">auto</td>
+<td align="left"><a href="./#function-startup"><strong>startup</strong></a> () <br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-functions-documentation">Public Functions Documentation<a class="headerlink" href="#public-functions-documentation" title="Permanent link">&para;</a></h2>
+<h3 id="function-configure">function configure<a class="headerlink" href="#function-configure" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">HRESULT</span> <span class="n">configure</span> <span class="p">(</span>
+    <span class="n">ComPtr</span><span class="o">&lt;</span> <span class="n">IMFStreamDescriptor</span> <span class="o">&gt;</span> <span class="n">stream</span>
+<span class="p">)</span> <span class="k">noexcept</span>
 </code></pre></div>
+
+
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft">https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft</a> </p>
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types">https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types</a> </p>
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video">https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video</a> </p>
+<h3 id="function-get_devices">function get_devices<a class="headerlink" href="#function-get_devices" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">HRESULT</span> <span class="n">get_devices</span> <span class="p">(</span>
+    <span class="n">IMFAttributes</span> <span class="o">*</span> <span class="n">attrs</span><span class="p">,</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span> <span class="n">ComPtr</span><span class="o">&lt;</span> <span class="n">IMFActivate</span> <span class="o">&gt;&gt;</span> <span class="o">&amp;</span> <span class="n">devices</span>
+<span class="p">)</span> <span class="k">noexcept</span>
+</code></pre></div>
+
+
+<h3 id="function-get_name">function get_name<a class="headerlink" href="#function-get_name" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">HRESULT</span> <span class="n">get_name</span> <span class="p">(</span>
+    <span class="n">IMFActivate</span> <span class="o">*</span> <span class="n">device</span><span class="p">,</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">wstring</span> <span class="o">&amp;</span> <span class="n">name</span>
+<span class="p">)</span> <span class="k">noexcept</span>
+</code></pre></div>
+
+
+<h3 id="function-get_stream_descriptor">function get_stream_descriptor<a class="headerlink" href="#function-get_stream_descriptor" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">HRESULT</span> <span class="n">get_stream_descriptor</span> <span class="p">(</span>
+    <span class="n">IMFPresentationDescriptor</span> <span class="o">*</span> <span class="n">presentation</span><span class="p">,</span>
+    <span class="n">IMFStreamDescriptor</span> <span class="o">**</span> <span class="n">ptr</span>
+<span class="p">)</span> 
+</code></pre></div>
+
+
+<h3 id="function-startup">function startup<a class="headerlink" href="#function-startup" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="k">auto</span> <span class="n">startup</span> <span class="p">()</span> 
+</code></pre></div>
+
+
+<hr />
+<p>The documentation for this class was generated from the following file <code>src/media.hpp</code></p>
                 
                   
                 

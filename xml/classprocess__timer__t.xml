@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="classprocess__timer__t" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>process_timer_t</compoundname>
+    <includes refid="media_8hpp" local="no">media.hpp</includes>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classprocess__timer__t_1a679830497a5ec98b3fda5a1ee343ce53" prot="private" static="no" mutable="no">
+        <type>clock_t</type>
+        <definition>clock_t process_timer_t::start</definition>
+        <argsstring></argsstring>
+        <name>start</name>
+        <initializer>= clock()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="50" column="1" bodyfile="src/media.hpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classprocess__timer__t_1a63d79dc52088cd10d9a45135ef990157" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>float</type>
+        <definition>float process_timer_t::pick</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>pick</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>float elapsed second </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="56" column="1" bodyfile="src/media.hpp" bodystart="56" bodyend="59"/>
+      </memberdef>
+      <memberdef kind="function" id="classprocess__timer__t_1a31c3d5af066ec12a9e47355ff72d3800" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>float</type>
+        <definition>float process_timer_t::reset</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>reset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="60" column="1" bodyfile="src/media.hpp" bodystart="60" bodyend="64"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="see"><para>clock_gettime, CLOCKS_PER_SEC </para></simplesect>
+</para>    </detaileddescription>
+    <location file="src/media.hpp" line="49" column="1" bodyfile="src/media.hpp" bodystart="49" bodyend="65"/>
+    <listofallmembers>
+      <member refid="classprocess__timer__t_1a63d79dc52088cd10d9a45135ef990157" prot="public" virt="non-virtual"><scope>process_timer_t</scope><name>pick</name></member>
+      <member refid="classprocess__timer__t_1a31c3d5af066ec12a9e47355ff72d3800" prot="public" virt="non-virtual"><scope>process_timer_t</scope><name>reset</name></member>
+      <member refid="classprocess__timer__t_1a679830497a5ec98b3fda5a1ee343ce53" prot="private" virt="non-virtual"><scope>process_timer_t</scope><name>start</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
