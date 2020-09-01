@@ -2,9 +2,11 @@
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
 
+#include <filesystem>
 #include <media.hpp>
 
 using namespace std;
+namespace fs = std::filesystem;
 
 TEST_CASE("get_devices") {
     auto on_return = startup();
@@ -141,7 +143,8 @@ TEST_CASE("IMFMediaSource(IMFSourceResolver)") {
     ComPtr<IMFMediaSession> session{};
     REQUIRE(MFCreateMediaSession(attrs.Get(), session.GetAddressOf()) == S_OK);
 
-    LPCWSTR url = L"C:\\path\\to\\test.mp4";
+    const auto fpath = fs::path{ASSET_DIR} / "MOT17-02-SDP-raw.mp4";
+    LPCWSTR url = fpath.c_str();
     REQUIRE(PathFileExistsW(url));
 
     ComPtr<IMFSourceResolver> resolver{};

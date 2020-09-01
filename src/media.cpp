@@ -1,5 +1,6 @@
+#if __has_include(<winrt/Windows.Foundation.h>)
 #include <winrt/Windows.Foundation.h>
-
+#endif
 #include "media.hpp"
 
 using namespace std;

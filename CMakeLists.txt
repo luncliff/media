@@ -95,3 +95,10 @@ target_link_libraries(media_test_suite
 PRIVATE
     media Catch2::Catch2
 )
+
+get_filename_component(asset_path ${PROJECT_SOURCE_DIR}/test ABSOLUTE)
+
+target_compile_definitions(media_test_suite
+PRIVATE
+    ASSET_DIR="${asset_path}"
+)
