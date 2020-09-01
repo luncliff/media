@@ -1,73 +1,54 @@
-cmake_minimum_required(VERSION 3.10)
-project(ssf VERSION 1.0 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.13)
+project(media VERSION 0.0 LANGUAGES CXX)
 
-add_library(ssf
-    socket.hpp
-    socket.cpp
+find_package(Microsoft.GSL CONFIG REQUIRED)
+
+add_library(media
+    src/socket.hpp
+    src/socket.cpp
 )
 
-set_target_properties(ssf
+set_target_properties(media
 PROPERTIES
-    CXX_STANDARD 14
-    # PUBLIC_HEADER socket.hpp
+    CXX_STANDARD 20
+    # PUBLIC_HEADER src/socket.hpp
+    WINDOWS_EXPORT_ALL_SYMBOLS True # todo: remove this
 )
 
-# target_include_directories(ssf
-# PUBLIC
-#     $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
-# )
+target_include_directories(media
+PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+)
 
-message(STATUS "compiler: ${CMAKE_CXX_COMPILER_ID}")
-if(${CMAKE_CXX_COMPILER_ID} MATCHES GNU)
-    target_compile_options(ssf
-    PUBLIC
-        -std=gnu++14
-    )
-    target_link_libraries(ssf
-    PUBLIC
-        stdc++
-    )
-elseif(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
-    if(WIN32)
-        # clang-cl is not considered for now ...
-    else()
-        target_compile_options(ssf
-        PUBLIC
-            -stdlib=libc++
-        )
+target_link_libraries(media
+PUBLIC
+    ws2_32
+    Microsoft.GSL::GSL
+)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+    if(NOT WIN32)
+        message(FATAL_ERROR "the project is only for Windows OS")
     endif()
-elseif(${CMAKE_CXX_COMPILER_ID} MATCHES MSVC)
-    target_compile_options(ssf
+    target_compile_options(media
+    PUBLIC
+        /Wall
+    )
+elseif(MSVC)
+    target_compile_options(media
     PUBLIC
         /W4
     )
 endif()
 
-if(WIN32)
-    set_target_properties(ssf
-    PROPERTIES
-        WINDOWS_EXPORT_ALL_SYMBOLS True
-    )
-    target_link_libraries(ssf
-    PUBLIC
-        ws2_32
-    )
-elseif(APPLE)
-    target_link_libraries(ssf
-    PUBLIC
-        c++
-    )
-endif()
-
-install(FILES   socket.hpp
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}
+install(FILES           src/socket.hpp
+        DESTINATION     ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}
 )
-install(TARGETS         ssf
+install(TARGETS         media
         EXPORT          ${PROJECT_NAME}-config
         RUNTIME  DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
         LIBRARY  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
         ARCHIVE  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-        INCLUDES DESTINATION ${CMAKE_INSTALL_PREFIX}/include
 )
 install(EXPORT      ${PROJECT_NAME}-config
         DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}
@@ -81,4 +62,23 @@ write_basic_package_version_file(${VERSION_FILE_PATH}
 )
 install(FILES           ${VERSION_FILE_PATH} 
         DESTINATION     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}
+)
+
+if(NOT BUILD_TESTING)
+    return()
+endif()
+
+add_executable(media_test_suite
+    test/media_test.cpp
+)
+
+set_target_properties(media_test_suite
+PROPERTIES
+    CXX_STANDARD 20
+)
+
+find_package(Catch2 CONFIG REQUIRED)
+target_link_libraries(media_test_suite
+PRIVATE
+    media Catch2::Catch2
 )

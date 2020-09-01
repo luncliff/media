@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <gsl/gsl>
 
 /**
  * @struct addrinfo

@@ -24,6 +24,6 @@ REM We can specify with -DCMAKE_CXX_COMPILER=clang-cl
 REM But for this script we will use CXX variable
 set CXX=clang-cl
 
-cmake . -G "Ninja" -D CMAKE_INSTALL_PREFIX="./install" -D BUILD_SHARED_LIBS="%SHARED%" -D CMAKE_BUILD_TYPE="%BUILD_TYPE%"
+cmake . -G "Ninja" -DBUILD_SHARED_LIBS="%SHARED%" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%"
 cmake --build .
 cmake --build . --target install

@@ -1,12 +1,3 @@
-#
-# Author: github.com/luncliff (luncliff@gmail.com)
-#
-# References
-#   https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops
-#   https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/hosted?view=azure-devops#use-a-microsoft-hosted-agent
-#   https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/win/Vs2019-Server2019-Readme.md
-#   https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops&tabs=yaml
-#
 
 jobs:
   - job: vs2017_cmake_vs_msvc141
@@ -33,32 +24,23 @@ jobs:
         parameters:
           toolset: v142
 
-  - template: azure/jobs-win2019-llvm.yml
-    parameters:
-      make_shared: True
-      configuration: "Debug"
-
-  - job: ubuntu_cmake_clang8
+  - job: vs2019_cmake_ninja_clang
     pool:
-      vmImage: "ubuntu-16.04"
-    variables:
-      configuration: Debug
-      is_dynamic: True
+      vmImage: windows-2019
     steps:
-      - template: azure/steps-ubuntu.yml
-        parameters:
-          cmake_cxx_compiler: "clang-8"
-          cmake_work_dir: "build-ub"
-          cmake_install_dir: "../install"
-
-  - job: mac_cmake_appleclang11
-    pool:
-      vmImage: "macos-latest"
-    variables:
-      configuration: Debug
-      is_dynamic: True
-    steps:
-      - template: azure/steps-mac.yml
-        parameters:
-          cmake_work_dir: "build-osx"
-          cmake_install_dir: "../install"
+      - task: ChocolateyCommand@0
+        inputs:
+          command: "install"
+          installPackageId: "ninja"
+          installInstallArgs: "--no-progress --yes"
+      - task: ChocolateyCommand@0
+        inputs:
+          command: "install"
+          installPackageId: "llvm"
+          installInstallArgs: "--no-progress --yes"
+      - task: BatchScript@1
+        inputs:
+          filename: "./scripts/build-vs2019-cmake-clang.bat"
+        env:
+          SHARED: True
+          BUILD_TYPE: Debug
