@@ -287,8 +287,9 @@
                 <h1 id="file-mediacpp">File media.cpp<a class="headerlink" href="#file-mediacpp" title="Permanent link">&para;</a></h1>
 <p><a href="../files/"><strong>File List</strong></a> <strong>&gt;</strong> <a href="../dir_68267d1309a1af8e8297ef4c3efbcdba/"><strong>src</strong></a> <strong>&gt;</strong> <a href="../media_8cpp/"><strong>media.cpp</strong></a></p>
 <p><a href="../media_8cpp/">Go to the documentation of this file.</a> </p>
-<div class="codehilite"><pre><span></span><code><span class="cp">#include</span> <span class="cpf">&lt;winrt/Windows.Foundation.h&gt;</span><span class="cp"></span>
-
+<div class="codehilite"><pre><span></span><code><span class="cp">#if __has_include(&lt;winrt/Windows.Foundation.h&gt;)</span>
+<span class="cp">#include</span> <span class="cpf">&lt;winrt/Windows.Foundation.h&gt;</span><span class="cp"></span>
+<span class="cp">#endif</span>
 <span class="cp">#include</span> <span class="cpf">&quot;media.hpp&quot;</span><span class="cp"></span>
 
 <span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>

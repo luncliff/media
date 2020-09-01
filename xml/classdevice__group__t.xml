@@ -52,7 +52,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="35" column="1" bodyfile="src/media.cpp" bodystart="124" bodyend="135"/>
+        <location file="src/media.hpp" line="35" column="1" bodyfile="src/media.cpp" bodystart="125" bodyend="136"/>
       </memberdef>
       </sectiondef>
     <briefdescription>

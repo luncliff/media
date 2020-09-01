@@ -13,24 +13,26 @@
     <includes local="no">mfreadwrite.h</includes>
     <includedby refid="media_8cpp" local="yes">src/media.cpp</includedby>
     <incdepgraph>
-      <node id="21">
+      <node id="20">
         <label>mfidl.h</label>
       </node>
-      <node id="18">
+      <node id="17">
         <label>shlwapi.h</label>
       </node>
-      <node id="17">
+      <node id="16">
         <label>comdef.h</label>
       </node>
-      <node id="16">
+      <node id="15">
         <label>gsl/gsl</label>
       </node>
-      <node id="20">
+      <node id="19">
         <label>mfapi.h</label>
       </node>
-      <node id="13">
+      <node id="12">
         <label>src/media.hpp</label>
         <link refid="media_8hpp"/>
+        <childnode refid="13" relation="include">
+        </childnode>
         <childnode refid="14" relation="include">
         </childnode>
         <childnode refid="15" relation="include">
@@ -47,19 +49,17 @@
         </childnode>
         <childnode refid="21" relation="include">
         </childnode>
-        <childnode refid="22" relation="include">
-        </childnode>
-      </node>
-      <node id="15">
-        <label>ctime</label>
-      </node>
-      <node id="19">
-        <label>wrl/client.h</label>
-      </node>
-      <node id="22">
-        <label>mfreadwrite.h</label>
       </node>
       <node id="14">
+        <label>ctime</label>
+      </node>
+      <node id="18">
+        <label>wrl/client.h</label>
+      </node>
+      <node id="21">
+        <label>mfreadwrite.h</label>
+      </node>
+      <node id="13">
         <label>chrono</label>
       </node>
     </incdepgraph>
@@ -78,7 +78,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="16" column="1" bodyfile="src/media.cpp" bodystart="27" bodyend="37"/>
+        <location file="src/media.hpp" line="16" column="1" bodyfile="src/media.cpp" bodystart="28" bodyend="38"/>
       </memberdef>
       <memberdef kind="function" id="media_8hpp_1ae47c84bf57ff97e71578eecee2b9f8ae" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>HRESULT</type>
@@ -141,7 +141,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="21" column="1" bodyfile="src/media.cpp" bodystart="61" bodyend="74"/>
+        <location file="src/media.hpp" line="21" column="1" bodyfile="src/media.cpp" bodystart="62" bodyend="75"/>
       </memberdef>
       <memberdef kind="function" id="media_8hpp_1a4d439ee9ee5b9f516c805c8bb8507b9b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>HRESULT</type>
@@ -161,7 +161,7 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="26" column="1" bodyfile="src/media.cpp" bodystart="81" bodyend="122"/>
+        <location file="src/media.hpp" line="26" column="1" bodyfile="src/media.cpp" bodystart="82" bodyend="123"/>
       </memberdef>
       </sectiondef>
     <briefdescription>
