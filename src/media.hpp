@@ -28,6 +28,8 @@ auto startup() -> gsl::final_action<HRESULT(WINAPI*)()>;
 HRESULT get_devices(IMFAttributes* attrs, std::vector<ComPtr<IMFActivate>>& devices) noexcept;
 HRESULT get_name(IMFActivate* device, std::wstring& name) noexcept;
 
+gsl::czstring<> get_name(const GUID& guid) noexcept;
+
 HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr);
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
