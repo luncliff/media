@@ -36,7 +36,9 @@ PUBLIC
 
 target_link_libraries(media
 PUBLIC
-    dxva2 evr mf mfplat mfplay mfreadwrite mfuuid shlwapi
+    dxva2 evr shlwapi
+    mf mfplat mfplay mfreadwrite 
+    mfuuid wmcodecdspuuid
     Microsoft.GSL::GSL
 )
 

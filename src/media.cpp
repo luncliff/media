@@ -27,7 +27,7 @@ struct critical_section_t final : public CRITICAL_SECTION {
 };
 
 auto startup() -> gsl::final_action<HRESULT(WINAPI*)()> {
-    switch (auto hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED)) {
+    switch (auto hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)) {
     case CO_E_NOTINITIALIZED:
         throw _com_error{hr};
     default:
