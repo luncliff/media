@@ -1,6 +1,3 @@
-#if __has_include(<winrt/Windows.Foundation.h>)
-#include <winrt/Windows.Foundation.h>
-#endif
 #include "media.hpp"
 #include <dshowasf.h>
 
@@ -200,4 +197,147 @@ void print(IMFMediaType* media) noexcept {
         print_video(stdout, media);
     else
         fprintf(stdout, " - unknown\n");
+}
+
+auto decode(ComPtr<IMFSourceReader> source_reader, ComPtr<IMFTransform> decoding_transform)
+    -> std::experimental::generator<ComPtr<IMFSample>> {
+    while (true) {
+        ComPtr<IMFSample> video_sample{};
+        DWORD stream_index{};
+        DWORD flags{};
+        LONGLONG sample_timestamp = 0; // unit 100-nanosecond
+        LONGLONG sample_duration = 0;
+        if (auto hr = source_reader->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, &stream_index, &flags,
+                                                &sample_timestamp, video_sample.GetAddressOf()))
+            throw winrt::hresult_error{hr};
+
+        if (flags & MF_SOURCE_READERF_STREAMTICK) {
+            // INFO("MF_SOURCE_READERF_STREAMTICK");
+        }
+        if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
+            // INFO("MF_SOURCE_READERF_ENDOFSTREAM");
+            break;
+        }
+        if (flags & MF_SOURCE_READERF_NEWSTREAM) {
+            // INFO("MF_SOURCE_READERF_NEWSTREAM");
+            break;
+        }
+        if (flags & MF_SOURCE_READERF_NATIVEMEDIATYPECHANGED) {
+            // INFO("MF_SOURCE_READERF_NATIVEMEDIATYPECHANGED");
+            break;
+        }
+        if (flags & MF_SOURCE_READERF_CURRENTMEDIATYPECHANGED) {
+            // INFO("MF_SOURCE_READERF_CURRENTMEDIATYPECHANGED");
+            break;
+        }
+
+        if (video_sample) {
+            if (auto hr = video_sample->SetSampleTime(sample_timestamp))
+                throw winrt::hresult_error{hr};
+            if (auto hr = video_sample->GetSampleDuration(&sample_duration))
+                throw winrt::hresult_error{hr};
+            DWORD flags = 0;
+            if (auto hr = video_sample->GetSampleFlags(&flags))
+                throw winrt::hresult_error{hr};
+
+            // Replicate transmitting the sample across the network and reconstructing.
+            ComPtr<IMFSample> copied_sample{};
+            if (auto hr = create_and_copy_single_buffer_sample(video_sample.Get(), copied_sample.GetAddressOf()))
+                throw winrt::hresult_error{hr};
+
+            // Apply the H264 decoder transform
+            if (auto hr = decoding_transform->ProcessInput(0, copied_sample.Get(), 0))
+                throw winrt::hresult_error{hr};
+
+            HRESULT result = S_OK;
+            while (result == S_OK) {
+                ComPtr<IMFSample> decoded_sample{};
+                BOOL flushed = FALSE;
+                result = get_transform_output(decoding_transform.Get(), decoded_sample.GetAddressOf(), flushed);
+
+                if (result != S_OK && result != MF_E_TRANSFORM_NEED_MORE_INPUT)
+                    throw winrt::hresult_error{result};
+
+                if (flushed) {
+                    // decoder format changed
+                } else if (decoded_sample) {
+                    // Write decoded sample to capture file.
+                    co_yield decoded_sample;
+                }
+            }
+        }
+    }
+}
+
+HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample) {
+    if (auto hr = MFCreateSample(sample))
+        return hr;
+    ComPtr<IMFMediaBuffer> buffer{};
+    if (auto hr = MFCreateMemoryBuffer(bufsz, buffer.GetAddressOf()))
+        return hr;
+    return (*sample)->AddBuffer(buffer.Get());
+}
+
+HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst) {
+    DWORD total{};
+    if (auto hr = src->GetTotalLength(&total))
+        return hr;
+    if (auto hr = create_single_buffer_sample(total, dst))
+        return hr;
+    if (auto hr = src->CopyAllItems(*dst))
+        return hr;
+    ComPtr<IMFMediaBuffer> buffer{};
+    if (auto hr = (*dst)->GetBufferByIndex(0, buffer.GetAddressOf()))
+        return hr;
+    return src->CopyToBuffer(buffer.Get());
+}
+
+HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& flushed) {
+    MFT_OUTPUT_STREAM_INFO stream_info{};
+    if (auto hr = transform->GetOutputStreamInfo(0, &stream_info))
+        return hr;
+
+    flushed = FALSE;
+    *sample = nullptr;
+
+    MFT_OUTPUT_DATA_BUFFER output{};
+    if ((stream_info.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES) == 0) {
+        if (auto hr = create_single_buffer_sample(stream_info.cbSize, sample))
+            return hr;
+        output.pSample = *sample;
+    }
+
+    DWORD status = 0;
+    HRESULT const result = transform->ProcessOutput(0, 1, &output, &status);
+    if (result == S_OK) {
+        *sample = output.pSample;
+        return S_OK;
+    }
+
+    // see https://docs.microsoft.com/en-us/windows/win32/medfound/handling-stream-changes
+    if (result == MF_E_TRANSFORM_STREAM_CHANGE) {
+        ComPtr<IMFMediaType> changed_output_type{};
+        if (output.dwStatus != MFT_OUTPUT_DATA_BUFFER_FORMAT_CHANGE) {
+            // todo: add more works for this case
+            return E_NOTIMPL;
+        }
+
+        if (auto hr = transform->GetOutputAvailableType(0, 0, changed_output_type.GetAddressOf()))
+            return hr;
+
+        // check new output media type
+
+        if (auto hr = changed_output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_IYUV))
+            return hr;
+        if (auto hr = transform->SetOutputType(0, changed_output_type.Get(), 0))
+            return hr;
+
+        if (auto hr = transform->ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, NULL))
+            return hr;
+        flushed = TRUE;
+
+        return S_OK;
+    }
+    // MF_E_TRANSFORM_NEED_MORE_INPUT: not an error condition but it means the allocated output sample is empty.
+    return result;
 }

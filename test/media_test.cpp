@@ -5,9 +5,7 @@
 #include <filesystem>
 #include <media.hpp>
 
-#include <mferror.h>
 #include <mmdeviceapi.h>
-#include <wmcodecdsp.h>
 #include <wmsdkidl.h>
 
 using namespace std;
@@ -227,103 +225,10 @@ TEST_CASE("IMFMediaSource(IMFSourceResolver)") {
     read_on_background(impl.reader);
 }
 
-HRESULT write_sample(IMFSample* pSample, std::ofstream& stream) {
-    ComPtr<IMFMediaBuffer> buffer{};
-    if (auto hr = pSample->ConvertToContiguousBuffer(buffer.GetAddressOf()))
-        return hr;
-    DWORD bufsz{};
-    if (auto hr = buffer->GetCurrentLength(&bufsz))
-        return hr;
-
-    BYTE* ptr = NULL;
-    DWORD capacity = 0, length = 0;
-    if (auto hr = buffer->Lock(&ptr, &capacity, &length))
-        return hr;
-    auto on_return = gsl::finally([buffer]() { buffer->Unlock(); });
-
-    stream.write((char*)ptr, bufsz);
-    stream.flush();
-    return S_OK;
-}
-
-HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample) {
-    if (auto hr = MFCreateSample(sample))
-        return hr;
-    ComPtr<IMFMediaBuffer> buffer{};
-    if (auto hr = MFCreateMemoryBuffer(bufsz, buffer.GetAddressOf()))
-        return hr;
-    return (*sample)->AddBuffer(buffer.Get());
-}
-
-HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst) {
-    DWORD total{};
-    if (auto hr = src->GetTotalLength(&total))
-        return hr;
-    if (auto hr = create_single_buffer_sample(total, dst))
-        return hr;
-    if (auto hr = src->CopyAllItems(*dst))
-        return hr;
-    ComPtr<IMFMediaBuffer> buffer{};
-    if (auto hr = (*dst)->GetBufferByIndex(0, buffer.GetAddressOf()))
-        return hr;
-    return src->CopyToBuffer(buffer.Get());
-}
-
-HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& flushed) {
-    MFT_OUTPUT_STREAM_INFO stream_info{};
-    if (auto hr = transform->GetOutputStreamInfo(0, &stream_info))
-        return hr;
-
-    flushed = FALSE;
-    *sample = nullptr;
-
-    MFT_OUTPUT_DATA_BUFFER output{};
-    if ((stream_info.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES) == 0) {
-        if (auto hr = create_single_buffer_sample(stream_info.cbSize, sample))
-            return hr;
-        output.pSample = *sample;
-    }
-
-    DWORD status = 0;
-    HRESULT const result = transform->ProcessOutput(0, 1, &output, &status);
-    if (result == S_OK) {
-        *sample = output.pSample;
-        return S_OK;
-    }
-
-    // see https://docs.microsoft.com/en-us/windows/win32/medfound/handling-stream-changes
-    if (result == MF_E_TRANSFORM_STREAM_CHANGE) {
-        ComPtr<IMFMediaType> changed_output_type{};
-        if (output.dwStatus != MFT_OUTPUT_DATA_BUFFER_FORMAT_CHANGE) {
-            // todo: add more works for this case
-            return E_NOTIMPL;
-        }
-
-        if (auto hr = transform->GetOutputAvailableType(0, 0, changed_output_type.GetAddressOf()))
-            return hr;
-
-        // check new output media type
-
-        if (auto hr = changed_output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_IYUV))
-            return hr;
-        if (auto hr = transform->SetOutputType(0, changed_output_type.Get(), 0))
-            return hr;
-
-        if (auto hr = transform->ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, NULL))
-            return hr;
-        flushed = TRUE;
-
-        return S_OK;
-    }
-    // MF_E_TRANSFORM_NEED_MORE_INPUT: not an error condition but it means the allocated output sample is empty.
-    return result;
-}
-
 gsl::czstring<> get_name(const GUID& guid) noexcept;
 
 TEST_CASE("MFTransform(MP4-YUV)") {
     const auto fpath = fs::absolute(get_asset_dir() / "fm5p7flyCSY.mp4");
-    std::ofstream outputBuffer("output.mp4", std::ios::out | std::ios::binary);
 
     auto on_return = startup();
 
@@ -458,6 +363,110 @@ TEST_CASE("MFTransform(MP4-YUV)") {
             }
             count++;
         }
+    }
+}
+
+HRESULT check_sample(ComPtr<IMFSample> sample) {
+    ComPtr<IMFMediaBuffer> buffer{};
+    if (auto hr = sample->ConvertToContiguousBuffer(buffer.GetAddressOf()))
+        return hr;
+    DWORD bufsz{};
+    if (auto hr = buffer->GetCurrentLength(&bufsz))
+        return hr;
+
+    BYTE* ptr = NULL;
+    DWORD capacity = 0, length = 0;
+    if (auto hr = buffer->Lock(&ptr, &capacity, &length))
+        return hr;
+    auto on_return = gsl::finally([buffer]() { buffer->Unlock(); });
+
+    // consume the IMFSample
+    return S_OK;
+}
+
+TEST_CASE("MFTransform(MP4-YUV) with Coroutine") {
+    const auto fpath = fs::absolute(get_asset_dir() / "fm5p7flyCSY.mp4");
+
+    auto on_return = startup();
+
+    MF_OBJECT_TYPE ObjectType = MF_OBJECT_INVALID;
+
+    ComPtr<IMFSourceResolver> resolver{};
+    ComPtr<IUnknown> source{};
+    REQUIRE(MFCreateSourceResolver(resolver.GetAddressOf()) == S_OK);
+    REQUIRE(resolver->CreateObjectFromURL(fpath.c_str(),             // URL of the source.
+                                          MF_RESOLUTION_MEDIASOURCE, // Create a source object.
+                                          NULL,                      // Optional property store.
+                                          &ObjectType,               // Receives the created object type.
+                                          source.GetAddressOf()      // Receives a pointer to the media source.
+                                          ) == S_OK);
+
+    ComPtr<IMFMediaSource> media_source{};
+    REQUIRE(source->QueryInterface(IID_PPV_ARGS(media_source.GetAddressOf())) == S_OK);
+
+    ComPtr<IMFAttributes> reader_attributes{};
+    REQUIRE(MFCreateAttributes(reader_attributes.GetAddressOf(), 2) == S_OK);
+    REQUIRE(reader_attributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                                       MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID) == S_OK);
+    REQUIRE(reader_attributes->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, 1) == S_OK);
+
+    ComPtr<IMFSourceReader> source_reader{};
+    REQUIRE(MFCreateSourceReaderFromMediaSource(media_source.Get(), reader_attributes.Get(),
+                                                source_reader.GetAddressOf()) == S_OK);
+
+    ComPtr<IMFMediaType> file_video_media_type{};
+    REQUIRE(source_reader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
+                                               file_video_media_type.GetAddressOf()) == S_OK);
+    {
+        GUID major{};
+        REQUIRE(file_video_media_type->GetMajorType(&major) == S_OK);
+        CAPTURE(get_name(major));
+        REQUIRE(major == MFMediaType_Video);
+    }
+
+    // Create H.264 decoder.
+    ComPtr<IUnknown> transform{};
+    ComPtr<IMFTransform> decoding_transform{}; // This is H264 Decoder MFT
+    REQUIRE(CoCreateInstance(CLSID_CMSH264DecoderMFT, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown,
+                             (void**)transform.GetAddressOf()) == S_OK);
+    REQUIRE(transform->QueryInterface(IID_PPV_ARGS(decoding_transform.GetAddressOf())) == S_OK);
+
+    ComPtr<IMFMediaType> input_media_type{};
+    REQUIRE(MFCreateMediaType(input_media_type.GetAddressOf()) == S_OK);
+    REQUIRE(file_video_media_type->CopyAllItems(input_media_type.Get()) == S_OK);
+    if (auto hr = decoding_transform->SetInputType(0, input_media_type.Get(), 0))
+        FAIL(hr);
+
+    ComPtr<IMFMediaType> output_media_type{};
+    REQUIRE(MFCreateMediaType(output_media_type.GetAddressOf()) == S_OK);
+    REQUIRE(file_video_media_type->CopyAllItems(output_media_type.Get()) == S_OK);
+    if (auto hr = output_media_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_IYUV))
+        FAIL(hr);
+
+    if (auto hr = decoding_transform->SetOutputType(0, output_media_type.Get(), 0))
+        FAIL(hr);
+
+    DWORD status = 0;
+    REQUIRE(decoding_transform->GetInputStatus(0, &status) == S_OK);
+    REQUIRE(status == MFT_INPUT_STATUS_ACCEPT_DATA);
+    //CAPTURE(GetMediaTypeDescription(output_media_type.Get()));
+    REQUIRE(decoding_transform->ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, NULL) == S_OK);
+    REQUIRE(decoding_transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
+    REQUIRE(decoding_transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
+
+    int count = 0;
+    try {
+        for (auto decoded_sample : decode(source_reader, decoding_transform)) {
+            if (decoded_sample == nullptr)
+                FAIL();
+            ++count;
+            if (auto hr = check_sample(decoded_sample))
+                FAIL(hr);
+        }
+    } catch (const winrt::hresult_error& ex) {
+        CAPTURE(count);
+        // FAIL(ex.message());
+        FAIL(ex.code());
     }
 }
 

@@ -36,9 +36,8 @@ PUBLIC
 
 target_link_libraries(media
 PUBLIC
-    dxva2 evr shlwapi
-    mf mfplat mfplay mfreadwrite 
-    mfuuid wmcodecdspuuid
+    dxva2 evr shlwapi windowsapp # for WinRT / COM
+    mf mfplat mfplay mfreadwrite mfuuid wmcodecdspuuid # for Media Foundation
     Microsoft.GSL::GSL
 )
 
@@ -50,9 +49,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
 elseif(MSVC)
     target_compile_options(media
     PUBLIC
-        /W4 /std:c++17 /Zc:__cplusplus
-    PRIVATE
-        /await
+        /W4 /Zc:__cplusplus /std:c++17 /await 
     )
 endif()
 

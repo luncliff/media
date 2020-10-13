@@ -1,15 +1,20 @@
 #pragma once
 #include <chrono>
 #include <ctime>
+#include <experimental/generator>
 #include <gsl/gsl>
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #include <comdef.h>
-#include <shlwapi.h>
-#include <wrl/client.h>
-//#include <mferror.h>
 #include <mfapi.h>
+#include <mferror.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
+#include <shlwapi.h>
+#include <wmcodecdsp.h>
+#include <wrl/client.h>
 
 using Microsoft::WRL::ComPtr;
 
@@ -30,8 +35,6 @@ HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStream
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video
 HRESULT configure(ComPtr<IMFStreamDescriptor> stream) noexcept;
 
-
-
 /// @see clock_gettime, CLOCKS_PER_SEC
 class process_timer_t final {
     clock_t start = clock();
@@ -50,3 +53,10 @@ class process_timer_t final {
         return d;
     }
 };
+
+auto decode(ComPtr<IMFSourceReader> source_reader, ComPtr<IMFTransform> decoding_transform) noexcept(false)
+    -> std::experimental::generator<ComPtr<IMFSample>>;
+
+HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample);
+HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst);
+HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& flushed);
