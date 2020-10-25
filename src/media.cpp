@@ -412,18 +412,19 @@ gsl::czstring<> get_name(const GUID& guid) noexcept {
     IF_EQUAL_RETURN(guid, MFMediaType_Binary);
     IF_EQUAL_RETURN(guid, MFMediaType_FileTransfer);
 
-    IF_EQUAL_RETURN(guid, MFVideoFormat_AI44);   //     FCC('AI44')
-    IF_EQUAL_RETURN(guid, MFVideoFormat_ARGB32); //   D3DFMT_A8R8G8B8
-    IF_EQUAL_RETURN(guid, MFVideoFormat_AYUV);   //     FCC('AYUV')
-    IF_EQUAL_RETURN(guid, MFVideoFormat_DV25);   //     FCC('dv25')
-    IF_EQUAL_RETURN(guid, MFVideoFormat_DV50);   //     FCC('dv50')
-    IF_EQUAL_RETURN(guid, MFVideoFormat_DVH1);   //     FCC('dvh1')
-    IF_EQUAL_RETURN(guid, MFVideoFormat_DVSD);   //     FCC('dvsd')
-    IF_EQUAL_RETURN(guid, MFVideoFormat_DVSL);   //     FCC('dvsl')
-    IF_EQUAL_RETURN(guid, MFVideoFormat_H264);   //     FCC('H264')
-    IF_EQUAL_RETURN(guid, MFVideoFormat_I420);   //     FCC('I420')
-    IF_EQUAL_RETURN(guid, MFVideoFormat_IYUV);   //     FCC('IYUV')
-    IF_EQUAL_RETURN(guid, MFVideoFormat_M4S2);   //     FCC('M4S2')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_AI44);    //     FCC('AI44')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_ARGB32);  //   D3DFMT_A8R8G8B8
+    IF_EQUAL_RETURN(guid, MFVideoFormat_AYUV);    //     FCC('AYUV')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_DV25);    //     FCC('dv25')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_DV50);    //     FCC('dv50')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_DVH1);    //     FCC('dvh1')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_DVSD);    //     FCC('dvsd')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_DVSL);    //     FCC('dvsl')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_H264);    //     FCC('H264')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_H264_ES); //
+    IF_EQUAL_RETURN(guid, MFVideoFormat_I420);    //     FCC('I420')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_IYUV);    //     FCC('IYUV')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_M4S2);    //     FCC('M4S2')
     IF_EQUAL_RETURN(guid, MFVideoFormat_MJPG);
     IF_EQUAL_RETURN(guid, MFVideoFormat_MP43);   //     FCC('MP43')
     IF_EQUAL_RETURN(guid, MFVideoFormat_MP4S);   //     FCC('MP4S')

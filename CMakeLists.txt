@@ -82,6 +82,7 @@ endif()
 
 add_executable(media_test_suite
     test/media_test.cpp
+    test/direct11_test.cpp
 )
 
 set_target_properties(media_test_suite
