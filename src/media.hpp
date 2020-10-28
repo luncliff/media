@@ -1,11 +1,9 @@
 #pragma once
-#include <chrono>
-#include <ctime>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.System.Threading.h>
+
 #include <experimental/generator>
 #include <gsl/gsl>
-#if __has_include(<winrt/Windows.Foundation.h>)
-#include <winrt/Windows.Foundation.h>
-#endif
 
 #include <comdef.h>
 #include <mfapi.h>
@@ -18,11 +16,10 @@
 
 using Microsoft::WRL::ComPtr;
 
-/// @see CoInitializeEx
 /// @see MFStartup
 /// @see MFShutdown
-/// @throw std::runtime_error
-auto startup() -> gsl::final_action<HRESULT(WINAPI*)()>;
+/// @throw winrt::hresult_error
+auto media_startup() noexcept(false) -> gsl::final_action<HRESULT(WINAPI*)()>;
 
 /// @see MFEnumDeviceSources
 HRESULT get_devices(IMFAttributes* attrs, std::vector<ComPtr<IMFActivate>>& devices) noexcept;
@@ -37,21 +34,27 @@ HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStream
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video
 HRESULT configure(ComPtr<IMFStreamDescriptor> stream) noexcept;
 
-/// @see clock_gettime, CLOCKS_PER_SEC
-class process_timer_t final {
-    clock_t start = clock();
+/// @todo use `static_assert` for Windows SDK
+class qpc_timer_t final {
+    LARGE_INTEGER start{}, const frequency{};
 
   public:
-    /**
-     * @return float elapsed second
-     */
-    float pick() const noexcept {
-        const auto now = clock();
-        return static_cast<float>(now - start) / CLOCKS_PER_SEC;
+    qpc_timer_t() noexcept {
+        QueryPerformanceFrequency(&frequency);
+        QueryPerformanceCounter(&start);
     }
-    float reset() noexcept {
-        const auto d = this->pick();
-        start = clock();
+
+    /// @return elapsed time in millisecond unit
+    auto pick() const noexcept {
+        LARGE_INTEGER end{};
+        QueryPerformanceCounter(&end);
+        const auto elapsed = end.QuadPart - start.QuadPart;
+        return (elapsed * 1'000) / frequency.QuadPart;
+    }
+
+    auto reset() noexcept {
+        auto d = pick();
+        QueryPerformanceCounter(&start);
         return d;
     }
 };

@@ -20,7 +20,7 @@ fs::path get_asset_dir() noexcept {
 }
 
 TEST_CASE("get_devices") {
-    auto on_return = startup();
+    auto on_return = media_startup();
     ComPtr<IMFAttributes> attrs{};
     HRESULT hr = MFCreateAttributes(attrs.GetAddressOf(), 1);
     REQUIRE_FALSE(FAILED(hr));
@@ -50,7 +50,7 @@ static_assert(sizeof(read_item_t) == 32);
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/using-the-source-reader-in-asynchronous-mode
 struct reader_impl_t : public IMFSourceReaderCallback {
     ComPtr<IMFSourceReader> reader{};
-    process_timer_t timer{};
+    qpc_timer_t timer{};
     SHORT ref_count = 0;
 
   private:
@@ -65,7 +65,7 @@ struct reader_impl_t : public IMFSourceReaderCallback {
     STDMETHODIMP OnReadSample(HRESULT status, DWORD index, DWORD flags, LONGLONG timestamp,
                               IMFSample* sample) noexcept override {
         static_assert(sizeof(time_t) == sizeof(LONGLONG));
-        if (timer.pick() >= 2)
+        if (timer.pick() >= 2'000)
             return S_OK;
         if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
             return S_OK;
@@ -162,7 +162,7 @@ HRESULT configure(ComPtr<IMFSourceReader> reader, DWORD stream) noexcept {
 }
 
 TEST_CASE("IMFMediaSource(IMFActivate)") {
-    auto on_return = startup();
+    auto on_return = media_startup();
 
     ComPtr<IMFAttributes> attrs{};
     std::vector<ComPtr<IMFActivate>> devices{};
@@ -195,7 +195,7 @@ TEST_CASE("IMFMediaSource(IMFActivate)") {
 }
 
 TEST_CASE("IMFMediaSource(IMFSourceResolver)") {
-    auto on_return = startup();
+    auto on_return = media_startup();
     ComPtr<IMFAttributes> attrs{};
     ComPtr<IMFMediaSession> session{};
     REQUIRE(MFCreateMediaSession(attrs.Get(), session.GetAddressOf()) == S_OK);
@@ -226,7 +226,7 @@ TEST_CASE("IMFMediaSource(IMFSourceResolver)") {
 TEST_CASE("MFTransform(MP4-YUV)") {
     const auto fpath = fs::absolute(get_asset_dir() / "fm5p7flyCSY.mp4");
 
-    auto on_return = startup();
+    auto on_return = media_startup();
 
     MF_OBJECT_TYPE ObjectType = MF_OBJECT_INVALID;
 
@@ -383,7 +383,7 @@ HRESULT check_sample(ComPtr<IMFSample> sample) {
 TEST_CASE("MFTransform(MP4-YUV) with Coroutine") {
     const auto fpath = fs::absolute(get_asset_dir() / "fm5p7flyCSY.mp4");
 
-    auto on_return = startup();
+    auto on_return = media_startup();
 
     MF_OBJECT_TYPE ObjectType = MF_OBJECT_INVALID;
 

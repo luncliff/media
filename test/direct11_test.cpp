@@ -26,31 +26,6 @@ namespace fs = std::filesystem;
 
 fs::path get_asset_dir() noexcept;
 
-/// @todo use `static_assert` for Windows SDK
-class qpc_timer_t final {
-    LARGE_INTEGER start{}, const frequency{};
-
-  public:
-    qpc_timer_t() noexcept {
-        QueryPerformanceFrequency(&frequency);
-        QueryPerformanceCounter(&start);
-    }
-
-    /// @return elapsed time in millisecond unit
-    auto pick() const noexcept {
-        LARGE_INTEGER end{};
-        QueryPerformanceCounter(&end);
-        const auto elapsed = end.QuadPart - start.QuadPart;
-        return (elapsed * 1'000) / frequency.QuadPart;
-    }
-
-    auto reset() noexcept {
-        auto d = pick();
-        QueryPerformanceCounter(&start);
-        return d;
-    }
-};
-
 auto media_open() {
     winrt::init_apartment(winrt::apartment_type::single_threaded);
     if (MFStartup(MF_VERSION) != S_OK)
@@ -328,15 +303,15 @@ TEST_CASE("MFTransform with Direct11 Device") {
                     continue;
             }
 
-            D3D11_VIDEO_DECODER_DESC desc{};
-            UINT count{};
-            if (auto hr = video_device->GetVideoDecoderConfigCount(&desc, &count))
-                FAIL(hr);
-            for (auto i = 0u; i < count; ++i) {
-                D3D11_VIDEO_DECODER_CONFIG config{};
-                if (auto hr = video_device->GetVideoDecoderConfig(&desc, i, &config))
-                    FAIL(hr);
-            }
+            // D3D11_VIDEO_DECODER_DESC desc{};
+            // UINT count{};
+            // if (auto hr = video_device->GetVideoDecoderConfigCount(&desc, &count))
+            //     FAIL(hr);
+            // for (auto i = 0u; i < count; ++i) {
+            //     D3D11_VIDEO_DECODER_CONFIG config{};
+            //     if (auto hr = video_device->GetVideoDecoderConfig(&desc, i, &config))
+            //         FAIL(hr);
+            // }
         }
     }
 }

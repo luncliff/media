@@ -1,4 +1,8 @@
 #include "media.hpp"
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/wincolor_sink.h>
+#include <spdlog/sinks/basic_file_sink.h>
 #include <dshowasf.h>
 
 using namespace std;
@@ -23,15 +27,9 @@ struct critical_section_t final : public CRITICAL_SECTION {
     }
 };
 
-auto startup() -> gsl::final_action<HRESULT(WINAPI*)()> {
-    switch (auto hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)) {
-    case CO_E_NOTINITIALIZED:
-        throw _com_error{hr};
-    default:
-        break;
-    }
-    if (MFStartup(MF_VERSION) != S_OK)
-        throw runtime_error{"MFStartup"};
+auto media_startup() noexcept(false) -> gsl::final_action<HRESULT(WINAPI*)()> {
+    if (auto hr = MFStartup(MF_VERSION))
+        throw winrt::hresult_error{hr};
     return gsl::finally(&MFShutdown);
 }
 

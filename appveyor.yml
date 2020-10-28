@@ -1,0 +1,51 @@
+
+version: 0.{build}
+
+notifications:
+  - provider: Email
+    to:
+      - luncliff@gmail.com
+
+branches:
+  except:
+    - docs
+    - gh-pages
+
+image:
+  # - Visual Studio 2017 # platform.winmd issue. will be supported later
+  - Visual Studio 2019
+
+platform:
+  - x64
+  - x86
+
+configuration:
+  - Debug
+  - Release
+
+cache:
+  - c:/tools/vcpkg/installed
+
+environment:
+  global:
+    install_path: c:/install
+
+install:
+  - ps: if($env:PLATFORM -eq "x64"){ $env:VCPKG_TARGET_TRIPLET="x64-windows" }
+  - ps: if($env:PLATFORM -eq "x86"){ $env:VCPKG_TARGET_TRIPLET="x86-windows" }
+  - ps: vcpkg install --triplet $env:VCPKG_TARGET_TRIPLET ms-gsl spdlog catch2
+  - ps: vcpkg list
+
+before_build:
+  - ps: if($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017"){ $env:GENERATOR="Visual Studio 15 2017" }
+  - ps: if($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2019"){ $env:GENERATOR="Visual Studio 16 2019" }
+  - ps: if($env:PLATFORM -eq "x86"){ $env:PLATFORM="Win32" }
+
+build_script:
+  - ps: cmake . -G "$env:GENERATOR" -A $env:PLATFORM -DCMAKE_BUILD_TYPE="$env:CONFIGURATION" -DCMAKE_INSTALL_PREFIX="$env:INSTALL_PATH" -DBUILD_SHARED_LIBS=false -DCMAKE_TOOLCHAIN_FILE="C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
+  - ps: cmake --build . --config $env:CONFIGURATION --target install
+
+test_script:
+  - ps: |
+      Push-Location ""$env:INSTALL_PATH/tools"
+      ./media_test_suite.exe --success

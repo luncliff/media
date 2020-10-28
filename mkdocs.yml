@@ -2,9 +2,6 @@
 # Author: github.com/luncliff (luncliff@gmail.com)
 # References:
 #   https://www.mkdocs.org/
-#   https://github.com/squidfunk/mkdocs-material
-#   https://material.io/resources/icons/?icon=call_split&style=twotone
-#   https://fonts.google.com/
 #
 site_name: luncliff-media
 site_url: https://luncliff.github.io/media
@@ -13,27 +10,9 @@ repo_name: luncliff/media
 repo_url: https://github.com/luncliff/media
 
 nav:
-  - Namespaces: namespaces.md
   - Functions: functions.md
-  - Classes: classes.md
 
-markdown_extensions:
-  - admonition
-  - codehilite:
-      guess_lang: false
-  - toc:
-      permalink: true
-
-theme:
-  name: "material"
-  extra:
-    search:
-      language: "en, kr"
-  palette:
-    primary: "purple"
-    accent: "purple"
-  logo:
-    icon: "filter"
+theme: readthedocs
 
 extra:
   social:

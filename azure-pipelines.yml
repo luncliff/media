@@ -1,42 +1,33 @@
 
-jobs:
-  - job: vs2017_cmake_vs_msvc141
-    pool:
-      vmImage: "vs2017-win2016"
-    variables:
-      platform: x64
-      configuration: Debug
-      cmake_toolchain: "C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
-    steps:
-      - template: azure/steps-win-vs.yml
-        parameters:
-          platform: x64
-          toolset: v141
+trigger:
+  branches:
+    exclude:
+      - docs
+      - gh-pages
 
-  - job: vs2019_cmake_vs_msvc142
-    pool:
-      vmImage: "windows-2019"
-    variables:
-      platform: x64
-      configuration: Debug
-      cmake_toolchain: "C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
-    steps:
-      - template: azure/steps-win-vs.yml
-        parameters:
-          platform: x64
-          toolset: v142
+strategy:
+  maxParallel: 2
+  matrix:
+    release_x64:
+      BuildPlatform: x64
+      BuildConfiguration: Release
+    debug_x64:
+      BuildPlatform: x64
+      BuildConfiguration: Debug
+    release_x86:
+      BuildPlatform: x86
+      BuildConfiguration: Release
+    debug_x86:
+      BuildPlatform: x86
+      BuildConfiguration: Debug
 
-  # Microsoft STL doesn't allow combination of Clang-cl and <experimental/coroutine> which is in WinRT
-  # This job is expected to be failed
-  # - job: vs2019_cmake_ninja_clang
-  #   pool:
-  #     vmImage: "windows-2019"
-  #   variables:
-  #     platform: x64
-  #     configuration: Debug
-  #     cmake_toolchain: "C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
-  #   steps:
-  #     - template: azure/steps-win-llvm.yml
-  #       parameters:
-  #         platform: x64
-  #         toolset: v142
+variables:
+  vcpkg_target_triplet: $(BuildPlatform)-windows
+
+steps:
+  - task: PowerShell@2
+    inputs:
+      targetType: "inline"
+      script: |
+        vcpkg install --triplet $(vcpkg_target_triplet) ms-gsl spdlog catch2
+        vcpkg list

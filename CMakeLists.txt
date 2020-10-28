@@ -8,15 +8,17 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
 endif()
 set(CMAKE_VS_WINRT_BY_DEFAULT true)
 
-find_package(Microsoft.GSL CONFIG REQUIRED)
+find_package(Microsoft.GSL CONFIG)
+find_package(spdlog        CONFIG REQUIRED)
 
 # see https://docs.microsoft.com/en-us/windows/win32/medfound/media-foundation-headers-and-libraries
 include(CheckIncludeFileCXX)
-check_include_file_cxx("codecapi.h"         found_codecapi)
-check_include_file_cxx("mfapi.h"            found_mfapi)
-check_include_file_cxx("wmcontainer.h"      found_wmcontainer)
-check_include_file_cxx("shlwapi.h"          found_shlwapi)
-check_include_file_cxx("wrl/client.h"       found_wrl)
+check_include_file_cxx("mfapi.h" found_mfapi)
+check_include_file_cxx("wincodecsdk.h" found_codecsdk)
+check_include_file_cxx("wrl/client.h" found_wrl)
+check_include_file_cxx("d3d11.h" found_direcx11)
+
+check_include_file_cxx("winrt/Windows.Foundation.h" found_winrt)
 
 add_library(media STATIC
     src/media.hpp
@@ -26,7 +28,7 @@ add_library(media STATIC
 set_target_properties(media
 PROPERTIES
     PUBLIC_HEADER src/media.hpp
-    WINDOWS_EXPORT_ALL_SYMBOLS False
+    WINDOWS_EXPORT_ALL_SYMBOLS false
 )
 
 target_include_directories(media
@@ -36,31 +38,45 @@ PUBLIC
 
 target_link_libraries(media
 PUBLIC
-    dxva2 evr shlwapi windowsapp # for WinRT / COM
+    windowsapp
+PRIVATE
+    dxva2 evr shlwapi # for WinRT / COM
     mf mfplat mfplay mfreadwrite mfuuid wmcodecdspuuid # for Media Foundation
-    Microsoft.GSL::GSL
+    spdlog::spdlog
 )
+if(Microsoft.GSL_FOUND)
+    target_link_libraries(media
+    PUBLIC
+        Microsoft.GSL::GSL
+    )
+endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+    message(FATAL_ERROR "This project uses WinRT. clang-cl can't be used since <experimentatl/coroutine> is not supported anymore")
     target_compile_options(media
     PUBLIC
-        /W4 /std:c++17
+        /std:c++17
+    PRIVATE
+        /W4
     )
 elseif(MSVC)
     target_compile_options(media
     PUBLIC
-        /W4 /Zc:__cplusplus /std:c++17 /await 
+        /Zc:__cplusplus /std:c++17 /await
+    PRIVATE
+        /W4 /bigobj /errorReport:send
     )
 endif()
 
-install(FILES           src/media.hpp
-        DESTINATION     ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}
-)
+# install(FILES           src/media.hpp
+#         DESTINATION     ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}
+# )
 install(TARGETS         media
         EXPORT          ${PROJECT_NAME}-config
         RUNTIME  DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
         LIBRARY  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
         ARCHIVE  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}
 )
 install(EXPORT      ${PROJECT_NAME}-config
         DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}
@@ -101,4 +117,8 @@ get_filename_component(asset_path ${PROJECT_SOURCE_DIR}/test ABSOLUTE)
 target_compile_definitions(media_test_suite
 PRIVATE
     ASSET_DIR="${asset_path}"
+)
+
+install(TARGETS  media_test_suite
+        RUNTIME  DESTINATION ${CMAKE_INSTALL_PREFIX}/tools
 )
