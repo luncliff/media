@@ -42,10 +42,10 @@ before_build:
   - ps: if($env:PLATFORM -eq "x86"){ $env:PLATFORM="Win32" }
 
 build_script:
-  - ps: cmake . -G "$env:GENERATOR" -A $env:PLATFORM -DCMAKE_BUILD_TYPE="$env:CONFIGURATION" -DCMAKE_INSTALL_PREFIX="$env:INSTALL_PATH" -DBUILD_SHARED_LIBS=false -DCMAKE_TOOLCHAIN_FILE="C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
+  - ps: cmake . -G "$env:GENERATOR" -A $env:PLATFORM -DCMAKE_BUILD_TYPE="$env:CONFIGURATION" -DCMAKE_INSTALL_PREFIX="$env:INSTALL_PATH" -DBUILD_SHARED_LIBS=false -DCMAKE_TOOLCHAIN_FILE="C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake" -DBUILD_TESTING=true
   - ps: cmake --build . --config $env:CONFIGURATION --target install
 
 test_script:
   - ps: |
-      Push-Location ""$env:INSTALL_PATH/tools"
+      Push-Location "$env:INSTALL_PATH/tools"
       ./media_test_suite.exe --success

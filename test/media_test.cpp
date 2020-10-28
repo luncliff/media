@@ -161,7 +161,7 @@ HRESULT configure(ComPtr<IMFSourceReader> reader, DWORD stream) noexcept {
     return reader->SetCurrentMediaType(stream, NULL, output.Get());
 }
 
-TEST_CASE("IMFMediaSource(IMFActivate)") {
+TEST_CASE("IMFMediaSource(IMFActivate)", "[!mayfail]") {
     auto on_return = media_startup();
 
     ComPtr<IMFAttributes> attrs{};
@@ -173,6 +173,7 @@ TEST_CASE("IMFMediaSource(IMFActivate)") {
         REQUIRE(SUCCEEDED(hr));
     if (auto hr = get_devices(attrs.Get(), devices))
         REQUIRE(SUCCEEDED(hr));
+
     REQUIRE(devices.size() > 0);
 
     for (auto device : devices) {

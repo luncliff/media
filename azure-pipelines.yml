@@ -5,29 +5,67 @@ trigger:
       - docs
       - gh-pages
 
+pool:
+  vmImage: 'windows-latest'
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/process/phases?view=azure-devops&tabs=yaml#multi-job-configuration
 strategy:
-  maxParallel: 2
+  maxParallel: 3
   matrix:
     release_x64:
       BuildPlatform: x64
       BuildConfiguration: Release
+      CMakeArch: x64
     debug_x64:
       BuildPlatform: x64
       BuildConfiguration: Debug
+      CMakeArch: x64
     release_x86:
       BuildPlatform: x86
       BuildConfiguration: Release
+      CMakeArch: Win32
     debug_x86:
       BuildPlatform: x86
       BuildConfiguration: Debug
+      CMakeArch: Win32
 
 variables:
-  vcpkg_target_triplet: $(BuildPlatform)-windows
+  install_dir: 'c:/install'
 
 steps:
   - task: PowerShell@2
     inputs:
       targetType: "inline"
       script: |
-        vcpkg install --triplet $(vcpkg_target_triplet) ms-gsl spdlog catch2
+        Write-Output $(install_dir) ${env:vcpkg_target_triplet}
+        vcpkg install --triplet $env:vcpkg_target_triplet ms-gsl spdlog catch2
         vcpkg list
+    env:
+      platform: $(BuildPlatform)
+      vcpkg_target_triplet: '$(BuildPlatform)-windows'
+
+  - task: CMake@1
+    inputs:
+      cmakeArgs: .. -A $(CMakeArch) -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$(BuildPlatform)-windows" -DCMAKE_INSTALL_PREFIX=$(install_dir) -DCMAKE_BUILD_TYPE=$(BuildConfiguration) -DBUILD_TESTING=True
+      workingDirectory: "build" # will create a directory
+
+  - task: VSBuild@1
+    inputs:
+      solution: build/media.sln
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      clean: true
+      msbuildArchitecture: $(BuildPlatform)
+    # condition: succeededOrFailed()
+
+  - task: CMake@1
+    inputs:
+      cmakeArgs: --build . --target install
+      workingDirectory: "build"
+
+  - task: PowerShell@2
+    inputs:
+      targetType: "inline"
+      script: ./media_test_suite.exe --success
+      workingDirectory: '$(install_dir)/tools'
+    condition: succeeded()

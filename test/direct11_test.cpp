@@ -109,7 +109,7 @@ void configure_multithread_protection(ID3D11Device* device) {
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/direct3d-aware-mfts
 /// @see https://github.com/microsoft/Windows-classic-samples/tree/master/Samples/DX11VideoRenderer
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/basic-mft-processing-model#process-data
-TEST_CASE("MFTransform with Direct11 Device") {
+TEST_CASE("MFTransform with Direct11 Device", "[!mayfail]") {
     auto on_exit = media_open();
 
     // To perform decoding using Direct3D 11, the software decoder must have a pointer to a Direct3D 11 device.
