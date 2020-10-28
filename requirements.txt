@@ -1,9 +1,7 @@
-#
-#   https://github.com/matusnovak/doxybook
-#
+
+# see https://github.com/matusnovak/doxybook
 doxybook
 
 # see https://community.netlify.com/t/mkdocs-fail-on-build/12082/2
 mkdocs<1.1
 markdown<=3.2
-mkdocs-material<5.0.0
