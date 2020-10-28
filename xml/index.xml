@@ -7,17 +7,20 @@
     <member refid="structcritical__section__t_1a61c19534112127c589bfff7eaaabd7cc" kind="function"><name>lock</name></member>
     <member refid="structcritical__section__t_1a9ef301a81b8715367f66d9867b0e4221" kind="function"><name>unlock</name></member>
   </compound>
-  <compound refid="classprocess__timer__t" kind="class"><name>process_timer_t</name>
-    <member refid="classprocess__timer__t_1a679830497a5ec98b3fda5a1ee343ce53" kind="variable"><name>start</name></member>
-    <member refid="classprocess__timer__t_1a63d79dc52088cd10d9a45135ef990157" kind="function"><name>pick</name></member>
-    <member refid="classprocess__timer__t_1a31c3d5af066ec12a9e47355ff72d3800" kind="function"><name>reset</name></member>
+  <compound refid="classqpc__timer__t" kind="class"><name>qpc_timer_t</name>
+    <member refid="classqpc__timer__t_1a3db805f0a3420ba243a2b637289dac46" kind="variable"><name>start</name></member>
+    <member refid="classqpc__timer__t_1ace9dfc7fb8d72f478fdad116591d468e" kind="variable"><name>frequency</name></member>
+    <member refid="classqpc__timer__t_1a21c2325186a822599f1a75adf4c600ec" kind="function"><name>qpc_timer_t</name></member>
+    <member refid="classqpc__timer__t_1a650f3913ec796ecdfcdd5650af3fc10d" kind="function"><name>pick</name></member>
+    <member refid="classqpc__timer__t_1ae4e5cabb6ef1d8aadb3ea2339ba3b05f" kind="function"><name>reset</name></member>
   </compound>
   <compound refid="namespaceMicrosoft_1_1WRL" kind="namespace"><name>Microsoft::WRL</name>
   </compound>
   <compound refid="namespacestd" kind="namespace"><name>std</name>
   </compound>
   <compound refid="media_8cpp" kind="file"><name>media.cpp</name>
-    <member refid="media_8cpp_1afff57e09d13a87eb34d8b8a0e0d01b75" kind="function"><name>startup</name></member>
+    <member refid="media_8cpp_1aeed8a54bf1b281ad1bab5e9e64351879" kind="define"><name>IF_EQUAL_RETURN</name></member>
+    <member refid="media_8cpp_1af496ff7a5e86499a1684a4b103e323d6" kind="function"><name>media_startup</name></member>
     <member refid="media_8cpp_1a747082ef949615992911c0308565b83e" kind="function"><name>get_devices</name></member>
     <member refid="media_8cpp_1a043959776c4955e4499979fbd61a7c2d" kind="function"><name>get_name</name></member>
     <member refid="media_8cpp_1a6791b11ab050c4addac5b15ea7d36beb" kind="function"><name>get_stream_descriptor</name></member>
@@ -25,13 +28,25 @@
     <member refid="media_8cpp_1a64cf8ebe28215fd213b9603391f95bcd" kind="function"><name>print</name></member>
     <member refid="media_8cpp_1a4d439ee9ee5b9f516c805c8bb8507b9b" kind="function"><name>configure</name></member>
     <member refid="media_8cpp_1ab2c51d7c6d3f219239b75b2893ca6f3b" kind="function"><name>print_video</name></member>
+    <member refid="media_8cpp_1ac89d0376fcee477fa192542f89e2c30f" kind="function"><name>decode</name></member>
+    <member refid="media_8cpp_1af9961cf281c89416cd111cdad5d8d573" kind="function"><name>create_single_buffer_sample</name></member>
+    <member refid="media_8cpp_1ae466bb2d4d55e39c2489624ab86633ce" kind="function"><name>create_and_copy_single_buffer_sample</name></member>
+    <member refid="media_8cpp_1abd1996125215540a7ae3bf9537f7841f" kind="function"><name>get_transform_output</name></member>
+    <member refid="media_8cpp_1aeaf07f415f19a4e961dff817c1d3e098" kind="function"><name>get_name</name></member>
   </compound>
   <compound refid="media_8hpp" kind="file"><name>media.hpp</name>
-    <member refid="media_8hpp_1afff57e09d13a87eb34d8b8a0e0d01b75" kind="function"><name>startup</name></member>
+    <member refid="media_8hpp_1af496ff7a5e86499a1684a4b103e323d6" kind="function"><name>media_startup</name></member>
     <member refid="media_8hpp_1ae47c84bf57ff97e71578eecee2b9f8ae" kind="function"><name>get_devices</name></member>
     <member refid="media_8hpp_1a0f188ed056176ce6098ccae92d943dde" kind="function"><name>get_name</name></member>
+    <member refid="media_8hpp_1aeaf07f415f19a4e961dff817c1d3e098" kind="function"><name>get_name</name></member>
     <member refid="media_8hpp_1a6791b11ab050c4addac5b15ea7d36beb" kind="function"><name>get_stream_descriptor</name></member>
     <member refid="media_8hpp_1a4d439ee9ee5b9f516c805c8bb8507b9b" kind="function"><name>configure</name></member>
+    <member refid="media_8hpp_1ad98185e93e7337a7041fedd0d84140e4" kind="function"><name>decode</name></member>
+    <member refid="media_8hpp_1af9961cf281c89416cd111cdad5d8d573" kind="function"><name>create_single_buffer_sample</name></member>
+    <member refid="media_8hpp_1ae466bb2d4d55e39c2489624ab86633ce" kind="function"><name>create_and_copy_single_buffer_sample</name></member>
+    <member refid="media_8hpp_1abd1996125215540a7ae3bf9537f7841f" kind="function"><name>get_transform_output</name></member>
+  </compound>
+  <compound refid="todo" kind="page"><name>todo</name>
   </compound>
   <compound refid="dir_68267d1309a1af8e8297ef4c3efbcdba" kind="dir"><name>src</name>
   </compound>

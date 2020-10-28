@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="classqpc__timer__t" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>qpc_timer_t</compoundname>
+    <includes refid="media_8hpp" local="no">media.hpp</includes>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classqpc__timer__t_1a3db805f0a3420ba243a2b637289dac46" prot="private" static="no" mutable="no">
+        <type>LARGE_INTEGER</type>
+        <definition>LARGE_INTEGER qpc_timer_t::start</definition>
+        <argsstring></argsstring>
+        <name>start</name>
+        <initializer>{}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="39" column="1" bodyfile="src/media.hpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classqpc__timer__t_1ace9dfc7fb8d72f478fdad116591d468e" prot="private" static="no" mutable="no">
+        <type>LARGE_INTEGER const</type>
+        <definition>LARGE_INTEGER const qpc_timer_t::frequency</definition>
+        <argsstring></argsstring>
+        <name>frequency</name>
+        <initializer>{}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="39" column="1" bodyfile="src/media.hpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classqpc__timer__t_1a21c2325186a822599f1a75adf4c600ec" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>qpc_timer_t::qpc_timer_t</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>qpc_timer_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="42" column="1" bodyfile="src/media.hpp" bodystart="42" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="classqpc__timer__t_1a650f3913ec796ecdfcdd5650af3fc10d" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>auto</type>
+        <definition>auto qpc_timer_t::pick</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>pick</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>elapsed time in millisecond unit </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="48" column="1" bodyfile="src/media.hpp" bodystart="48" bodyend="53"/>
+      </memberdef>
+      <memberdef kind="function" id="classqpc__timer__t_1ae4e5cabb6ef1d8aadb3ea2339ba3b05f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>auto</type>
+        <definition>auto qpc_timer_t::reset</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>reset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="55" column="1" bodyfile="src/media.hpp" bodystart="55" bodyend="59"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><xrefsect id="todo_1_todo000001"><xreftitle>Todo</xreftitle><xrefdescription><para>use <computeroutput>static_assert</computeroutput> for Windows SDK </para></xrefdescription></xrefsect></para>    </detaileddescription>
+    <location file="src/media.hpp" line="38" column="1" bodyfile="src/media.hpp" bodystart="38" bodyend="60"/>
+    <listofallmembers>
+      <member refid="classqpc__timer__t_1ace9dfc7fb8d72f478fdad116591d468e" prot="private" virt="non-virtual"><scope>qpc_timer_t</scope><name>frequency</name></member>
+      <member refid="classqpc__timer__t_1a650f3913ec796ecdfcdd5650af3fc10d" prot="public" virt="non-virtual"><scope>qpc_timer_t</scope><name>pick</name></member>
+      <member refid="classqpc__timer__t_1a21c2325186a822599f1a75adf4c600ec" prot="public" virt="non-virtual"><scope>qpc_timer_t</scope><name>qpc_timer_t</name></member>
+      <member refid="classqpc__timer__t_1ae4e5cabb6ef1d8aadb3ea2339ba3b05f" prot="public" virt="non-virtual"><scope>qpc_timer_t</scope><name>reset</name></member>
+      <member refid="classqpc__timer__t_1a3db805f0a3420ba243a2b637289dac46" prot="private" virt="non-virtual"><scope>qpc_timer_t</scope><name>start</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

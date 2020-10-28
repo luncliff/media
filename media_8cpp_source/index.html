@@ -1,536 +1,599 @@
-
-
-
-
-<!doctype html>
-<html lang="en" class="no-js">
-  <head>
-    
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      <meta http-equiv="x-ua-compatible" content="ie=edge">
-      
-      
-        <link rel="canonical" href="https://luncliff.github.io/media/media_8cpp_source/">
-      
-      
-      
-        <meta name="lang:clipboard.copy" content="Copy to clipboard">
-      
-        <meta name="lang:clipboard.copied" content="Copied to clipboard">
-      
-        <meta name="lang:search.language" content="en">
-      
-        <meta name="lang:search.pipeline.stopwords" content="True">
-      
-        <meta name="lang:search.pipeline.trimmer" content="True">
-      
-        <meta name="lang:search.result.none" content="No matching documents">
-      
-        <meta name="lang:search.result.one" content="1 matching document">
-      
-        <meta name="lang:search.result.other" content="# matching documents">
-      
-        <meta name="lang:search.tokenizer" content="[\s\-]+">
-      
-      <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.6.3">
-    
-    
-      
-        <title>File media.cpp - luncliff-media</title>
-      
-    
-    
-      <link rel="stylesheet" href="../assets/stylesheets/application.adb8469c.css">
-      
-        <link rel="stylesheet" href="../assets/stylesheets/application-palette.a8b3c06d.css">
-      
-      
-        
-        
-        <meta name="theme-color" content="#ab47bc">
-      
-    
-    
-      <script src="../assets/javascripts/modernizr.86422ebf.js"></script>
-    
-    
-      
-        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
-      
-    
-    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
-    
-    
-    
-      
-    
-    
-  </head>
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-    
-    
-    <body dir="ltr" data-md-color-primary="purple" data-md-color-accent="purple">
   
-    <svg class="md-svg">
-      <defs>
-        
-        
-          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
-        
-      </defs>
-    </svg>
-    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
-    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>File media.cpp - luncliff-media</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "File media.cpp";
+    var mkdocs_page_input_path = "media_8cpp_source.md";
+    var mkdocs_page_url = "/media/media_8cpp_source/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
     
-      <a href="#file-mediacpp" tabindex="0" class="md-skip">
-        Skip to content
-      </a>
-    
-    
-      <header class="md-header" data-md-component="header">
-  <nav class="md-header-nav md-grid">
-    <div class="md-flex">
-      <div class="md-flex__cell md-flex__cell--shrink">
-        <a href="https://luncliff.github.io/media" title="luncliff-media" aria-label="luncliff-media" class="md-header-nav__button md-logo">
-          
-            <i class="md-icon">filter</i>
-          
-        </a>
-      </div>
-      <div class="md-flex__cell md-flex__cell--shrink">
-        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
-      </div>
-      <div class="md-flex__cell md-flex__cell--stretch">
-        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          
-            <span class="md-header-nav__topic">
-              luncliff-media
-            </span>
-            <span class="md-header-nav__topic">
-              
-                File media.cpp
-              
-            </span>
-          
-        </div>
-      </div>
-      <div class="md-flex__cell md-flex__cell--shrink">
-        
-          <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
-          
-<div class="md-search" data-md-component="search" role="dialog">
-  <label class="md-search__overlay" for="__search"></label>
-  <div class="md-search__inner" role="search">
-    <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" aria-label="search" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
-      <label class="md-icon md-search__icon" for="__search"></label>
-      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
-        &#xE5CD;
-      </button>
-    </form>
-    <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
-        <div class="md-search-result" data-md-component="result">
-          <div class="md-search-result__meta">
-            Type to start searching
-          </div>
-          <ol class="md-search-result__list"></ol>
-        </div>
-      </div>
-    </div>
-  </div>
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> luncliff-media</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
 </div>
-        
       </div>
-      
-        <div class="md-flex__cell md-flex__cell--shrink">
-          <div class="md-header-nav__source">
-            
 
-
-  
-
-<a href="https://github.com/luncliff/media/" title="Go to repository" class="md-source" data-md-source="github">
-  
-    <div class="md-source__icon">
-      <svg viewBox="0 0 24 24" width="24" height="24">
-        <use xlink:href="#__github" width="24" height="24"></use>
-      </svg>
-    </div>
-  
-  <div class="md-source__repository">
-    luncliff/media
-  </div>
-</a>
-          </div>
-        </div>
-      
-    </div>
-  </nav>
-</header>
-    
-    <div class="md-container">
-      
-        
-      
-      
-      <main class="md-main" role="main">
-        <div class="md-main__inner md-grid" data-md-component="container">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
           
-            
-              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    <nav class="md-nav md-nav--primary" data-md-level="0">
-  <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href="https://luncliff.github.io/media" title="luncliff-media" class="md-nav__button md-logo">
-      
-        <i class="md-icon">filter</i>
-      
-    </a>
-    luncliff-media
-  </label>
-  
-    <div class="md-nav__source">
-      
+            <li class="toctree-l1">
+		
+    <a class="" href="../functions/">Functions</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
 
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
-  
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">luncliff-media</a>
+      </nav>
 
-<a href="https://github.com/luncliff/media/" title="Go to repository" class="md-source" data-md-source="github">
-  
-    <div class="md-source__icon">
-      <svg viewBox="0 0 24 24" width="24" height="24">
-        <use xlink:href="#__github" width="24" height="24"></use>
-      </svg>
-    </div>
-  
-  <div class="md-source__repository">
-    luncliff/media
-  </div>
-</a>
-    </div>
-  
-  <ul class="md-nav__list" data-md-scrollfix>
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
     
       
-      
-      
-
-
-  <li class="md-nav__item">
-    <a href="../namespaces/" title="Namespaces" class="md-nav__link">
-      Namespaces
-    </a>
-  </li>
-
     
+    <li>File media.cpp</li>
+    <li class="wy-breadcrumbs-aside">
       
+        <a href="https://github.com/luncliff/media/edit/master/docs/media_8cpp_source.md"> Edit on luncliff/media</a>
       
-      
-
-
-  <li class="md-nav__item">
-    <a href="../functions/" title="Functions" class="md-nav__link">
-      Functions
-    </a>
-  </li>
-
-    
-      
-      
-      
-
-
-  <li class="md-nav__item">
-    <a href="../classes/" title="Classes" class="md-nav__link">
-      Classes
-    </a>
-  </li>
-
-    
+    </li>
   </ul>
-</nav>
-                  </div>
-                </div>
-              </div>
-            
-            
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-<nav class="md-nav md-nav--secondary">
-  
-  
-    
-  
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
-          
-          <div class="md-content">
-            <article class="md-content__inner md-typeset">
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
               
-                
-                  <a href="https://github.com/luncliff/media/edit/master/docs/media_8cpp_source.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
-                
-                
-                <h1 id="file-mediacpp">File media.cpp<a class="headerlink" href="#file-mediacpp" title="Permanent link">&para;</a></h1>
+                <h1 id="file-mediacpp">File media.cpp</h1>
 <p><a href="../files/"><strong>File List</strong></a> <strong>&gt;</strong> <a href="../dir_68267d1309a1af8e8297ef4c3efbcdba/"><strong>src</strong></a> <strong>&gt;</strong> <a href="../media_8cpp/"><strong>media.cpp</strong></a></p>
 <p><a href="../media_8cpp/">Go to the documentation of this file.</a> </p>
-<div class="codehilite"><pre><span></span><code><span class="cp">#if __has_include(&lt;winrt/Windows.Foundation.h&gt;)</span>
-<span class="cp">#include</span> <span class="cpf">&lt;winrt/Windows.Foundation.h&gt;</span><span class="cp"></span>
-<span class="cp">#endif</span>
-<span class="cp">#include</span> <span class="cpf">&quot;media.hpp&quot;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;dshowasf.h&gt;</span><span class="cp"></span>
+<pre><code class="cpp">#include &quot;media.hpp&quot;
 
-<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
-<span class="k">using</span> <span class="k">namespace</span> <span class="n">Microsoft</span><span class="o">::</span><span class="n">WRL</span><span class="p">;</span>
+#include &lt;spdlog/spdlog.h&gt;
+#include &lt;spdlog/sinks/wincolor_sink.h&gt;
+#include &lt;spdlog/sinks/basic_file_sink.h&gt;
+#include &lt;dshowasf.h&gt;
 
-<span class="k">struct</span> <span class="n">critical_section_t</span> <span class="k">final</span> <span class="o">:</span> <span class="k">public</span> <span class="n">CRITICAL_SECTION</span> <span class="p">{</span>
-  <span class="k">public</span><span class="o">:</span>
-    <span class="n">critical_section_t</span><span class="p">()</span> <span class="k">noexcept</span> <span class="o">:</span> <span class="n">CRITICAL_SECTION</span><span class="p">{}</span> <span class="p">{</span>
-        <span class="n">InitializeCriticalSection</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="o">~</span><span class="n">critical_section_t</span><span class="p">()</span> <span class="k">noexcept</span> <span class="p">{</span>
-        <span class="n">DeleteCriticalSection</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="kt">bool</span> <span class="n">try_lock</span><span class="p">()</span> <span class="k">noexcept</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="n">TryEnterCriticalSection</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="kt">void</span> <span class="n">lock</span><span class="p">()</span> <span class="k">noexcept</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="n">EnterCriticalSection</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="kt">void</span> <span class="n">unlock</span><span class="p">()</span> <span class="k">noexcept</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="n">LeaveCriticalSection</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">};</span>
+using namespace std;
+using namespace Microsoft::WRL;
 
-<span class="k">auto</span> <span class="nf">startup</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">gsl</span><span class="o">::</span><span class="n">final_action</span><span class="o">&lt;</span><span class="n">HRESULT</span><span class="p">(</span><span class="n">WINAPI</span><span class="o">*</span><span class="p">)()</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">switch</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">CoInitializeEx</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">COINIT_APARTMENTTHREADED</span><span class="p">))</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="nl">CO_E_NOTINITIALIZED</span><span class="p">:</span>
-        <span class="k">throw</span> <span class="n">_com_error</span><span class="p">{</span><span class="n">hr</span><span class="p">};</span>
-    <span class="k">default</span><span class="o">:</span>
-        <span class="k">break</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">MFStartup</span><span class="p">(</span><span class="n">MF_VERSION</span><span class="p">)</span> <span class="o">!=</span> <span class="n">S_OK</span><span class="p">)</span>
-        <span class="k">throw</span> <span class="n">runtime_error</span><span class="p">{</span><span class="s">&quot;MFStartup&quot;</span><span class="p">};</span>
-    <span class="k">return</span> <span class="n">gsl</span><span class="o">::</span><span class="n">finally</span><span class="p">(</span><span class="o">&amp;</span><span class="n">MFShutdown</span><span class="p">);</span>
-<span class="p">}</span>
+struct critical_section_t final : public CRITICAL_SECTION {
+  public:
+    critical_section_t() noexcept : CRITICAL_SECTION{} {
+        InitializeCriticalSection(this);
+    }
+    ~critical_section_t() noexcept {
+        DeleteCriticalSection(this);
+    }
+    bool try_lock() noexcept {
+        return TryEnterCriticalSection(this);
+    }
+    void lock() noexcept {
+        return EnterCriticalSection(this);
+    }
+    void unlock() noexcept {
+        return LeaveCriticalSection(this);
+    }
+};
 
-<span class="n">HRESULT</span> <span class="nf">get_devices</span><span class="p">(</span><span class="n">IMFAttributes</span><span class="o">*</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">ComPtr</span><span class="o">&lt;</span><span class="n">IMFActivate</span><span class="o">&gt;&gt;&amp;</span> <span class="n">devices</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
-    <span class="n">IMFActivate</span><span class="o">**</span> <span class="n">handles</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
-    <span class="n">UINT32</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">HRESULT</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">MFEnumDeviceSources</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">handles</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">count</span><span class="p">);</span>
-    <span class="k">if</span> <span class="n">FAILED</span> <span class="p">(</span><span class="n">hr</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">hr</span><span class="p">;</span>
-    <span class="k">auto</span> <span class="n">on_return</span> <span class="o">=</span> <span class="n">gsl</span><span class="o">::</span><span class="n">finally</span><span class="p">([</span><span class="n">handles</span><span class="p">]()</span> <span class="p">{</span> <span class="n">CoTaskMemFree</span><span class="p">(</span><span class="n">handles</span><span class="p">);</span> <span class="p">});</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0u</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">count</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
-        <span class="n">devices</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">move</span><span class="p">(</span><span class="n">handles</span><span class="p">[</span><span class="n">i</span><span class="p">]));</span>
-    <span class="k">return</span> <span class="n">S_OK</span><span class="p">;</span>
-<span class="p">}</span>
+auto media_startup() noexcept(false) -&gt; gsl::final_action&lt;HRESULT(WINAPI*)()&gt; {
+    if (auto hr = MFStartup(MF_VERSION))
+        throw winrt::hresult_error{hr};
+    return gsl::finally(&amp;MFShutdown);
+}
 
-<span class="n">HRESULT</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">IMFActivate</span><span class="o">*</span> <span class="n">device</span><span class="p">,</span> <span class="n">wstring</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
-    <span class="k">constexpr</span> <span class="n">UINT32</span> <span class="n">max_size</span> <span class="o">=</span> <span class="mi">255</span><span class="p">;</span>
-    <span class="n">WCHAR</span> <span class="n">buf</span><span class="p">[</span><span class="n">max_size</span><span class="p">]{};</span>
-    <span class="n">UINT32</span> <span class="n">buflen</span><span class="p">{};</span>
-    <span class="n">HRESULT</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">device</span><span class="o">-&gt;</span><span class="n">GetString</span><span class="p">(</span><span class="n">MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">max_size</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">buflen</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">SUCCEEDED</span><span class="p">(</span><span class="n">hr</span><span class="p">))</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="p">{</span><span class="n">buf</span><span class="p">,</span> <span class="n">buflen</span><span class="p">};</span>
-    <span class="k">return</span> <span class="n">hr</span><span class="p">;</span>
-<span class="p">}</span>
+HRESULT get_devices(IMFAttributes* attrs, vector&lt;ComPtr&lt;IMFActivate&gt;&gt;&amp; devices) noexcept {
+    IMFActivate** handles = nullptr;
+    UINT32 count = 0;
+    HRESULT hr = MFEnumDeviceSources(attrs, &amp;handles, &amp;count);
+    if FAILED (hr)
+        return hr;
+    auto on_return = gsl::finally([handles]() { CoTaskMemFree(handles); });
+    for (auto i = 0u; i &lt; count; ++i)
+        devices.emplace_back(move(handles[i]));
+    return S_OK;
+}
 
-<span class="n">HRESULT</span> <span class="nf">get_stream_descriptor</span><span class="p">(</span><span class="n">IMFPresentationDescriptor</span><span class="o">*</span> <span class="n">presentation</span><span class="p">,</span> <span class="n">IMFStreamDescriptor</span><span class="o">**</span> <span class="n">ptr</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">DWORD</span> <span class="n">num_stream</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">presentation</span><span class="o">-&gt;</span><span class="n">GetStreamDescriptorCount</span><span class="p">(</span><span class="o">&amp;</span><span class="n">num_stream</span><span class="p">);</span> <span class="n">SUCCEEDED</span><span class="p">(</span><span class="n">hr</span><span class="p">)</span> <span class="o">==</span> <span class="nb">false</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">hr</span><span class="p">;</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0u</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_stream</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">BOOL</span> <span class="n">selected</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">presentation</span><span class="o">-&gt;</span><span class="n">GetStreamDescriptorByIndex</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">selected</span><span class="p">,</span> <span class="n">ptr</span><span class="p">);</span> <span class="n">FAILED</span><span class="p">(</span><span class="n">hr</span><span class="p">))</span>
-            <span class="k">return</span> <span class="n">hr</span><span class="p">;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">selected</span><span class="p">)</span>
-            <span class="k">break</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">S_OK</span><span class="p">;</span>
-<span class="p">}</span>
+HRESULT get_name(IMFActivate* device, wstring&amp; name) noexcept {
+    constexpr UINT32 max_size = 255;
+    WCHAR buf[max_size]{};
+    UINT32 buflen{};
+    HRESULT hr = device-&gt;GetString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, buf, max_size, &amp;buflen);
+    if (SUCCEEDED(hr))
+        name = {buf, buflen};
+    return hr;
+}
 
-<span class="n">HRESULT</span> <span class="nf">configure_video</span><span class="p">(</span><span class="n">ComPtr</span><span class="o">&lt;</span><span class="n">IMFMediaType</span><span class="o">&gt;</span> <span class="n">type</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">GUID</span> <span class="n">subtype</span><span class="p">{};</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetGUID</span><span class="p">(</span><span class="n">MF_MT_SUBTYPE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">subtype</span><span class="p">);</span>
+HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr) {
+    DWORD num_stream = 0;
+    if (auto hr = presentation-&gt;GetStreamDescriptorCount(&amp;num_stream); SUCCEEDED(hr) == false)
+        return hr;
+    for (auto i = 0u; i &lt; num_stream; ++i) {
+        BOOL selected = false;
+        if (auto hr = presentation-&gt;GetStreamDescriptorByIndex(i, &amp;selected, ptr); FAILED(hr))
+            return hr;
+        if (selected)
+            break;
+    }
+    return S_OK;
+}
 
-    <span class="n">UINT32</span> <span class="n">interlace</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT32</span><span class="p">(</span><span class="n">MF_MT_INTERLACE_MODE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">interlace</span><span class="p">);</span>
-    <span class="k">const</span> <span class="k">auto</span> <span class="n">imode</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">MFVideoInterlaceMode</span><span class="o">&gt;</span><span class="p">(</span><span class="n">interlace</span><span class="p">);</span>
+HRESULT configure_video(ComPtr&lt;IMFMediaType&gt; type) {
+    GUID subtype{};
+    type-&gt;GetGUID(MF_MT_SUBTYPE, &amp;subtype);
 
-    <span class="n">UINT32</span> <span class="n">stride</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT32</span><span class="p">(</span><span class="n">MF_MT_DEFAULT_STRIDE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">stride</span><span class="p">);</span>
+    UINT32 interlace = 0;
+    type-&gt;GetUINT32(MF_MT_INTERLACE_MODE, &amp;interlace);
+    const auto imode = static_cast&lt;MFVideoInterlaceMode&gt;(interlace);
 
-    <span class="n">UINT32</span> <span class="n">ycbcr2rgb</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT32</span><span class="p">(</span><span class="n">MF_MT_YUV_MATRIX</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ycbcr2rgb</span><span class="p">);</span>
-    <span class="k">const</span> <span class="k">auto</span> <span class="n">matrix</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">MFVideoTransferMatrix</span><span class="o">&gt;</span><span class="p">(</span><span class="n">ycbcr2rgb</span><span class="p">);</span>
+    UINT32 stride = 0;
+    type-&gt;GetUINT32(MF_MT_DEFAULT_STRIDE, &amp;stride);
 
-    <span class="n">UINT64</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_SIZE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">size</span><span class="p">);</span> <span class="c1">// MFGetAttributeSize</span>
-    <span class="n">UINT32</span> <span class="n">w</span> <span class="o">=</span> <span class="n">size</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">size</span> <span class="o">&amp;</span> <span class="n">UINT32_MAX</span><span class="p">;</span>
+    UINT32 ycbcr2rgb = 0;
+    type-&gt;GetUINT32(MF_MT_YUV_MATRIX, &amp;ycbcr2rgb);
+    const auto matrix = static_cast&lt;MFVideoTransferMatrix&gt;(ycbcr2rgb);
 
-    <span class="n">UINT64</span> <span class="n">framerate</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// framerate &gt;&gt; 32;</span>
-    <span class="n">type</span><span class="o">-&gt;</span><span class="n">GetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_RATE_RANGE_MAX</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">framerate</span><span class="p">);</span>
-    <span class="k">return</span> <span class="n">type</span><span class="o">-&gt;</span><span class="n">SetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_RATE</span><span class="p">,</span> <span class="n">framerate</span><span class="p">);</span>
-<span class="p">}</span>
+    UINT64 size = 0;
+    type-&gt;GetUINT64(MF_MT_FRAME_SIZE, &amp;size); // MFGetAttributeSize
+    UINT32 w = size &gt;&gt; 32, h = size &amp; UINT32_MAX;
 
-<span class="kt">void</span> <span class="nf">print</span><span class="p">(</span><span class="n">IMFMediaType</span><span class="o">*</span> <span class="n">media</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
+    UINT64 framerate = 0; // framerate &gt;&gt; 32;
+    type-&gt;GetUINT64(MF_MT_FRAME_RATE_RANGE_MAX, &amp;framerate);
+    return type-&gt;SetUINT64(MF_MT_FRAME_RATE, framerate);
+}
 
-<span class="n">HRESULT</span> <span class="nf">configure</span><span class="p">(</span><span class="n">ComPtr</span><span class="o">&lt;</span><span class="n">IMFStreamDescriptor</span><span class="o">&gt;</span> <span class="n">stream</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
-    <span class="n">ComPtr</span><span class="o">&lt;</span><span class="n">IMFMediaTypeHandler</span><span class="o">&gt;</span> <span class="n">handler</span><span class="p">{};</span>
-    <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">stream</span><span class="o">-&gt;</span><span class="n">GetMediaTypeHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">.</span><span class="n">GetAddressOf</span><span class="p">());</span> <span class="n">SUCCEEDED</span><span class="p">(</span><span class="n">hr</span><span class="p">)</span> <span class="o">==</span> <span class="nb">false</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">hr</span><span class="p">;</span>
-    <span class="n">DWORD</span> <span class="n">num_types</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">handler</span><span class="o">-&gt;</span><span class="n">GetMediaTypeCount</span><span class="p">(</span><span class="o">&amp;</span><span class="n">num_types</span><span class="p">);</span> <span class="n">SUCCEEDED</span><span class="p">(</span><span class="n">hr</span><span class="p">)</span> <span class="o">==</span> <span class="nb">false</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">hr</span><span class="p">;</span>
-    <span class="n">ComPtr</span><span class="o">&lt;</span><span class="n">IMFMediaType</span><span class="o">&gt;</span> <span class="n">type</span><span class="p">{};</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0u</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_types</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">ComPtr</span><span class="o">&lt;</span><span class="n">IMFMediaType</span><span class="o">&gt;</span> <span class="n">current</span><span class="p">{};</span>
-        <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">handler</span><span class="o">-&gt;</span><span class="n">GetMediaTypeByIndex</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">current</span><span class="p">.</span><span class="n">GetAddressOf</span><span class="p">());</span> <span class="n">FAILED</span><span class="p">(</span><span class="n">hr</span><span class="p">))</span>
-            <span class="k">return</span> <span class="n">hr</span><span class="p">;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">type</span> <span class="o">==</span> <span class="k">nullptr</span><span class="p">)</span>
-            <span class="n">type</span> <span class="o">=</span> <span class="n">current</span><span class="p">;</span>
+void print(IMFMediaType* media) noexcept;
 
-        <span class="n">print</span><span class="p">(</span><span class="n">current</span><span class="p">.</span><span class="n">Get</span><span class="p">());</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">handler</span><span class="o">-&gt;</span><span class="n">SetCurrentMediaType</span><span class="p">(</span><span class="n">type</span><span class="p">.</span><span class="n">Get</span><span class="p">());</span>
-<span class="p">}</span>
+HRESULT configure(ComPtr&lt;IMFStreamDescriptor&gt; stream) noexcept {
+    ComPtr&lt;IMFMediaTypeHandler&gt; handler{};
+    if (auto hr = stream-&gt;GetMediaTypeHandler(handler.GetAddressOf()); SUCCEEDED(hr) == false)
+        return hr;
+    DWORD num_types = 0;
+    if (auto hr = handler-&gt;GetMediaTypeCount(&amp;num_types); SUCCEEDED(hr) == false)
+        return hr;
+    ComPtr&lt;IMFMediaType&gt; type{};
+    for (auto i = 0u; i &lt; num_types; ++i) {
+        ComPtr&lt;IMFMediaType&gt; current{};
+        if (auto hr = handler-&gt;GetMediaTypeByIndex(i, current.GetAddressOf()); FAILED(hr))
+            return hr;
+        if (type == nullptr)
+            type = current;
 
-<span class="kt">void</span> <span class="nf">print_video</span><span class="p">(</span><span class="kt">FILE</span><span class="o">*</span> <span class="n">fout</span><span class="p">,</span> <span class="n">IMFMediaType</span><span class="o">*</span> <span class="n">media</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
-    <span class="n">fprintf</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="s">&quot; - video:</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
-    <span class="n">GUID</span> <span class="n">subtype</span><span class="p">{};</span>
-    <span class="n">media</span><span class="o">-&gt;</span><span class="n">GetGUID</span><span class="p">(</span><span class="n">MF_MT_SUBTYPE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">subtype</span><span class="p">);</span>
-    <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Unknown&quot;</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_RGB32</span><span class="p">)</span> <span class="c1">// 444 (32 bpp)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;D3DFMT_X8R8G8B8&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_ARGB32</span><span class="p">)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;D3DFMT_A8R8G8B8&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_RGB24</span><span class="p">)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;D3DFMT_R8G8B8&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_I420</span><span class="p">)</span> <span class="c1">// 420 (16 bpp)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;I420&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_NV12</span><span class="p">)</span> <span class="c1">// 420 (12 bpp)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;NV12&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_UYVY</span><span class="p">)</span> <span class="c1">// 422 (12 bpp)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;UYVY&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_MJPG</span><span class="p">)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;MJPG&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_AI44</span><span class="p">)</span> <span class="c1">// 4:4:4 Packed P</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;AI44&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_AYUV</span><span class="p">)</span> <span class="c1">// 4:4:4 Packed 8</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;AYUV&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_I420</span><span class="p">)</span> <span class="c1">// 4:2:0 Planar 8</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;I420&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_IYUV</span><span class="p">)</span> <span class="c1">// 4:2:0 Planar 8</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;IYUV&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_NV11</span><span class="p">)</span> <span class="c1">// 4:1:1 Planar 8</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;NV11&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_NV12</span><span class="p">)</span> <span class="c1">// 4:2:0 Planar 8</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;NV12&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_UYVY</span><span class="p">)</span> <span class="c1">// 4:2:2 Packed 8</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;UYVY&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_Y41P</span><span class="p">)</span> <span class="c1">// 4:1:1 Packed 8</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Y41P&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_Y41T</span><span class="p">)</span> <span class="c1">// 4:1:1 Packed 8</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Y41T&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_Y42T</span><span class="p">)</span> <span class="c1">// 4:2:2 Packed 8</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Y42T&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_YUY2</span><span class="p">)</span> <span class="c1">// 4:2:2 Packed 8</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;YUY2&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_YVU9</span><span class="p">)</span> <span class="c1">// 8:4:4 Planar 9</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;YVU9&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_YV12</span><span class="p">)</span> <span class="c1">// 4:2:0 Planar 8</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;YV12&quot;</span><span class="p">;</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">subtype</span> <span class="o">==</span> <span class="n">MFVideoFormat_YVYU</span><span class="p">)</span> <span class="c1">// 4:2:2 Packed 8</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;YVYU&quot;</span><span class="p">;</span>
+        print(current.Get());
+    }
+    return handler-&gt;SetCurrentMediaType(type.Get());
+}
 
-    <span class="n">fprintf</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="s">&quot;   - format: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
-    <span class="n">UINT64</span> <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">media</span><span class="o">-&gt;</span><span class="n">GetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_SIZE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">);</span> <span class="n">SUCCEEDED</span><span class="p">(</span><span class="n">hr</span><span class="p">))</span> <span class="p">{</span>
-        <span class="n">UINT32</span> <span class="n">w</span> <span class="o">=</span> <span class="n">value</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">value</span> <span class="o">&amp;</span> <span class="n">UINT32_MAX</span><span class="p">;</span>
-        <span class="n">fprintf</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="s">&quot;   - width: %u</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">w</span><span class="p">);</span>
-        <span class="n">fprintf</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="s">&quot;   - height: %u</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">media</span><span class="o">-&gt;</span><span class="n">GetUINT64</span><span class="p">(</span><span class="n">MF_MT_FRAME_RATE_RANGE_MAX</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">);</span> <span class="n">SUCCEEDED</span><span class="p">(</span><span class="n">hr</span><span class="p">))</span> <span class="p">{</span>
-        <span class="n">UINT32</span> <span class="n">framerate</span> <span class="o">=</span> <span class="n">value</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">;</span>
-        <span class="n">fprintf</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="s">&quot;   - fps: %u</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">framerate</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">}</span>
+void print_video(FILE* fout, IMFMediaType* media) noexcept {
+    fprintf(fout, &quot; - video:\n&quot;);
+    GUID subtype{};
+    media-&gt;GetGUID(MF_MT_SUBTYPE, &amp;subtype);
+    gsl::czstring&lt;&gt; name = get_name(subtype);
+    if (name == nullptr)
+        name = &quot;Unknown&quot;;
+    // MFVideoFormat_RGB32 // 444 (32 bpp)
+    // MFVideoFormat_ARGB32
+    // MFVideoFormat_RGB24
+    // MFVideoFormat_I420 // 420 (16 bpp)
+    // MFVideoFormat_NV12 // 420 (12 bpp)
+    // MFVideoFormat_UYVY // 422 (12 bpp)
+    // MFVideoFormat_MJPG
+    // MFVideoFormat_AI44 // 4:4:4 Packed P
+    // MFVideoFormat_AYUV // 4:4:4 Packed 8
+    // MFVideoFormat_I420 // 4:2:0 Planar 8
+    // MFVideoFormat_IYUV // 4:2:0 Planar 8
+    // MFVideoFormat_NV11 // 4:1:1 Planar 8
+    // MFVideoFormat_NV12 // 4:2:0 Planar 8
+    // MFVideoFormat_UYVY // 4:2:2 Packed 8
+    // MFVideoFormat_Y41P // 4:1:1 Packed 8
+    // MFVideoFormat_Y41T // 4:1:1 Packed 8
+    // MFVideoFormat_Y42T // 4:2:2 Packed 8
+    // MFVideoFormat_YUY2 // 4:2:2 Packed 8
+    // MFVideoFormat_YVU9 // 8:4:4 Planar 9
+    // MFVideoFormat_YV12 // 4:2:0 Planar 8
+    // MFVideoFormat_YVYU // 4:2:2 Packed 8
+    fprintf(fout, &quot;   - format: %s\n&quot;, name);
+    UINT64 value = 0;
+    if (auto hr = media-&gt;GetUINT64(MF_MT_FRAME_SIZE, &amp;value); SUCCEEDED(hr)) {
+        UINT32 w = value &gt;&gt; 32, h = value &amp; UINT32_MAX;
+        fprintf(fout, &quot;   - width: %u\n&quot;, w);
+        fprintf(fout, &quot;   - height: %u\n&quot;, h);
+    }
+    if (auto hr = media-&gt;GetUINT64(MF_MT_FRAME_RATE_RANGE_MAX, &amp;value); SUCCEEDED(hr)) {
+        UINT32 framerate = value &gt;&gt; 32;
+        fprintf(fout, &quot;   - fps: %u\n&quot;, framerate);
+    }
+}
 
-<span class="kt">void</span> <span class="nf">print</span><span class="p">(</span><span class="n">IMFMediaType</span><span class="o">*</span> <span class="n">media</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
-    <span class="n">GUID</span> <span class="n">major</span><span class="p">{};</span>
-    <span class="n">media</span><span class="o">-&gt;</span><span class="n">GetGUID</span><span class="p">(</span><span class="n">MF_MT_MAJOR_TYPE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">major</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">major</span> <span class="o">==</span> <span class="n">MFMediaType_Default</span><span class="p">)</span>
-        <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot; - default</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">major</span> <span class="o">==</span> <span class="n">MFMediaType_Audio</span><span class="p">)</span>
-        <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot; - audio</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">major</span> <span class="o">==</span> <span class="n">MFMediaType_Stream</span><span class="p">)</span>
-        <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot; - stream</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">major</span> <span class="o">==</span> <span class="n">MFMediaType_Video</span><span class="p">)</span>
-        <span class="n">print_video</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">media</span><span class="p">);</span>
-    <span class="k">else</span>
-        <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot; - unknown</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
-<span class="p">}</span>
-</code></pre></div>
-                
-                  
-                
-                
+void print(IMFMediaType* media) noexcept {
+    GUID major{};
+    media-&gt;GetGUID(MF_MT_MAJOR_TYPE, &amp;major);
+    if (major == MFMediaType_Default)
+        fprintf(stdout, &quot; - default\n&quot;);
+    else if (major == MFMediaType_Audio)
+        fprintf(stdout, &quot; - audio\n&quot;);
+    else if (major == MFMediaType_Stream)
+        fprintf(stdout, &quot; - stream\n&quot;);
+    else if (major == MFMediaType_Video)
+        print_video(stdout, media);
+    else
+        fprintf(stdout, &quot; - unknown\n&quot;);
+}
+
+auto decode(ComPtr&lt;IMFSourceReader&gt; source_reader, ComPtr&lt;IMFTransform&gt; decoding_transform)
+    -&gt; std::experimental::generator&lt;ComPtr&lt;IMFSample&gt;&gt; {
+    while (true) {
+        ComPtr&lt;IMFSample&gt; video_sample{};
+        DWORD stream_index{};
+        DWORD flags{};
+        LONGLONG sample_timestamp = 0; // unit 100-nanosecond
+        LONGLONG sample_duration = 0;
+        if (auto hr = source_reader-&gt;ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, &amp;stream_index, &amp;flags,
+                                                &amp;sample_timestamp, video_sample.GetAddressOf()))
+            throw winrt::hresult_error{hr};
+
+        if (flags &amp; MF_SOURCE_READERF_STREAMTICK) {
+            // INFO(&quot;MF_SOURCE_READERF_STREAMTICK&quot;);
+        }
+        if (flags &amp; MF_SOURCE_READERF_ENDOFSTREAM) {
+            // INFO(&quot;MF_SOURCE_READERF_ENDOFSTREAM&quot;);
+            break;
+        }
+        if (flags &amp; MF_SOURCE_READERF_NEWSTREAM) {
+            // INFO(&quot;MF_SOURCE_READERF_NEWSTREAM&quot;);
+            break;
+        }
+        if (flags &amp; MF_SOURCE_READERF_NATIVEMEDIATYPECHANGED) {
+            // INFO(&quot;MF_SOURCE_READERF_NATIVEMEDIATYPECHANGED&quot;);
+            break;
+        }
+        if (flags &amp; MF_SOURCE_READERF_CURRENTMEDIATYPECHANGED) {
+            // INFO(&quot;MF_SOURCE_READERF_CURRENTMEDIATYPECHANGED&quot;);
+            break;
+        }
+
+        if (video_sample) {
+            if (auto hr = video_sample-&gt;SetSampleTime(sample_timestamp))
+                throw winrt::hresult_error{hr};
+            if (auto hr = video_sample-&gt;GetSampleDuration(&amp;sample_duration))
+                throw winrt::hresult_error{hr};
+            DWORD flags = 0;
+            if (auto hr = video_sample-&gt;GetSampleFlags(&amp;flags))
+                throw winrt::hresult_error{hr};
+
+            // Replicate transmitting the sample across the network and reconstructing.
+            ComPtr&lt;IMFSample&gt; copied_sample{};
+            if (auto hr = create_and_copy_single_buffer_sample(video_sample.Get(), copied_sample.GetAddressOf()))
+                throw winrt::hresult_error{hr};
+
+            // Apply the H264 decoder transform
+            if (auto hr = decoding_transform-&gt;ProcessInput(0, copied_sample.Get(), 0))
+                throw winrt::hresult_error{hr};
+
+            HRESULT result = S_OK;
+            while (result == S_OK) {
+                ComPtr&lt;IMFSample&gt; decoded_sample{};
+                BOOL flushed = FALSE;
+                result = get_transform_output(decoding_transform.Get(), decoded_sample.GetAddressOf(), flushed);
+
+                if (result != S_OK &amp;&amp; result != MF_E_TRANSFORM_NEED_MORE_INPUT)
+                    throw winrt::hresult_error{result};
+
+                if (flushed) {
+                    // decoder format changed
+                } else if (decoded_sample) {
+                    // Write decoded sample to capture file.
+                    co_yield decoded_sample;
+                }
+            }
+        }
+    }
+}
+
+HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample) {
+    if (auto hr = MFCreateSample(sample))
+        return hr;
+    ComPtr&lt;IMFMediaBuffer&gt; buffer{};
+    if (auto hr = MFCreateMemoryBuffer(bufsz, buffer.GetAddressOf()))
+        return hr;
+    return (*sample)-&gt;AddBuffer(buffer.Get());
+}
+
+HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst) {
+    DWORD total{};
+    if (auto hr = src-&gt;GetTotalLength(&amp;total))
+        return hr;
+    if (auto hr = create_single_buffer_sample(total, dst))
+        return hr;
+    if (auto hr = src-&gt;CopyAllItems(*dst))
+        return hr;
+    ComPtr&lt;IMFMediaBuffer&gt; buffer{};
+    if (auto hr = (*dst)-&gt;GetBufferByIndex(0, buffer.GetAddressOf()))
+        return hr;
+    return src-&gt;CopyToBuffer(buffer.Get());
+}
+
+HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL&amp; flushed) {
+    MFT_OUTPUT_STREAM_INFO stream_info{};
+    if (auto hr = transform-&gt;GetOutputStreamInfo(0, &amp;stream_info))
+        return hr;
+
+    flushed = FALSE;
+    *sample = nullptr;
+
+    MFT_OUTPUT_DATA_BUFFER output{};
+    if ((stream_info.dwFlags &amp; MFT_OUTPUT_STREAM_PROVIDES_SAMPLES) == 0) {
+        if (auto hr = create_single_buffer_sample(stream_info.cbSize, sample))
+            return hr;
+        output.pSample = *sample;
+    }
+
+    DWORD status = 0;
+    HRESULT const result = transform-&gt;ProcessOutput(0, 1, &amp;output, &amp;status);
+    if (result == S_OK) {
+        *sample = output.pSample;
+        return S_OK;
+    }
+
+    // see https://docs.microsoft.com/en-us/windows/win32/medfound/handling-stream-changes
+    if (result == MF_E_TRANSFORM_STREAM_CHANGE) {
+        ComPtr&lt;IMFMediaType&gt; changed_output_type{};
+        if (output.dwStatus != MFT_OUTPUT_DATA_BUFFER_FORMAT_CHANGE) {
+            // todo: add more works for this case
+            return E_NOTIMPL;
+        }
+
+        if (auto hr = transform-&gt;GetOutputAvailableType(0, 0, changed_output_type.GetAddressOf()))
+            return hr;
+
+        // check new output media type
+
+        if (auto hr = changed_output_type-&gt;SetGUID(MF_MT_SUBTYPE, MFVideoFormat_IYUV))
+            return hr;
+        if (auto hr = transform-&gt;SetOutputType(0, changed_output_type.Get(), 0))
+            return hr;
+
+        if (auto hr = transform-&gt;ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, NULL))
+            return hr;
+        flushed = TRUE;
+
+        return S_OK;
+    }
+    // MF_E_TRANSFORM_NEED_MORE_INPUT: not an error condition but it means the allocated output sample is empty.
+    return result;
+}
+
+gsl::czstring&lt;&gt; get_name(const GUID&amp; guid) noexcept {
+#ifndef IF_EQUAL_RETURN
+#define IF_EQUAL_RETURN(param, val)                                                                                    \
+    if (val == param)                                                                                                  \
+    return #val
+#endif
+    IF_EQUAL_RETURN(guid, MF_MT_MAJOR_TYPE);
+    IF_EQUAL_RETURN(guid, MF_MT_MAJOR_TYPE);
+    IF_EQUAL_RETURN(guid, MF_MT_SUBTYPE);
+    IF_EQUAL_RETURN(guid, MF_MT_ALL_SAMPLES_INDEPENDENT);
+    IF_EQUAL_RETURN(guid, MF_MT_FIXED_SIZE_SAMPLES);
+    IF_EQUAL_RETURN(guid, MF_MT_COMPRESSED);
+    IF_EQUAL_RETURN(guid, MF_MT_SAMPLE_SIZE);
+    IF_EQUAL_RETURN(guid, MF_MT_WRAPPED_TYPE);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_NUM_CHANNELS);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_SAMPLES_PER_SECOND);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_FLOAT_SAMPLES_PER_SECOND);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_AVG_BYTES_PER_SECOND);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_BLOCK_ALIGNMENT);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_BITS_PER_SAMPLE);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_VALID_BITS_PER_SAMPLE);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_SAMPLES_PER_BLOCK);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_CHANNEL_MASK);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_FOLDDOWN_MATRIX);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_WMADRC_PEAKREF);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_WMADRC_PEAKTARGET);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_WMADRC_AVGREF);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_WMADRC_AVGTARGET);
+    IF_EQUAL_RETURN(guid, MF_MT_AUDIO_PREFER_WAVEFORMATEX);
+    IF_EQUAL_RETURN(guid, MF_MT_AAC_PAYLOAD_TYPE);
+    IF_EQUAL_RETURN(guid, MF_MT_AAC_AUDIO_PROFILE_LEVEL_INDICATION);
+    IF_EQUAL_RETURN(guid, MF_MT_FRAME_SIZE);
+    IF_EQUAL_RETURN(guid, MF_MT_FRAME_RATE);
+    IF_EQUAL_RETURN(guid, MF_MT_FRAME_RATE_RANGE_MAX);
+    IF_EQUAL_RETURN(guid, MF_MT_FRAME_RATE_RANGE_MIN);
+    IF_EQUAL_RETURN(guid, MF_MT_PIXEL_ASPECT_RATIO);
+    IF_EQUAL_RETURN(guid, MF_MT_DRM_FLAGS);
+    IF_EQUAL_RETURN(guid, MF_MT_PAD_CONTROL_FLAGS);
+    IF_EQUAL_RETURN(guid, MF_MT_SOURCE_CONTENT_HINT);
+    IF_EQUAL_RETURN(guid, MF_MT_VIDEO_CHROMA_SITING);
+    IF_EQUAL_RETURN(guid, MF_MT_INTERLACE_MODE);
+    IF_EQUAL_RETURN(guid, MF_MT_TRANSFER_FUNCTION);
+    IF_EQUAL_RETURN(guid, MF_MT_VIDEO_PRIMARIES);
+    IF_EQUAL_RETURN(guid, MF_MT_CUSTOM_VIDEO_PRIMARIES);
+    IF_EQUAL_RETURN(guid, MF_MT_YUV_MATRIX);
+    IF_EQUAL_RETURN(guid, MF_MT_VIDEO_LIGHTING);
+    IF_EQUAL_RETURN(guid, MF_MT_VIDEO_NOMINAL_RANGE);
+    IF_EQUAL_RETURN(guid, MF_MT_GEOMETRIC_APERTURE);
+    IF_EQUAL_RETURN(guid, MF_MT_MINIMUM_DISPLAY_APERTURE);
+    IF_EQUAL_RETURN(guid, MF_MT_PAN_SCAN_APERTURE);
+    IF_EQUAL_RETURN(guid, MF_MT_PAN_SCAN_ENABLED);
+    IF_EQUAL_RETURN(guid, MF_MT_AVG_BITRATE);
+    IF_EQUAL_RETURN(guid, MF_MT_AVG_BIT_ERROR_RATE);
+    IF_EQUAL_RETURN(guid, MF_MT_MAX_KEYFRAME_SPACING);
+    IF_EQUAL_RETURN(guid, MF_MT_DEFAULT_STRIDE);
+    IF_EQUAL_RETURN(guid, MF_MT_PALETTE);
+    IF_EQUAL_RETURN(guid, MF_MT_USER_DATA);
+    IF_EQUAL_RETURN(guid, MF_MT_AM_FORMAT_TYPE);
+    IF_EQUAL_RETURN(guid, MF_MT_MPEG_START_TIME_CODE);
+    IF_EQUAL_RETURN(guid, MF_MT_MPEG2_PROFILE);
+    IF_EQUAL_RETURN(guid, MF_MT_MPEG2_LEVEL);
+    IF_EQUAL_RETURN(guid, MF_MT_MPEG2_FLAGS);
+    IF_EQUAL_RETURN(guid, MF_MT_MPEG_SEQUENCE_HEADER);
+    IF_EQUAL_RETURN(guid, MF_MT_DV_AAUX_SRC_PACK_0);
+    IF_EQUAL_RETURN(guid, MF_MT_DV_AAUX_CTRL_PACK_0);
+    IF_EQUAL_RETURN(guid, MF_MT_DV_AAUX_SRC_PACK_1);
+    IF_EQUAL_RETURN(guid, MF_MT_DV_AAUX_CTRL_PACK_1);
+    IF_EQUAL_RETURN(guid, MF_MT_DV_VAUX_SRC_PACK);
+    IF_EQUAL_RETURN(guid, MF_MT_DV_VAUX_CTRL_PACK);
+    IF_EQUAL_RETURN(guid, MF_MT_ARBITRARY_HEADER);
+    IF_EQUAL_RETURN(guid, MF_MT_ARBITRARY_FORMAT);
+    IF_EQUAL_RETURN(guid, MF_MT_IMAGE_LOSS_TOLERANT);
+    IF_EQUAL_RETURN(guid, MF_MT_MPEG4_SAMPLE_DESCRIPTION);
+    IF_EQUAL_RETURN(guid, MF_MT_MPEG4_CURRENT_SAMPLE_ENTRY);
+    IF_EQUAL_RETURN(guid, MF_MT_ORIGINAL_4CC);
+    IF_EQUAL_RETURN(guid, MF_MT_ORIGINAL_WAVE_FORMAT_TAG);
+
+    // Media types
+
+    IF_EQUAL_RETURN(guid, MFMediaType_Audio);
+    IF_EQUAL_RETURN(guid, MFMediaType_Video);
+    IF_EQUAL_RETURN(guid, MFMediaType_Protected);
+    IF_EQUAL_RETURN(guid, MFMediaType_SAMI);
+    IF_EQUAL_RETURN(guid, MFMediaType_Script);
+    IF_EQUAL_RETURN(guid, MFMediaType_Image);
+    IF_EQUAL_RETURN(guid, MFMediaType_HTML);
+    IF_EQUAL_RETURN(guid, MFMediaType_Binary);
+    IF_EQUAL_RETURN(guid, MFMediaType_FileTransfer);
+
+    IF_EQUAL_RETURN(guid, MFVideoFormat_AI44);    //     FCC('AI44')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_ARGB32);  //   D3DFMT_A8R8G8B8
+    IF_EQUAL_RETURN(guid, MFVideoFormat_AYUV);    //     FCC('AYUV')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_DV25);    //     FCC('dv25')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_DV50);    //     FCC('dv50')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_DVH1);    //     FCC('dvh1')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_DVSD);    //     FCC('dvsd')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_DVSL);    //     FCC('dvsl')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_H264);    //     FCC('H264')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_H264_ES); //
+    IF_EQUAL_RETURN(guid, MFVideoFormat_I420);    //     FCC('I420')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_IYUV);    //     FCC('IYUV')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_M4S2);    //     FCC('M4S2')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_MJPG);
+    IF_EQUAL_RETURN(guid, MFVideoFormat_MP43);   //     FCC('MP43')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_MP4S);   //     FCC('MP4S')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_MP4V);   //     FCC('MP4V')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_MPG1);   //     FCC('MPG1')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_MSS1);   //     FCC('MSS1')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_MSS2);   //     FCC('MSS2')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_NV11);   //     FCC('NV11')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_NV12);   //     FCC('NV12')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_P010);   //     FCC('P010')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_P016);   //     FCC('P016')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_P210);   //     FCC('P210')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_P216);   //     FCC('P216')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_RGB24);  //    D3DFMT_R8G8B8
+    IF_EQUAL_RETURN(guid, MFVideoFormat_RGB32);  //    D3DFMT_X8R8G8B8
+    IF_EQUAL_RETURN(guid, MFVideoFormat_RGB555); //   D3DFMT_X1R5G5B5
+    IF_EQUAL_RETURN(guid, MFVideoFormat_RGB565); //   D3DFMT_R5G6B5
+    IF_EQUAL_RETURN(guid, MFVideoFormat_RGB8);
+    IF_EQUAL_RETURN(guid, MFVideoFormat_UYVY); //     FCC('UYVY')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_v210); //     FCC('v210')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_v410); //     FCC('v410')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_WMV1); //     FCC('WMV1')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_WMV2); //     FCC('WMV2')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_WMV3); //     FCC('WMV3')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_WVC1); //     FCC('WVC1')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_Y210); //     FCC('Y210')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_Y216); //     FCC('Y216')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_Y410); //     FCC('Y410')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_Y416); //     FCC('Y416')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_Y41P);
+    IF_EQUAL_RETURN(guid, MFVideoFormat_Y41T);
+    IF_EQUAL_RETURN(guid, MFVideoFormat_YUY2); //     FCC('YUY2')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_YV12); //     FCC('YV12')
+    IF_EQUAL_RETURN(guid, MFVideoFormat_YVYU);
+
+    IF_EQUAL_RETURN(guid, MFAudioFormat_PCM);              //              WAVE_FORMAT_PCM
+    IF_EQUAL_RETURN(guid, MFAudioFormat_Float);            //            WAVE_FORMAT_IEEE_FLOAT
+    IF_EQUAL_RETURN(guid, MFAudioFormat_DTS);              //              WAVE_FORMAT_DTS
+    IF_EQUAL_RETURN(guid, MFAudioFormat_Dolby_AC3_SPDIF);  //  WAVE_FORMAT_DOLBY_AC3_SPDIF
+    IF_EQUAL_RETURN(guid, MFAudioFormat_DRM);              //              WAVE_FORMAT_DRM
+    IF_EQUAL_RETURN(guid, MFAudioFormat_WMAudioV8);        //        WAVE_FORMAT_WMAUDIO2
+    IF_EQUAL_RETURN(guid, MFAudioFormat_WMAudioV9);        //        WAVE_FORMAT_WMAUDIO3
+    IF_EQUAL_RETURN(guid, MFAudioFormat_WMAudio_Lossless); // WAVE_FORMAT_WMAUDIO_LOSSLESS
+    IF_EQUAL_RETURN(guid, MFAudioFormat_WMASPDIF);         //         WAVE_FORMAT_WMASPDIF
+    IF_EQUAL_RETURN(guid, MFAudioFormat_MSP1);             //             WAVE_FORMAT_WMAVOICE9
+    IF_EQUAL_RETURN(guid, MFAudioFormat_MP3);              //              WAVE_FORMAT_MPEGLAYER3
+    IF_EQUAL_RETURN(guid, MFAudioFormat_MPEG);             //             WAVE_FORMAT_MPEG
+    IF_EQUAL_RETURN(guid, MFAudioFormat_AAC);              //              WAVE_FORMAT_MPEG_HEAAC
+    IF_EQUAL_RETURN(guid, MFAudioFormat_ADTS);             //             WAVE_FORMAT_MPEG_ADTS_AAC
+#undef IF_EQUAL_RETURN
+    return NULL;
+}
+</code></pre>
               
-              
-                
-
-
-              
-            </article>
+            </div>
           </div>
-        </div>
-      </main>
-      
-        
-<footer class="md-footer">
+          <footer>
   
-  <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-      <div class="md-footer-copyright">
-        
-        powered by
-        <a href="https://www.mkdocs.org" target="_blank" rel="noopener">MkDocs</a>
-        and
-        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-          Material for MkDocs</a>
-      </div>
-      
-  <div class="md-footer-social">
-    <link rel="stylesheet" href="../assets/fonts/font-awesome.css">
-    
-      <a href="https://github.com/luncliff" target="_blank" rel="noopener" title="github" class="md-footer-social__link fa fa-github"></a>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
     
   </div>
 
-    </div>
-  </div>
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
       
-    </div>
-    
-      <script src="../assets/javascripts/application.c33a9706.js"></script>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
       
-      <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
       
-    
-  </body>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
 </html>

@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>Struct critical\_section\_t - luncliff-media</title>
+  <title>Class qpc\_timer\_t - luncliff-media</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -17,9 +17,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Struct critical\\_section\\_t";
-    var mkdocs_page_input_path = "structcritical__section__t.md";
-    var mkdocs_page_url = "/media/structcritical__section__t/";
+    var mkdocs_page_name = "Class qpc\\_timer\\_t";
+    var mkdocs_page_input_path = "classqpc__timer__t.md";
+    var mkdocs_page_url = "/media/classqpc__timer__t/";
   </script>
   
   <script src="../js/jquery-2.1.1.min.js" defer></script>
@@ -75,10 +75,10 @@
     
       
     
-    <li>Struct critical\_section\_t</li>
+    <li>Class qpc\_timer\_t</li>
     <li class="wy-breadcrumbs-aside">
       
-        <a href="https://github.com/luncliff/media/edit/master/docs/structcritical__section__t.md"> Edit on luncliff/media</a>
+        <a href="https://github.com/luncliff/media/edit/master/docs/classqpc__timer__t.md"> Edit on luncliff/media</a>
       
     </li>
   </ul>
@@ -87,9 +87,12 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="struct-critical_section_t">Struct critical_section_t</h1>
-<p><a href="../annotated/"><strong>Class List</strong></a> <strong>&gt;</strong> <a href="./"><strong>critical_section_t</strong></a></p>
-<p>Inherits the following classes: CRITICAL_SECTION</p>
+                <h1 id="class-qpc_timer_t">Class qpc_timer_t</h1>
+<p><a href="../annotated/"><strong>Class List</strong></a> <strong>&gt;</strong> <a href="./"><strong>qpc_timer_t</strong></a></p>
+<p><a href="#detailed-description">More...</a></p>
+<ul>
+<li><code>#include &lt;media.hpp&gt;</code></li>
+</ul>
 <h2 id="public-functions">Public Functions</h2>
 <table>
 <thead>
@@ -100,50 +103,39 @@
 </thead>
 <tbody>
 <tr>
-<td align="right"></td>
-<td align="left"><a href="./#function-critical-section-t"><strong>critical_section_t</strong></a> () noexcept<br></td>
-</tr>
-<tr>
-<td align="right">void</td>
-<td align="left"><a href="./#function-lock"><strong>lock</strong></a> () noexcept<br></td>
-</tr>
-<tr>
-<td align="right">bool</td>
-<td align="left"><a href="./#function-try-lock"><strong>try_lock</strong></a> () noexcept<br></td>
-</tr>
-<tr>
-<td align="right">void</td>
-<td align="left"><a href="./#function-unlock"><strong>unlock</strong></a> () noexcept<br></td>
+<td align="right">auto</td>
+<td align="left"><a href="./#function-pick"><strong>pick</strong></a> () noexcept const<br></td>
 </tr>
 <tr>
 <td align="right"></td>
-<td align="left"><a href="./#function-critical-section-t"><strong>~critical_section_t</strong></a> () noexcept<br></td>
+<td align="left"><a href="./#function-qpc-timer-t"><strong>qpc_timer_t</strong></a> () noexcept<br></td>
+</tr>
+<tr>
+<td align="right">auto</td>
+<td align="left"><a href="./#function-reset"><strong>reset</strong></a> () noexcept<br></td>
 </tr>
 </tbody>
 </table>
+<h1 id="detailed-description">Detailed Description</h1>
+<p><strong>Todo</strong></p>
+<p>use <code>static_assert</code> for Windows SDK </p>
 <h2 id="public-functions-documentation">Public Functions Documentation</h2>
-<h3 id="function-critical_section_t">function critical_section_t</h3>
-<pre><code class="cpp">inline critical_section_t::critical_section_t () noexcept
+<h3 id="function-pick">function pick</h3>
+<pre><code class="cpp">inline auto qpc_timer_t::pick () noexcept const
 </code></pre>
 
-<h3 id="function-lock">function lock</h3>
-<pre><code class="cpp">inline void critical_section_t::lock () noexcept
+<p><strong>Returns:</strong></p>
+<p>elapsed time in millisecond unit </p>
+<h3 id="function-qpc_timer_t">function qpc_timer_t</h3>
+<pre><code class="cpp">inline qpc_timer_t::qpc_timer_t () noexcept
 </code></pre>
 
-<h3 id="function-try_lock">function try_lock</h3>
-<pre><code class="cpp">inline bool critical_section_t::try_lock () noexcept
-</code></pre>
-
-<h3 id="function-unlock">function unlock</h3>
-<pre><code class="cpp">inline void critical_section_t::unlock () noexcept
-</code></pre>
-
-<h3 id="function-critical_section_t_1">function ~critical_section_t</h3>
-<pre><code class="cpp">inline critical_section_t::~critical_section_t () noexcept
+<h3 id="function-reset">function reset</h3>
+<pre><code class="cpp">inline auto qpc_timer_t::reset () noexcept
 </code></pre>
 
 <hr />
-<p>The documentation for this class was generated from the following file <code>src/media.cpp</code></p>
+<p>The documentation for this class was generated from the following file <code>src/media.hpp</code></p>
               
             </div>
           </div>
