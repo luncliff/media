@@ -8,6 +8,8 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
 endif()
 set(CMAKE_VS_WINRT_BY_DEFAULT true)
 
+message(STATUS "using Windows: ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
+
 find_package(Microsoft.GSL CONFIG)
 find_package(spdlog        CONFIG REQUIRED)
 
