@@ -315,3 +315,122 @@ TEST_CASE("MFTransform with Direct11 Device", "[!mayfail]") {
         }
     }
 }
+
+HRESULT check_sample(ComPtr<IMFSample> sample);
+
+TEST_CASE("MFTransform(MP4-YUV) with ID3D11Device") {
+    const auto fpath = fs::absolute(get_asset_dir() / "fm5p7flyCSY.mp4");
+    auto on_return = media_startup();
+
+    // To perform decoding using Direct3D 11, the software decoder must have a pointer to a Direct3D 11 device.
+    ComPtr<ID3D11Device> graphics_device{};
+    ComPtr<ID3D11DeviceContext> graphics_device_context{};
+    {
+        D3D_FEATURE_LEVEL level{};
+        D3D_FEATURE_LEVEL levels[]{D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1};
+        REQUIRE(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_VIDEO_SUPPORT, levels, 3,
+                                  D3D11_SDK_VERSION, graphics_device.GetAddressOf(), &level,
+                                  graphics_device_context.GetAddressOf()) == S_OK);
+    }
+    // multi-thread protection
+    configure_multithread_protection(graphics_device.Get());
+
+    // get video accelerator to ensure D3D11_CREATE_DEVICE_VIDEO_SUPPORT
+    ComPtr<ID3D11VideoDevice> video_device{};
+    REQUIRE(graphics_device->QueryInterface(__uuidof(ID3D11VideoDevice), //
+                                            (void**)video_device.GetAddressOf()) == S_OK);
+    ComPtr<ID3D11VideoContext> video_context{};
+    REQUIRE(graphics_device_context->QueryInterface(__uuidof(ID3D11VideoContext), //
+                                                    (void**)video_context.GetAddressOf()) == S_OK);
+
+    // The DXGI Device Manager is used to share the Direct3D 11 between components.
+    UINT device_manager_token{};
+    ComPtr<IMFDXGIDeviceManager> device_manager{};
+    REQUIRE(MFCreateDXGIDeviceManager(&device_manager_token, device_manager.GetAddressOf()) == S_OK);
+    REQUIRE(device_manager->ResetDevice(graphics_device.Get(), device_manager_token) == S_OK);
+
+    check_device(device_manager.Get(), graphics_device.Get());
+    check_device(device_manager.Get(), video_device.Get());
+    check_device_context(graphics_device.Get(), graphics_device_context.Get());
+
+    MF_OBJECT_TYPE media_object_type = MF_OBJECT_INVALID;
+    ComPtr<IMFSourceResolver> resolver{};
+    ComPtr<IUnknown> source{};
+    REQUIRE(MFCreateSourceResolver(resolver.GetAddressOf()) == S_OK);
+    REQUIRE(resolver->CreateObjectFromURL(fpath.c_str(),             // URL of the source.
+                                          MF_RESOLUTION_MEDIASOURCE, // Create a source object.
+                                          NULL,                      // Optional property store.
+                                          &media_object_type,        // Receives the created object type.
+                                          source.GetAddressOf()      // Receives a pointer to the media source.
+                                          ) == S_OK);
+
+    ComPtr<IMFMediaSource> media_source{};
+    REQUIRE(source->QueryInterface(IID_PPV_ARGS(media_source.GetAddressOf())) == S_OK);
+
+    ComPtr<IMFAttributes> reader_attributes{};
+    REQUIRE(MFCreateAttributes(reader_attributes.GetAddressOf(), 2) == S_OK);
+    REQUIRE(reader_attributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                                       MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID) == S_OK);
+    REQUIRE(reader_attributes->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, 1) == S_OK);
+
+    ComPtr<IMFSourceReader> source_reader{};
+    REQUIRE(MFCreateSourceReaderFromMediaSource(media_source.Get(), reader_attributes.Get(),
+                                                source_reader.GetAddressOf()) == S_OK);
+
+    ComPtr<IMFMediaType> file_video_media_type{};
+    REQUIRE(source_reader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
+                                               file_video_media_type.GetAddressOf()) == S_OK);
+
+    ComPtr<IUnknown> transform{};
+    ComPtr<IMFTransform> decoding_transform{}; // This is H264 Decoder MFT
+    REQUIRE(CoCreateInstance(CLSID_CMSH264DecoderMFT, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown,
+                             (void**)transform.GetAddressOf()) == S_OK);
+    REQUIRE(transform->QueryInterface(IID_PPV_ARGS(decoding_transform.GetAddressOf())) == S_OK);
+
+    // configure Direct3D 11
+    ComPtr<IMFAttributes> transform_attributes{};
+    REQUIRE(decoding_transform->GetAttributes(transform_attributes.GetAddressOf()) == S_OK);
+    REQUIRE(transform_attributes->SetUINT32(MF_SA_D3D_AWARE, TRUE) == S_OK);
+    REQUIRE(transform_attributes->SetUINT32(MF_SA_D3D11_AWARE, TRUE) == S_OK);
+    REQUIRE(decoding_transform->ProcessMessage(
+                MFT_MESSAGE_SET_D3D_MANAGER, //
+                reinterpret_cast<ULONG_PTR>(static_cast<IUnknown*>(device_manager.Get()))) == S_OK);
+
+    ComPtr<IMFMediaType> input_media_type{};
+    REQUIRE(MFCreateMediaType(input_media_type.GetAddressOf()) == S_OK);
+    REQUIRE(file_video_media_type->CopyAllItems(input_media_type.Get()) == S_OK);
+    if (auto hr = decoding_transform->SetInputType(0, input_media_type.Get(), 0))
+        FAIL(hr);
+
+    ComPtr<IMFMediaType> output_media_type{};
+    REQUIRE(MFCreateMediaType(output_media_type.GetAddressOf()) == S_OK);
+    REQUIRE(file_video_media_type->CopyAllItems(output_media_type.Get()) == S_OK);
+    if (auto hr = output_media_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_IYUV))
+        FAIL(hr);
+
+    if (auto hr = decoding_transform->SetOutputType(0, output_media_type.Get(), 0))
+        FAIL(hr);
+
+    DWORD status = 0;
+    REQUIRE(decoding_transform->GetInputStatus(0, &status) == S_OK);
+    REQUIRE(status == MFT_INPUT_STATUS_ACCEPT_DATA);
+    //CAPTURE(GetMediaTypeDescription(output_media_type.Get()));
+    REQUIRE(decoding_transform->ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, NULL) == S_OK);
+    REQUIRE(decoding_transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
+    REQUIRE(decoding_transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
+
+    size_t count = 0;
+    try {
+        for (auto decoded_sample : decode(source_reader, decoding_transform)) {
+            if (decoded_sample == nullptr)
+                FAIL();
+            ++count;
+            if (auto hr = check_sample(decoded_sample))
+                FAIL(hr);
+        }
+    } catch (const winrt::hresult_error& ex) {
+        // FAIL(ex.message());
+        FAIL(ex.code());
+    }
+    REQUIRE(count > 0);
+}

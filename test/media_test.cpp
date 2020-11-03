@@ -451,7 +451,7 @@ TEST_CASE("MFTransform(MP4-YUV) with Coroutine") {
     REQUIRE(decoding_transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
     REQUIRE(decoding_transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
 
-    int count = 0;
+    size_t count = 0;
     try {
         for (auto decoded_sample : decode(source_reader, decoding_transform)) {
             if (decoded_sample == nullptr)
@@ -461,8 +461,8 @@ TEST_CASE("MFTransform(MP4-YUV) with Coroutine") {
                 FAIL(hr);
         }
     } catch (const winrt::hresult_error& ex) {
-        CAPTURE(count);
         // FAIL(ex.message());
         FAIL(ex.code());
     }
+    REQUIRE(count > 0);
 }
