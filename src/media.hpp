@@ -3,6 +3,7 @@
 #include <winrt/Windows.System.Threading.h>
 
 #include <experimental/generator>
+#include <filesystem>
 #include <gsl/gsl>
 
 #include <comdef.h>
@@ -15,6 +16,7 @@
 #include <wrl/client.h>
 
 using Microsoft::WRL::ComPtr;
+namespace fs = std::filesystem;
 
 /// @see MFStartup
 /// @see MFShutdown
@@ -26,6 +28,18 @@ HRESULT get_devices(IMFAttributes* attrs, std::vector<ComPtr<IMFActivate>>& devi
 HRESULT get_name(IMFActivate* device, std::wstring& name) noexcept;
 
 gsl::czstring<> get_name(const GUID& guid) noexcept;
+
+/// @see MFCreateSourceResolver
+HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE& media_object_type) noexcept;
+
+/// @see CoCreateInstance
+/// @see CLSID_CMSH264DecoderMFT
+/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder
+HRESULT make_transform_H264(IMFTransform** transform) noexcept;
+
+/// @see CoCreateInstance
+/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
+HRESULT make_transform_video(IMFTransform** transform) noexcept;
 
 HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr);
 

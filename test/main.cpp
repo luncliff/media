@@ -16,6 +16,7 @@ fs::path get_asset_dir() noexcept {
 #endif
 }
 
+/// @todo catch `winrt::hresult_error`
 int main(int argc, char* argv[]) {
     winrt::init_apartment(winrt::apartment_type::multi_threaded);
     auto on_exit = gsl::finally(&winrt::uninit_apartment);

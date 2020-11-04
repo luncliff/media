@@ -1,9 +1,9 @@
 #include "media.hpp"
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/wincolor_sink.h>
-#include <spdlog/sinks/basic_file_sink.h>
 #include <dshowasf.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/wincolor_sink.h>
+#include <spdlog/spdlog.h>
 
 using namespace std;
 using namespace Microsoft::WRL;
@@ -46,13 +46,40 @@ HRESULT get_devices(IMFAttributes* attrs, vector<ComPtr<IMFActivate>>& devices) 
 }
 
 HRESULT get_name(IMFActivate* device, wstring& name) noexcept {
-    constexpr UINT32 max_size = 255;
+    constexpr UINT32 max_size = 240;
     WCHAR buf[max_size]{};
     UINT32 buflen{};
     HRESULT hr = device->GetString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, buf, max_size, &buflen);
     if (SUCCEEDED(hr))
         name = {buf, buflen};
     return hr;
+}
+
+HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE& media_object_type) noexcept {
+    ComPtr<IMFSourceResolver> resolver{};
+    if (auto hr = MFCreateSourceResolver(resolver.GetAddressOf()))
+        return hr;
+    ComPtr<IUnknown> unknown{};
+    if (auto hr = resolver->CreateObjectFromURL(fpath.c_str(), MF_RESOLUTION_MEDIASOURCE | MF_RESOLUTION_READ, NULL,
+                                                &media_object_type, unknown.GetAddressOf()))
+        return hr;
+    return unknown->QueryInterface(IID_PPV_ARGS(source));
+}
+
+HRESULT make_transform_H264(IMFTransform** transform) noexcept {
+    ComPtr<IUnknown> unknown{};
+    if (auto hr = CoCreateInstance(CLSID_CMSH264DecoderMFT, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown,
+                                   (void**)unknown.GetAddressOf()))
+        return hr;
+    return unknown->QueryInterface(IID_PPV_ARGS(transform));
+}
+
+HRESULT make_transform_video(IMFTransform** transform) noexcept {
+    ComPtr<IUnknown> unknown{};
+    if (auto hr = CoCreateInstance(CLSID_VideoProcessorMFT, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown,
+                                   (void**)unknown.GetAddressOf()))
+        return hr;
+    return unknown->QueryInterface(IID_PPV_ARGS(transform));
 }
 
 HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr) {
@@ -233,8 +260,14 @@ auto decode(ComPtr<IMFSourceReader> source_reader, ComPtr<IMFTransform> decoding
                 BOOL flushed = FALSE;
                 result = get_transform_output(decoding_transform.Get(), decoded_sample.GetAddressOf(), flushed);
 
-                if (result != S_OK && result != MF_E_TRANSFORM_NEED_MORE_INPUT)
+                switch (result) {
+                case S_OK:
+                case MF_E_TRANSFORM_NEED_MORE_INPUT:
+                    break;
+                case MF_E_INVALIDMEDIATYPE:
+                default:
                     throw winrt::hresult_error{result};
+                }
 
                 if (flushed) {
                     // decoder format changed

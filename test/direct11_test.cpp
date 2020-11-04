@@ -319,6 +319,7 @@ TEST_CASE("MFTransform with Direct11 Device", "[!mayfail]") {
 HRESULT check_sample(ComPtr<IMFSample> sample);
 
 TEST_CASE("MFTransform(MP4-YUV) with ID3D11Device") {
+    FAIL("stop!");
     const auto fpath = fs::absolute(get_asset_dir() / "fm5p7flyCSY.mp4");
     auto on_return = media_startup();
 
