@@ -24,10 +24,10 @@ namespace fs = std::filesystem;
 auto media_startup() noexcept(false) -> gsl::final_action<HRESULT(WINAPI*)()>;
 
 /// @see MFEnumDeviceSources
-HRESULT get_devices(IMFAttributes* attrs, std::vector<ComPtr<IMFActivate>>& devices) noexcept;
-HRESULT get_name(IMFActivate* device, std::wstring& name) noexcept;
+HRESULT get_devices(gsl::not_null<IMFAttributes*> attrs, std::vector<ComPtr<IMFActivate>>& devices) noexcept;
 
-gsl::czstring<> get_name(const GUID& guid) noexcept;
+HRESULT get_name(gsl::not_null<IMFActivate*> device, std::wstring& name) noexcept;
+HRESULT get_name(gsl::not_null<IMFActivate*> device, std::string& name) noexcept;
 
 /// @see MFCreateSourceResolver
 HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE& media_object_type) noexcept;
@@ -40,6 +40,27 @@ HRESULT make_transform_H264(IMFTransform** transform) noexcept;
 /// @see CoCreateInstance
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
 HRESULT make_transform_video(IMFTransform** transform) noexcept;
+
+auto get_input_available_types(ComPtr<IMFTransform> transform, DWORD num_input, HRESULT& ec) noexcept(false)
+    -> std::experimental::generator<ComPtr<IMFMediaType>>;
+auto try_output_available_types(ComPtr<IMFTransform> transform, DWORD stream_id, DWORD& type_index) noexcept(false)
+    -> std::experimental::generator<ComPtr<IMFMediaType>>;
+
+auto get_output_available_types(ComPtr<IMFTransform> transform, DWORD num_output, HRESULT& ec) noexcept(false)
+    -> std::experimental::generator<ComPtr<IMFMediaType>>;
+auto try_input_available_types(ComPtr<IMFTransform> transform, DWORD stream_id, DWORD& type_index) noexcept(false)
+    -> std::experimental::generator<ComPtr<IMFMediaType>>;
+
+auto read_samples(ComPtr<IMFSourceReader> source_reader, //
+                  DWORD& index, DWORD& flags, LONGLONG& timestamp, LONGLONG& duration) noexcept(false)
+    -> std::experimental::generator<ComPtr<IMFSample>>;
+
+auto decode(ComPtr<IMFTransform> transform, ComPtr<IMFMediaType> output_type, DWORD ostream_id) noexcept(false)
+    -> std::experimental::generator<ComPtr<IMFSample>>;
+
+HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample);
+HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst);
+HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& flushed);
 
 HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr);
 
@@ -73,9 +94,8 @@ class qpc_timer_t final {
     }
 };
 
-auto decode(ComPtr<IMFSourceReader> source_reader, ComPtr<IMFTransform> decoding_transform) noexcept(false)
-    -> std::experimental::generator<ComPtr<IMFSample>>;
+std::string to_readable(const GUID& guid) noexcept;
 
-HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample);
-HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst);
-HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& flushed);
+void print(gsl::not_null<IMFActivate*> device) noexcept;
+void print(gsl::not_null<IMFTransform*> transform) noexcept;
+void print(gsl::not_null<IMFMediaType*> media) noexcept;

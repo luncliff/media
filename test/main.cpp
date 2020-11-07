@@ -2,10 +2,13 @@
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
 
+#include <clocale>
 #include <filesystem>
 #include <media.hpp>
 
-using namespace std;
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/spdlog.h>
+
 namespace fs = std::filesystem;
 
 fs::path get_asset_dir() noexcept {
@@ -18,8 +21,16 @@ fs::path get_asset_dir() noexcept {
 
 /// @todo catch `winrt::hresult_error`
 int main(int argc, char* argv[]) {
-    winrt::init_apartment(winrt::apartment_type::multi_threaded);
+    std::setlocale(LC_ALL, ".65001");
+
+    winrt::init_apartment();
     auto on_exit = gsl::finally(&winrt::uninit_apartment);
-    Catch::Session suite{};
-    return suite.run(argc, argv);
+
+    //auto log = spdlog::basic_logger_st("report", "log.yaml");
+    //spdlog::set_default_logger(log);
+    spdlog::set_pattern("%v");
+    spdlog::set_level(spdlog::level::level_enum::debug);
+
+    Catch::Session session{};
+    return session.run(argc, argv);
 }

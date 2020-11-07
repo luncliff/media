@@ -25,6 +25,7 @@ check_include_file_cxx("winrt/Windows.Foundation.h" found_winrt)
 add_library(media STATIC
     src/media.hpp
     src/media.cpp
+    src/media_print.cpp
 )
 
 set_target_properties(media
@@ -99,6 +100,7 @@ if(NOT BUILD_TESTING)
 endif()
 
 add_executable(media_test_suite
+    test/main.cpp
     test/media_test.cpp
     test/direct11_test.cpp
 )
@@ -111,7 +113,7 @@ PROPERTIES
 find_package(Catch2 CONFIG REQUIRED)
 target_link_libraries(media_test_suite
 PRIVATE
-    media Catch2::Catch2
+    media Catch2::Catch2 spdlog::spdlog
 )
 
 get_filename_component(asset_path ${PROJECT_SOURCE_DIR}/test ABSOLUTE)
