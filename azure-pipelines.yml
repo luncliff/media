@@ -17,19 +17,23 @@ jobs:
       release_x64:
         BuildPlatform: x64
         BuildConfiguration: Release
-        CMakeArch: x64
+        cmake_arch: x64
+        vcpkg_target_triplet: x64-windows
       debug_x64:
         BuildPlatform: x64
         BuildConfiguration: Debug
-        CMakeArch: x64
+        cmake_arch: x64
+        vcpkg_target_triplet: x64-windows
       release_x86:
         BuildPlatform: x86
         BuildConfiguration: Release
-        CMakeArch: Win32
+        cmake_arch: Win32
+        vcpkg_target_triplet: x86-windows
       debug_x86:
         BuildPlatform: x86
         BuildConfiguration: Debug
-        CMakeArch: Win32
+        cmake_arch: Win32
+        vcpkg_target_triplet: x86-windows
 
   variables:
     install_dir: "c:/install"
@@ -49,17 +53,16 @@ jobs:
           vcpkg list
       env:
         platform: $(BuildPlatform)
-        vcpkg_target_triplet: "$(BuildPlatform)-windows"
 
     - task: CMake@1
       inputs:
-        cmakeArgs: .. -A $(CMakeArch) -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$(BuildPlatform)-windows" -DCMAKE_INSTALL_PREFIX=$(install_dir) -DCMAKE_BUILD_TYPE=$(BuildConfiguration) -DBUILD_TESTING=True
+        cmakeArgs: .. -A $(cmake_arch) -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$(BuildPlatform)-windows" -DCMAKE_INSTALL_PREFIX=$(install_dir) -DCMAKE_BUILD_TYPE=$(BuildConfiguration) -DBUILD_TESTING=True
         workingDirectory: "build" # will create a directory
 
     - task: MSBuild@1
       inputs:
         solution: build/media.sln
-        platform: "$(CMakeArch)" # x64|Win32
+        platform: "$(cmake_arch)" # x64|Win32
         configuration: "$(BuildConfiguration)" # Debug|Release
         clean: true
         logFileVerbosity: detailed
@@ -67,8 +70,26 @@ jobs:
 
     - task: CMake@1
       inputs:
-        cmakeArgs: --build . --target install
+        cmakeArgs: --build . --config $(BuildConfiguration) --target install
         workingDirectory: "build"
+
+    # copy DLL in VcPkg (for Debug build) 
+    - task: CopyFiles@2
+      inputs:
+        sourceFolder: 'C:/vcpkg/installed/$(vcpkg_target_triplet)/debug/bin'
+        contents: '*.dll'
+        targetFolder: '$(install_dir)/tools'
+        overWrite: true
+      condition: in(variables['BuildConfiguration'], 'Debug')
+
+    # copy DLL in VcPkg (for Release build)
+    - task: CopyFiles@2
+      inputs:
+        sourceFolder: 'C:/vcpkg/installed/$(vcpkg_target_triplet)/bin'
+        contents: '*.dll'
+        targetFolder: '$(install_dir)/tools'
+        overWrite: true
+      condition: in(variables['BuildConfiguration'], 'Release')
 
     - task: PowerShell@2
       inputs:
