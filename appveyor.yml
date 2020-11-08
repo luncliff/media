@@ -40,18 +40,14 @@ before_build:
   - ps: if($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017"){ $env:GENERATOR="Visual Studio 15 2017" }
   - ps: if($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2019"){ $env:GENERATOR="Visual Studio 16 2019" }
   - ps: if($env:PLATFORM -eq "x86"){ $env:PLATFORM="Win32" }
+
+build_script:
   - ps: |
       cmake . -G "$env:GENERATOR" -A $env:PLATFORM `
         -DBUILD_SHARED_LIBS=false -DBUILD_TESTING=true `
         -DCMAKE_BUILD_TYPE="$env:CONFIGURATION" `
         -DCMAKE_INSTALL_PREFIX="$env:INSTALL_PATH" `
         -DCMAKE_TOOLCHAIN_FILE="C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$env:VCPKG_TARGET_TRIPLET"
-
-build:
-  project: media.sln
-  verbosity: normal
-
-after_build:
   - ps: cmake --build . --config $env:CONFIGURATION --target install
 
 test_script:
