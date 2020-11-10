@@ -1,5 +1,7 @@
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.System.Threading.h>
 
 #include <filesystem>
 #include <media.hpp>
@@ -136,7 +138,7 @@ HRESULT check_sample(ComPtr<IMFSample> sample) {
 
 // see https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder
 // see https://docs.microsoft.com/en-us/windows/win32/medfound/basic-mft-processing-model
-TEST_CASE("MFTransform - H.264 Video Decoder", "[codec]") {
+TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
     auto on_return = media_startup();
 
     ComPtr<IMFMediaSourceEx> source{};

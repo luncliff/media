@@ -43,8 +43,9 @@ target_link_libraries(media
 PUBLIC
     windowsapp
 PRIVATE
-    dxva2 evr shlwapi # for WinRT / COM
+    dxva2 evr shlwapi comctl32 # for WinRT / COM
     mf mfplat mfplay mfreadwrite mfuuid wmcodecdspuuid # for Media Foundation
+    dxva2 d3d9 d3d11 dxguid dxgi # for DXVA
     spdlog::spdlog
 )
 if(Microsoft.GSL_FOUND)
@@ -101,8 +102,9 @@ endif()
 
 add_executable(media_test_suite
     test/main.cpp
-    test/media_test.cpp
-    test/direct11_test.cpp
+    test/sink_test.cpp
+    test/dxva_test.cpp
+    test/transform_test.cpp
 )
 
 set_target_properties(media_test_suite

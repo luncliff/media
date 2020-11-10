@@ -1,5 +1,7 @@
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.System.Threading.h>
 
 #include <filesystem>
 #include <iostream>
@@ -55,11 +57,11 @@ void make_souce_reader(IMFSourceReader** source_reader, IMFMediaSource* media_so
 }
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder
-void make_video_transform(IMFTransform** decoding_transform, IMFSourceReader* source_reader,
-                          IMFMediaType** source_type) {
+void make_video_transform(IMFTransform** decoding_transform, IMFSourceReader* source_reader, IMFMediaType** source_type,
+                          const IID& decoder_type = CLSID_CMSH264DecoderMFT) {
     // @todo CLSID_CMSMPEGDecoderMFT, CLSID_VideoProcessorMFT, CLSID_CMSH264DecoderMFT, IID_IMFTransform, IID_IUnknown
     ComPtr<IUnknown> transform{};
-    REQUIRE(CoCreateInstance(CLSID_CMSH264DecoderMFT, NULL, CLSCTX_INPROC_SERVER, IID_IMFTransform,
+    REQUIRE(CoCreateInstance(decoder_type, NULL, CLSCTX_INPROC_SERVER, IID_IMFTransform,
                              (void**)transform.GetAddressOf()) == S_OK);
     REQUIRE(transform->QueryInterface(IID_PPV_ARGS(decoding_transform)) == S_OK);
 
@@ -97,11 +99,30 @@ void configure_multithread_protection(ID3D11Device* device) {
     CAPTURE(protection->SetMultithreadProtected(TRUE));
 }
 
+HRESULT check_D3D11_DXGI(IMFTransform* transform, IMFDXGIDeviceManager* device_manager) {
+    ComPtr<IMFAttributes> attrs{};
+    if (auto hr = transform->GetAttributes(attrs.GetAddressOf()))
+        return hr;
+    // configure D3D11 if the transform supports it
+    UINT32 supported{};
+    //if (auto hr = attrs->GetUINT32(MF_SA_D3D_AWARE, &supported))
+    //    return hr;
+    //if (supported == false)
+    //    return E_FAIL;
+    if (auto hr = attrs->GetUINT32(MF_SA_D3D11_AWARE, &supported))
+        return hr;
+    if (supported == false)
+        return E_FAIL;
+
+    return transform->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, //
+                                     reinterpret_cast<ULONG_PTR>(static_cast<IUnknown*>(device_manager)));
+}
+
 HRESULT check_sample(ComPtr<IMFSample> sample);
 
 /// @see source reader scenario in https://docs.microsoft.com/en-us/windows/win32/medfound/supporting-direct3d-11-video-decoding-in-media-foundation
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/dxva-video-processing
-SCENARIO("MFTransform(MP4-YUV) with ID3D11Device", "[directx][!mayfail]") {
+SCENARIO("MFTransform with ID3D11Device", "[directx][!mayfail]") {
     auto on_return = media_startup();
 
     // To perform decoding using Direct3D 11, the software decoder must have a pointer to a Direct3D 11 device.
@@ -153,21 +174,6 @@ SCENARIO("MFTransform(MP4-YUV) with ID3D11Device", "[directx][!mayfail]") {
         DWORD istream_id = 0, ostream_id = 0;
         GUID in_subtype{}, out_subtype{};
         {
-            ComPtr<IMFAttributes> attrs{};
-            REQUIRE(transform->GetAttributes(attrs.GetAddressOf()) == S_OK);
-            // configure D3D11 if the transform supports it
-            UINT32 supported{};
-            REQUIRE(attrs->GetUINT32(MF_SA_D3D_AWARE, &supported) == S_OK);
-            if (supported) {
-                REQUIRE(attrs->GetUINT32(MF_SA_D3D11_AWARE, &supported) == S_OK);
-                if (supported)
-                    REQUIRE(transform->ProcessMessage(
-                                MFT_MESSAGE_SET_D3D_MANAGER, //
-                                reinterpret_cast<ULONG_PTR>(static_cast<IUnknown*>(device_manager.Get()))) == S_OK);
-                else
-                    WARN("MF_SA_D3D11_AWARE == false");
-            }
-
             REQUIRE(transform->GetStreamCount(&num_input, &num_output) == S_OK);
             REQUIRE(transform->GetStreamIDs(1, &istream_id, 1, &ostream_id) != MF_E_BUFFERTOOSMALL);
 
@@ -183,20 +189,21 @@ SCENARIO("MFTransform(MP4-YUV) with ID3D11Device", "[directx][!mayfail]") {
                     FAIL(hr);
                 break;
             }
-            spdlog::debug("in_subtype: {}", to_readable(in_subtype));
-            spdlog::debug("out_subtype: {}", to_readable(out_subtype));
+            spdlog::debug("- transform_configuration:");
+            spdlog::debug("  input: {}", to_readable(in_subtype));
+            spdlog::debug("  output: {}", to_readable(out_subtype));
         }
+
+        MFT_INPUT_STREAM_INFO input_stream_info{};
+        if (auto hr = transform->GetInputStreamInfo(istream_id, &input_stream_info))
+            FAIL(hr);
+        MFT_OUTPUT_STREAM_INFO output_stream_info{};
+        if (auto hr = transform->GetOutputStreamInfo(ostream_id, &output_stream_info))
+            FAIL(hr);
 
         WHEN("Synchronous Transform") {
             REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
             REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
-
-            MFT_INPUT_STREAM_INFO input_stream_info{};
-            if (auto hr = transform->GetInputStreamInfo(istream_id, &input_stream_info))
-                FAIL(hr);
-            MFT_OUTPUT_STREAM_INFO output_stream_info{};
-            if (auto hr = transform->GetOutputStreamInfo(ostream_id, &output_stream_info))
-                FAIL(hr);
 
             ComPtr<IMFMediaType> output_type{};
             if (auto hr = transform->GetOutputCurrentType(ostream_id, output_type.GetAddressOf()))
@@ -209,18 +216,12 @@ SCENARIO("MFTransform(MP4-YUV) with ID3D11Device", "[directx][!mayfail]") {
             LONGLONG duration{};
             for (ComPtr<IMFSample> input_sample : read_samples(source_reader, //
                                                                index, flags, timestamp, duration)) {
-                ComPtr<IMFSample> copied_sample{};
-                if (auto hr = create_and_copy_single_buffer_sample(input_sample.Get(), copied_sample.GetAddressOf()))
-                    FAIL(hr);
-                copied_sample->SetSampleTime(timestamp);
-                copied_sample->SetSampleDuration(duration);
-
-                switch (auto hr = transform->ProcessInput(istream_id, copied_sample.Get(), 0)) {
+                input_sample->SetSampleTime(timestamp);
+                switch (auto hr = transform->ProcessInput(istream_id, input_sample.Get(), 0)) {
                 case S_OK: // MF_E_TRANSFORM_TYPE_NOT_SET, MF_E_NO_SAMPLE_DURATION, MF_E_NO_SAMPLE_TIMESTAMP
                     break;
-                case MF_E_NOTACCEPTING:
                 case MF_E_UNSUPPORTED_D3D_TYPE:
-                case E_INVALIDARG:
+                case MF_E_NOTACCEPTING:
                 default:
                     FAIL(hr);
                 }
@@ -228,13 +229,10 @@ SCENARIO("MFTransform(MP4-YUV) with ID3D11Device", "[directx][!mayfail]") {
                     if (auto hr = check_sample(output_sample))
                         FAIL(hr);
                     ++count;
-                    spdlog::debug("checked: {}", count);
                 }
             }
             REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL) == S_OK);
             REQUIRE(transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL) == S_OK);
-            spdlog::debug("drained");
-
             REQUIRE(count);
             count = 0;
             // fetch remaining output in the transform
@@ -242,14 +240,13 @@ SCENARIO("MFTransform(MP4-YUV) with ID3D11Device", "[directx][!mayfail]") {
                 if (auto hr = check_sample(output_sample))
                     FAIL(hr);
                 ++count;
-                spdlog::debug("checked: {}", count);
             }
             REQUIRE(count);
         }
     }
     GIVEN("CLSID_VideoProcessorMFT") {
         ComPtr<IMFTransform> transform{};
-        REQUIRE(make_transform_video(transform.GetAddressOf()) == S_OK);
+        REQUIRE(make_transform_video(transform.GetAddressOf(), CLSID_VideoProcessorMFT) == S_OK);
         {
             ComPtr<IMFAttributes> attrs{};
             REQUIRE(transform->GetAttributes(attrs.GetAddressOf()) == S_OK);
@@ -259,20 +256,81 @@ SCENARIO("MFTransform(MP4-YUV) with ID3D11Device", "[directx][!mayfail]") {
                         MFT_MESSAGE_SET_D3D_MANAGER, //
                         reinterpret_cast<ULONG_PTR>(static_cast<IUnknown*>(device_manager.Get()))) == S_OK);
         }
+        print(transform.Get());
+
+        ComPtr<IMFMediaSourceEx> source_h264{};
+        ComPtr<IMFSourceReader> reader_h264{};
+        ComPtr<IMFTransform> transform_h264{};
+        ComPtr<IMFMediaType> output_h264{};
+        {
+            MF_OBJECT_TYPE media_object_type = MF_OBJECT_INVALID;
+            REQUIRE(resolve(get_asset_dir() / "fm5p7flyCSY.mp4", source_h264.GetAddressOf(), media_object_type) ==
+                    S_OK);
+            REQUIRE(MFCreateSourceReaderFromMediaSource(source_h264.Get(), nullptr, reader_h264.GetAddressOf()) ==
+                    S_OK);
+            ComPtr<IMFMediaType> input_h264{};
+            REQUIRE(reader_h264->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
+                                                     input_h264.GetAddressOf()) == S_OK);
+            REQUIRE(make_transform_H264(transform_h264.GetAddressOf()) == S_OK);
+            REQUIRE(transform_h264->SetInputType(0, input_h264.Get(), 0) == S_OK);
+            REQUIRE(try_output_type(transform_h264.Get(), 0, MFVideoFormat_NV12, output_h264.GetAddressOf()) == S_OK);
+        }
 
         DWORD num_input = 0, num_output = 0;
         REQUIRE(transform->GetStreamCount(&num_input, &num_output) == S_OK);
-        auto istream_ids = std::make_unique<DWORD[]>(num_input);
-        auto ostream_ids = std::make_unique<DWORD[]>(num_input);
+        REQUIRE(num_input == 1);
+        REQUIRE(num_output == 1);
+        const DWORD istream = 0, ostream = 0;
+        //// E_NOTIMPL is expected. we can start from id '0'
+        //CAPTURE(transform->GetStreamIDs(num_input, istreams.get(), num_output, ostreams.get()));
 
-        DWORD istream_id = 0, ostream_id = 0;
-        switch (auto hr = transform->GetStreamIDs(num_input, istream_ids.get(), num_output, ostream_ids.get())) {
-        case E_NOTIMPL: // this is expected. we can start from id '0'
-        case S_OK:
-            break;
-        case MF_E_BUFFERTOOSMALL:
-        default:
-            FAIL(hr);
+        WHEN("Synchronous Transform") {
+            ComPtr<IMFMediaType> input_type = output_h264;
+
+            print(input_type.Get());
+            if (auto hr = transform->SetInputType(istream, input_type.Get(), 0)) {
+                auto msg = winrt::hresult_error{hr}.message();
+                FAIL(hr);
+            }
+            ComPtr<IMFMediaType> output_type{};
+            if (auto hr = try_output_type(transform.Get(), ostream, MFVideoFormat_RGB32, //
+                                          output_type.GetAddressOf())) {
+                auto msg = winrt::hresult_error{hr}.message();
+                FAIL(hr);
+            }
+            print(output_type.Get());
+
+            REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
+            REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
+
+            HRESULT ec = S_OK;
+            size_t count = 0;
+            for (ComPtr<IMFSample> input_sample : process(transform_h264, 0, 0, reader_h264, ec)) {
+                switch (auto hr = transform->ProcessInput(istream, input_sample.Get(), 0)) {
+                case S_OK: // MF_E_TRANSFORM_TYPE_NOT_SET, MF_E_NO_SAMPLE_DURATION, MF_E_NO_SAMPLE_TIMESTAMP
+                    break;
+                case MF_E_UNSUPPORTED_D3D_TYPE:
+                case MF_E_NOTACCEPTING:
+                default:
+                    FAIL(hr);
+                }
+                for (ComPtr<IMFSample> output_sample : decode(transform, output_type, ostream)) {
+                    if (auto hr = check_sample(output_sample))
+                        FAIL(hr);
+                    ++count;
+                }
+            }
+            REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL) == S_OK);
+            REQUIRE(transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL) == S_OK);
+            REQUIRE(count);
+            count = 0;
+            // fetch remaining output in the transform
+            for (ComPtr<IMFSample> output_sample : decode(transform, output_type, ostream)) {
+                if (auto hr = check_sample(output_sample))
+                    FAIL(hr);
+                ++count;
+            }
+            REQUIRE(count);
         }
     }
 }

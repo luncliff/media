@@ -1,6 +1,6 @@
 #pragma once
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.System.Threading.h>
+// #include <winrt/Windows.Foundation.h>
+// #include <winrt/Windows.System.Threading.h>
 
 #include <experimental/generator>
 #include <filesystem>
@@ -38,8 +38,26 @@ HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE
 HRESULT make_transform_H264(IMFTransform** transform) noexcept;
 
 /// @see CoCreateInstance
+/// @see Color Converter DSP https://docs.microsoft.com/en-us/windows/win32/medfound/colorconverter
+/// @param iid CLSID_CColorConvertDMO
+HRESULT make_transform_video(IMFTransform** transform, const IID& iid) noexcept;
+
+/// @see CoCreateInstance
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
 HRESULT make_transform_video(IMFTransform** transform) noexcept;
+
+/**
+ * @todo: configure MF_MT_FRAME_SIZE, MF_MT_FRAME_RATE
+ * @todo: configure MF_MT_PIXEL_ASPECT_RATIO
+ */
+HRESULT make_video_output_RGB32(IMFMediaType** ptr) noexcept;
+
+HRESULT make_video_output_RGB565(IMFMediaType** ptr) noexcept;
+
+
+HRESULT try_output_type(IMFTransform* transform, DWORD ostream, const GUID& desired,
+                        IMFMediaType** output_type) noexcept;
+
 
 auto get_input_available_types(ComPtr<IMFTransform> transform, DWORD num_input, HRESULT& ec) noexcept(false)
     -> std::experimental::generator<ComPtr<IMFMediaType>>;
@@ -57,6 +75,13 @@ auto read_samples(ComPtr<IMFSourceReader> source_reader, //
 
 auto decode(ComPtr<IMFTransform> transform, ComPtr<IMFMediaType> output_type, DWORD ostream_id) noexcept(false)
     -> std::experimental::generator<ComPtr<IMFSample>>;
+
+auto process(ComPtr<IMFTransform> transform, DWORD istream, DWORD ostream,     //
+             ComPtr<IMFSample> input_sample, ComPtr<IMFMediaType> output_type, //
+             HRESULT& hr) noexcept -> std::experimental::generator<ComPtr<IMFSample>>;
+auto process(ComPtr<IMFTransform> transform, DWORD istream, DWORD ostream, //
+             ComPtr<IMFSourceReader> source_reader,                        //
+             HRESULT& ec) -> std::experimental::generator<ComPtr<IMFSample>>;
 
 HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample);
 HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst);

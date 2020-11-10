@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_RUNNER
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
+#include <winrt/Windows.Foundation.h>
 
 #include <clocale>
 #include <filesystem>
