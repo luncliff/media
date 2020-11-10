@@ -8,18 +8,17 @@ Personal Practice project to learn [Windows Media Foundation](https://docs.micro
 
 ### References
 
+#### Media Foundation SDK
+
 * [Media Foundation and DirectShow Media Types](https://gix.github.io/media-types/)
 * **https://github.com/microsoft/media-foundation**
 * https://github.com/sipsorcery/mediafoundationsamples
 * https://github.com/roman380/msdnblogsmfsamples
-
-#### StackOverflow
-
 * https://stackoverflow.com/questions/53915769/using-media-foundation-source-reader-to-read-3d-left-right-video
-
-### To Do
-
 * https://docs.microsoft.com/en-us/windows/win32/medfound/supporting-direct3d-11-video-decoding-in-media-foundation
+
+#### C++/WinRT
+* https://docs.microsoft.com/en-us/uwp/cpp-ref-for-winrt/winrt
 
 ## License
 

@@ -1,21 +1,22 @@
 #pragma once
-// #include <winrt/Windows.Foundation.h>
-// #include <winrt/Windows.System.Threading.h>
+#include <winrt/base.h>
 
 #include <experimental/generator>
 #include <filesystem>
 #include <gsl/gsl>
 
-#include <comdef.h>
 #include <mfapi.h>
 #include <mferror.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
 #include <shlwapi.h>
 #include <wmcodecdsp.h>
-#include <wrl/client.h>
 
-using Microsoft::WRL::ComPtr;
+// C++ 17 Coroutines TS
+using std::experimental::generator;
+// replaces Microsoft::WRL::ComPtr. see https://docs.microsoft.com/en-us/windows/uwp/cpp-and-winrt-apis/move-to-winrt-from-wrl
+using winrt::com_ptr;
+
 namespace fs = std::filesystem;
 
 /// @see MFStartup
@@ -24,10 +25,14 @@ namespace fs = std::filesystem;
 auto media_startup() noexcept(false) -> gsl::final_action<HRESULT(WINAPI*)()>;
 
 /// @see MFEnumDeviceSources
-HRESULT get_devices(gsl::not_null<IMFAttributes*> attrs, std::vector<ComPtr<IMFActivate>>& devices) noexcept;
+HRESULT get_devices(gsl::not_null<IMFAttributes*> attrs, std::vector<com_ptr<IMFActivate>>& devices) noexcept;
 
-HRESULT get_name(gsl::not_null<IMFActivate*> device, std::wstring& name) noexcept;
-HRESULT get_name(gsl::not_null<IMFActivate*> device, std::string& name) noexcept;
+/// @see MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME
+HRESULT get_name(gsl::not_null<IMFActivate*> device, winrt::hstring& name) noexcept;
+[[deprecated]] HRESULT get_name(gsl::not_null<IMFActivate*> device, std::wstring& name) noexcept;
+[[deprecated]] HRESULT get_name(gsl::not_null<IMFActivate*> device, std::string& name) noexcept;
+
+HRESULT get_hardware_url(gsl::not_null<IMFTransform*> transform, std::wstring& name) noexcept;
 
 /// @see MFCreateSourceResolver
 HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE& media_object_type) noexcept;
@@ -55,32 +60,33 @@ HRESULT make_video_output_RGB32(IMFMediaType** ptr) noexcept;
 
 HRESULT make_video_output_RGB565(IMFMediaType** ptr) noexcept;
 
-HRESULT try_output_type(IMFTransform* transform, DWORD ostream, const GUID& desired,
+HRESULT try_output_type(com_ptr<IMFTransform> transform, DWORD ostream, const GUID& desired,
                         IMFMediaType** output_type) noexcept;
 
-auto get_input_available_types(ComPtr<IMFTransform> transform, DWORD num_input, HRESULT& ec) noexcept(false)
-    -> std::experimental::generator<ComPtr<IMFMediaType>>;
-auto try_output_available_types(ComPtr<IMFTransform> transform, DWORD stream_id, DWORD& type_index) noexcept(false)
-    -> std::experimental::generator<ComPtr<IMFMediaType>>;
+auto get_input_available_types(com_ptr<IMFTransform> transform, DWORD num_input, HRESULT& ec) noexcept(false)
+    -> generator<com_ptr<IMFMediaType>>;
 
-auto get_output_available_types(ComPtr<IMFTransform> transform, DWORD num_output, HRESULT& ec) noexcept(false)
-    -> std::experimental::generator<ComPtr<IMFMediaType>>;
-auto try_input_available_types(ComPtr<IMFTransform> transform, DWORD stream_id, DWORD& type_index) noexcept(false)
-    -> std::experimental::generator<ComPtr<IMFMediaType>>;
+auto try_output_available_types(com_ptr<IMFTransform> transform, DWORD stream_id, DWORD& type_index) noexcept(false)
+    -> generator<com_ptr<IMFMediaType>>;
 
-auto read_samples(ComPtr<IMFSourceReader> source_reader, //
+auto get_output_available_types(com_ptr<IMFTransform> transform, DWORD num_output, HRESULT& ec) noexcept(false)
+    -> generator<com_ptr<IMFMediaType>>;
+auto try_input_available_types(com_ptr<IMFTransform> transform, DWORD stream_id, DWORD& type_index) noexcept(false)
+    -> generator<com_ptr<IMFMediaType>>;
+
+auto read_samples(com_ptr<IMFSourceReader> source_reader, //
                   DWORD& index, DWORD& flags, LONGLONG& timestamp, LONGLONG& duration) noexcept(false)
-    -> std::experimental::generator<ComPtr<IMFSample>>;
+    -> generator<com_ptr<IMFSample>>;
 
-auto decode(ComPtr<IMFTransform> transform, ComPtr<IMFMediaType> output_type, DWORD ostream_id) noexcept(false)
-    -> std::experimental::generator<ComPtr<IMFSample>>;
+auto decode(com_ptr<IMFTransform> transform, com_ptr<IMFMediaType> output_type, DWORD ostream_id) noexcept(false)
+    -> generator<com_ptr<IMFSample>>;
 
-auto process(ComPtr<IMFTransform> transform, DWORD istream, DWORD ostream,     //
-             ComPtr<IMFSample> input_sample, ComPtr<IMFMediaType> output_type, //
-             HRESULT& hr) noexcept -> std::experimental::generator<ComPtr<IMFSample>>;
-auto process(ComPtr<IMFTransform> transform, DWORD istream, DWORD ostream, //
-             ComPtr<IMFSourceReader> source_reader,                        //
-             HRESULT& ec) -> std::experimental::generator<ComPtr<IMFSample>>;
+auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream,      //
+             com_ptr<IMFSample> input_sample, com_ptr<IMFMediaType> output_type, //
+             HRESULT& hr) noexcept -> generator<com_ptr<IMFSample>>;
+auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, //
+             com_ptr<IMFSourceReader> source_reader,                        //
+             HRESULT& ec) -> generator<com_ptr<IMFSample>>;
 
 HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample);
 HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst);
@@ -91,7 +97,7 @@ HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStream
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video
-HRESULT configure(ComPtr<IMFStreamDescriptor> stream) noexcept;
+HRESULT configure(com_ptr<IMFStreamDescriptor> stream) noexcept;
 
 /// @todo use `static_assert` for Windows SDK
 class qpc_timer_t final {

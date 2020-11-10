@@ -278,34 +278,34 @@ void print(gsl::not_null<IMFTransform*> transform) noexcept {
                 spdlog::info("    max_latency: {}", info.hnsMaxLatency);
             }
             DWORD input_index = 0;
-            ComPtr<IMFMediaType> input_type{};
-            for (auto hr = transform->GetInputAvailableType(istream, input_index++, input_type.GetAddressOf());
-                 SUCCEEDED(hr);
-                 hr = transform->GetInputAvailableType(istream, input_index++, input_type.ReleaseAndGetAddressOf())) {
+            com_ptr<IMFMediaType> input_type{};
+            for (auto hr = transform->GetInputAvailableType(istream, input_index++, input_type.put()); SUCCEEDED(hr);
+                 hr = transform->GetInputAvailableType(istream, input_index++, input_type.put())) {
                 if (input_index == 1)
                     spdlog::info("    input_available_type:");
                 GUID major_type{};
                 input_type->GetGUID(MF_MT_MAJOR_TYPE, &major_type);
                 GUID subtype{};
                 input_type->GetGUID(MF_MT_SUBTYPE, &subtype);
-                spdlog::info("      - major: {}", to_readable(major_type));
-                spdlog::info("        subtype: {}", to_readable(subtype));
+                spdlog::info("      - {}: {}", to_readable(major_type), to_readable(subtype));
 
-                if (auto hr = transform->SetInputType(istream, input_type.Get(), 0)) {
+                if (auto hr = transform->SetInputType(istream, input_type.get(), 0)) {
                     spdlog::info("      - error: {:x}", hr);
+                    input_type = nullptr;
                     continue;
                 }
                 DWORD ostream = 0;
                 DWORD output_index = 0;
-                ComPtr<IMFMediaType> output_type{};
-                for (auto hr = transform->GetOutputAvailableType(ostream, output_index++, output_type.GetAddressOf());
-                     SUCCEEDED(hr); hr = transform->GetOutputAvailableType(ostream, output_index++,
-                                                                           output_type.ReleaseAndGetAddressOf())) {
+                com_ptr<IMFMediaType> output_type{};
+                for (auto hr = transform->GetOutputAvailableType(ostream, output_index++, output_type.put());
+                     SUCCEEDED(hr);
+                     hr = transform->GetOutputAvailableType(ostream, output_index++, output_type.put())) {
                     if (output_index == 1)
                         spdlog::info("        output_available_type:");
                     GUID subtype{};
                     output_type->GetGUID(MF_MT_SUBTYPE, &subtype);
                     spdlog::info("          - subtype: {}", to_readable(subtype));
+                    output_type = nullptr;
                 }
             }
         }
@@ -323,17 +323,17 @@ void print(gsl::not_null<IMFTransform*> transform) noexcept {
                 spdlog::info("    flags: {}", info.dwFlags);
             }
             DWORD i = 0;
-            ComPtr<IMFMediaType> media_type{};
-            for (auto hr = transform->GetOutputAvailableType(id, i++, media_type.GetAddressOf()); SUCCEEDED(hr);
-                 hr = transform->GetOutputAvailableType(id, i++, media_type.ReleaseAndGetAddressOf())) {
+            com_ptr<IMFMediaType> output_type{};
+            for (auto hr = transform->GetOutputAvailableType(id, i++, output_type.put()); SUCCEEDED(hr);
+                 hr = transform->GetOutputAvailableType(id, i++, output_type.put())) {
                 if (i == 1)
                     spdlog::info("    output_available_type:");
                 GUID major_type{};
-                media_type->GetGUID(MF_MT_MAJOR_TYPE, &major_type);
-                spdlog::info("      - major: {}", to_readable(major_type));
+                output_type->GetGUID(MF_MT_MAJOR_TYPE, &major_type);
                 GUID subtype{};
-                media_type->GetGUID(MF_MT_SUBTYPE, &subtype);
-                spdlog::info("        subtype: {}", to_readable(subtype));
+                output_type->GetGUID(MF_MT_SUBTYPE, &subtype);
+                spdlog::info("      - {}: {}", to_readable(major_type), to_readable(subtype));
+                output_type = nullptr;
             }
         }
     }

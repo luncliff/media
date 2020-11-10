@@ -1,3 +1,7 @@
+/**
+ * @file sink_test.cpp
+ * @author github.com/luncliff (luncligg@gmail.com)
+ */
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
 #include <winrt/Windows.Foundation.h>
@@ -23,24 +27,24 @@ TEST_CASE("IMFMediaSink(MFVideoEVR)", "[window][!mayfail]") {
     HWND window = NULL;
     auto on_return = media_startup();
 
-    ComPtr<IMFActivate> activate{};
-    REQUIRE(MFCreateVideoRendererActivate(window, activate.GetAddressOf()) == S_OK);
-    ComPtr<IMFMediaSink> sink{};
-    REQUIRE(activate->ActivateObject(IID_IMFMediaSink, (void**)sink.GetAddressOf()) == S_OK);
+    com_ptr<IMFActivate> activate{};
+    REQUIRE(MFCreateVideoRendererActivate(window, activate.put()) == S_OK);
+    com_ptr<IMFMediaSink> sink{};
+    REQUIRE(activate->ActivateObject(IID_IMFMediaSink, (void**)sink.put()) == S_OK);
 
-    ComPtr<IMFVideoRenderer> renderer{};
-    REQUIRE(sink->QueryInterface(renderer.GetAddressOf()) == S_OK);
+    com_ptr<IMFVideoRenderer> renderer{};
+    REQUIRE(sink->QueryInterface(renderer.put()) == S_OK);
     {
         IMFTransform* mixer = nullptr;
         IMFVideoPresenter* presenter = nullptr;
         REQUIRE(renderer->InitializeRenderer(mixer, presenter) == S_OK);
     }
-    ComPtr<IMFGetService> service{};
-    REQUIRE(sink->QueryInterface(service.GetAddressOf()) == S_OK);
+    com_ptr<IMFGetService> service{};
+    REQUIRE(sink->QueryInterface(service.put()) == S_OK);
 
-    ComPtr<IMFVideoDisplayControl> control{};
-    REQUIRE(service->GetService(MR_VIDEO_RENDER_SERVICE, __uuidof(IMFVideoDisplayControl),
-                                (void**)control.GetAddressOf()) == S_OK);
+    com_ptr<IMFVideoDisplayControl> control{};
+    REQUIRE(service->GetService(MR_VIDEO_RENDER_SERVICE, __uuidof(IMFVideoDisplayControl), (void**)control.put()) ==
+            S_OK);
     {
         REQUIRE(control->SetVideoWindow(window) == S_OK);
         RECT region{0, 0, 640, 480};
@@ -48,10 +52,10 @@ TEST_CASE("IMFMediaSink(MFVideoEVR)", "[window][!mayfail]") {
     }
 
     SECTION("IMFStreamSink") {
-        ComPtr<IMFStreamSink> stream_sink{};
-        REQUIRE(sink->GetStreamSinkByIndex(0, stream_sink.GetAddressOf()) == S_OK);
-        ComPtr<IMFMediaTypeHandler> handler{};
-        REQUIRE(stream_sink->GetMediaTypeHandler(handler.GetAddressOf()) == S_OK);
+        com_ptr<IMFStreamSink> stream_sink{};
+        REQUIRE(sink->GetStreamSinkByIndex(0, stream_sink.put()) == S_OK);
+        com_ptr<IMFMediaTypeHandler> handler{};
+        REQUIRE(stream_sink->GetMediaTypeHandler(handler.put()) == S_OK);
 
         // see https://docs.microsoft.com/en-us/windows/win32/api/mfidl/nn-mfidl-imfmediatypehandler
         SECTION("IMFMediaTypeHandler") {
@@ -63,27 +67,27 @@ TEST_CASE("IMFMediaSink(MFVideoEVR)", "[window][!mayfail]") {
             REQUIRE(handler->GetMediaTypeCount(&num_types) == S_OK);
             REQUIRE(num_types > 0);
             for (auto i = 0u; i < num_types; ++i) {
-                ComPtr<IMFMediaType> media_type{};
-                if (auto hr = handler->GetMediaTypeByIndex(i, media_type.GetAddressOf()))
+                com_ptr<IMFMediaType> media_type{};
+                if (auto hr = handler->GetMediaTypeByIndex(i, media_type.put()))
                     FAIL(hr);
-                print(media_type.Get());
+                print(media_type.get());
             }
         }
 
         // see https://docs.microsoft.com/en-us/windows/win32/medfound/direct3d-device-manager
         SECTION("Direct3D Device Manager") {
-            ComPtr<IMFVideoSampleAllocator> allocator{};
-            REQUIRE(MFGetService(stream_sink.Get(), MR_VIDEO_ACCELERATION_SERVICE,
-                                 IID_PPV_ARGS(allocator.GetAddressOf())) == S_OK);
-            ComPtr<IDirect3DDeviceManager9> device_manager{};
-            REQUIRE(MFGetService(sink.Get(), MR_VIDEO_ACCELERATION_SERVICE,
-                                 IID_PPV_ARGS(device_manager.GetAddressOf())) == S_OK);
-            REQUIRE(allocator->SetDirectXManager(device_manager.Get()) == S_OK);
+            com_ptr<IMFVideoSampleAllocator> allocator{};
+            REQUIRE(MFGetService(stream_sink.get(), MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(allocator.put())) ==
+                    S_OK);
+            com_ptr<IDirect3DDeviceManager9> device_manager{};
+            REQUIRE(MFGetService(sink.get(), MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(device_manager.put())) ==
+                    S_OK);
+            REQUIRE(allocator->SetDirectXManager(device_manager.get()) == S_OK);
 
-            ComPtr<IMFSample> sample{};
-            REQUIRE(allocator->AllocateSample(sample.GetAddressOf()) == S_OK);
-            ComPtr<IMFMediaBuffer> buffer{};
-            REQUIRE(sample->GetBufferByIndex(0, buffer.GetAddressOf()) == S_OK);
+            com_ptr<IMFSample> sample{};
+            REQUIRE(allocator->AllocateSample(sample.put()) == S_OK);
+            com_ptr<IMFMediaBuffer> buffer{};
+            REQUIRE(sample->GetBufferByIndex(0, buffer.put()) == S_OK);
         }
     }
 }

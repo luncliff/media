@@ -7,7 +7,6 @@
 #include <dshowasf.h>
 
 using namespace std;
-using namespace Microsoft::WRL;
 
 struct critical_section_t final : public CRITICAL_SECTION {
   public:
@@ -36,29 +35,23 @@ auto media_startup() noexcept(false) -> gsl::final_action<HRESULT(WINAPI*)()> {
     return gsl::finally(&MFShutdown);
 }
 
-HRESULT get_devices(gsl::not_null<IMFAttributes*> attrs, vector<ComPtr<IMFActivate>>& devices) noexcept {
+HRESULT get_devices(gsl::not_null<IMFAttributes*> attrs, vector<com_ptr<IMFActivate>>& devices) noexcept {
     IMFActivate** handles = nullptr;
     UINT32 count = 0;
-    HRESULT hr = MFEnumDeviceSources(attrs, &handles, &count);
-    if FAILED (hr)
+    if (auto hr = MFEnumDeviceSources(attrs, &handles, &count); FAILED(hr))
         return hr;
-    auto on_return = gsl::finally([handles]() { CoTaskMemFree(handles); });
-    for (auto i = 0u; i < count; ++i)
-        devices.emplace_back(move(handles[i]));
+    auto on_return = gsl::finally([handles]() {
+        CoTaskMemFree(handles); // must be deallocated
+    });
+    for (auto i = 0u; i < count; ++i) {
+        com_ptr<IMFActivate> activate{};
+        activate.attach(handles[i]);
+        devices.emplace_back(move(activate));
+    }
     return S_OK;
 }
 
-std::string w2mb(std::wstring_view in) noexcept(false);
-
-HRESULT get_name(gsl::not_null<IMFActivate*> device, std::string& name) noexcept {
-    wstring wtxt{};
-    auto hr = get_name(device, wtxt);
-    if SUCCEEDED (hr)
-        name = w2mb(wtxt);
-    return hr;
-}
-
-HRESULT get_name(gsl::not_null<IMFActivate*> device, std::wstring& name) noexcept {
+HRESULT get_name(gsl::not_null<IMFActivate*> device, winrt::hstring& name) noexcept {
     constexpr UINT32 max_size = 240;
     WCHAR buf[max_size]{};
     UINT32 buflen{};
@@ -68,37 +61,64 @@ HRESULT get_name(gsl::not_null<IMFActivate*> device, std::wstring& name) noexcep
     return hr;
 }
 
-HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE& media_object_type) noexcept {
-    ComPtr<IMFSourceResolver> resolver{};
-    if (auto hr = MFCreateSourceResolver(resolver.GetAddressOf()))
+HRESULT get_name(gsl::not_null<IMFActivate*> device, std::string& ref) noexcept {
+    winrt::hstring name{};
+    auto hr = get_name(device, name);
+    if SUCCEEDED (hr)
+        ref = winrt::to_string(name);
+    return hr;
+}
+
+HRESULT get_name(gsl::not_null<IMFActivate*> device, std::wstring& ref) noexcept {
+    winrt::hstring name{};
+    auto hr = get_name(device, name);
+    if SUCCEEDED (hr)
+        ref = name.c_str();
+    return hr;
+}
+
+HRESULT get_hardware_url(gsl::not_null<IMFTransform*> transform, std::wstring& name) noexcept {
+    com_ptr<IMFAttributes> attrs{};
+    if (auto hr = transform->GetAttributes(attrs.put()))
         return hr;
-    ComPtr<IUnknown> unknown{};
+    constexpr UINT32 max_size = 240;
+    WCHAR buf[max_size]{};
+    UINT32 buflen{};
+    HRESULT hr = attrs->GetString(MFT_ENUM_HARDWARE_URL_Attribute, buf, max_size, &buflen);
+    if (SUCCEEDED(hr))
+        name = {buf, buflen};
+    return hr;
+}
+
+HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE& media_object_type) noexcept {
+    com_ptr<IMFSourceResolver> resolver{};
+    if (auto hr = MFCreateSourceResolver(resolver.put()))
+        return hr;
+    com_ptr<IUnknown> unknown{};
     if (auto hr = resolver->CreateObjectFromURL(fpath.c_str(), MF_RESOLUTION_MEDIASOURCE | MF_RESOLUTION_READ, NULL,
-                                                &media_object_type, unknown.GetAddressOf()))
+                                                &media_object_type, unknown.put()))
         return hr;
     return unknown->QueryInterface(IID_PPV_ARGS(source));
 }
 
 HRESULT make_transform_H264(IMFTransform** transform) noexcept {
-    ComPtr<IUnknown> unknown{};
-    if (auto hr = CoCreateInstance(CLSID_CMSH264DecoderMFT, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown,
-                                   (void**)unknown.GetAddressOf()))
+    com_ptr<IUnknown> unknown{};
+    if (auto hr =
+            CoCreateInstance(CLSID_CMSH264DecoderMFT, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown, (void**)unknown.put()))
         return hr;
     return unknown->QueryInterface(IID_PPV_ARGS(transform));
 }
 
 HRESULT make_transform_video(IMFTransform** transform, const IID& iid) noexcept {
-    ComPtr<IUnknown> unknown{};
-    if (auto hr = CoCreateInstance(iid, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown, (void**)unknown.GetAddressOf()))
+    com_ptr<IUnknown> unknown{};
+    if (auto hr = CoCreateInstance(iid, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown, (void**)unknown.put()))
         return hr;
     return unknown->QueryInterface(IID_PPV_ARGS(transform));
 }
 
 HRESULT make_transform_video(IMFTransform** transform) noexcept {
-    return make_transform_video(transform, CLSID_VideoProcessorMFT); 
+    return make_transform_video(transform, CLSID_VideoProcessorMFT);
 }
-
-
 
 HRESULT configure_video_output_RGB565(IMFMediaType* type) noexcept {
     if (type == nullptr)
@@ -114,13 +134,13 @@ HRESULT make_video_output_RGB565(IMFMediaType** ptr) noexcept {
     if (ptr == nullptr)
         return E_INVALIDARG;
     *ptr = nullptr;
-    ComPtr<IMFMediaType> output_type{};
-    if (auto hr = MFCreateMediaType(output_type.GetAddressOf()))
+    com_ptr<IMFMediaType> output_type{};
+    if (auto hr = MFCreateMediaType(output_type.put()))
         return hr;
-    if (auto hr = configure_video_output_RGB565(output_type.Get()))
+    if (auto hr = configure_video_output_RGB565(output_type.get()))
         return hr;
     output_type->AddRef();
-    *ptr = output_type.Get();
+    *ptr = output_type.get();
     return S_OK;
 }
 
@@ -133,7 +153,7 @@ HRESULT configure_video_output_RGB32(IMFMediaType* type) noexcept {
         return hr;
     if (auto hr = type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Unknown))
         return hr;
-    //if (auto hr = MFSetAttributeRatio(output_type.Get(), MF_MT_PIXEL_ASPECT_RATIO, 16, 9))
+    //if (auto hr = MFSetAttributeRatio(output_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 16, 9))
     //    return hr;
     return type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32);
 }
@@ -142,26 +162,26 @@ HRESULT make_video_output_RGB32(IMFMediaType** ptr) noexcept {
     if (ptr == nullptr)
         return E_INVALIDARG;
     *ptr = nullptr;
-    ComPtr<IMFMediaType> output_type{};
-    if (auto hr = MFCreateMediaType(output_type.GetAddressOf()))
+    com_ptr<IMFMediaType> output_type{};
+    if (auto hr = MFCreateMediaType(output_type.put()))
         return hr;
-    if (auto hr = configure_video_output_RGB32(output_type.Get()))
+    if (auto hr = configure_video_output_RGB32(output_type.get()))
         return hr;
     output_type->AddRef();
-    *ptr = output_type.Get();
+    *ptr = output_type.get();
     return S_OK;
 }
 
-HRESULT try_output_type(IMFTransform* transform, DWORD ostream, const GUID& desired,
+HRESULT try_output_type(com_ptr<IMFTransform> transform, DWORD ostream, const GUID& desired,
                         IMFMediaType** output_type) noexcept {
     DWORD type_index = 0;
-    for (ComPtr<IMFMediaType> candidate : try_output_available_types(transform, ostream, type_index)) {
+    for (com_ptr<IMFMediaType> candidate : try_output_available_types(transform, ostream, type_index)) {
         GUID subtype{};
         if (auto hr = candidate->GetGUID(MF_MT_SUBTYPE, &subtype))
             return hr;
         if (subtype != desired)
             continue;
-        if (auto hr = transform->SetOutputType(ostream, candidate.Get(), 0))
+        if (auto hr = transform->SetOutputType(ostream, candidate.get(), 0))
             return hr;
         break;
     }
@@ -170,44 +190,50 @@ HRESULT try_output_type(IMFTransform* transform, DWORD ostream, const GUID& desi
     return transform->GetOutputCurrentType(ostream, output_type);
 }
 
-auto get_input_available_types(ComPtr<IMFTransform> transform, DWORD num_input, HRESULT& ec) noexcept(false)
-    -> std::experimental::generator<ComPtr<IMFMediaType>> {
+auto get_input_available_types(com_ptr<IMFTransform> transform, DWORD num_input, HRESULT& ec) noexcept(false)
+    -> generator<com_ptr<IMFMediaType>> {
     for (auto stream_id = 0u; stream_id < num_input; ++stream_id) {
         DWORD type_index = 0;
-        ComPtr<IMFMediaType> type{};
-        for (ec = transform->GetInputAvailableType(stream_id, type_index++, type.GetAddressOf()); SUCCEEDED(ec);
-             ec = transform->GetInputAvailableType(stream_id, type_index++, type.ReleaseAndGetAddressOf())) {
-            co_yield type;
+        com_ptr<IMFMediaType> media_type{};
+        for (ec = transform->GetInputAvailableType(stream_id, type_index++, media_type.put()); SUCCEEDED(ec);
+             ec = transform->GetInputAvailableType(stream_id, type_index++, media_type.put())) {
+            co_yield media_type;
+            media_type = nullptr;
         }
     }
 }
-auto try_output_available_types(ComPtr<IMFTransform> transform, DWORD stream_id, DWORD& type_index) noexcept(false)
-    -> std::experimental::generator<ComPtr<IMFMediaType>> {
+auto try_output_available_types(com_ptr<IMFTransform> transform, DWORD stream_id, DWORD& type_index) noexcept(false)
+    -> generator<com_ptr<IMFMediaType>> {
     type_index = 0;
-    ComPtr<IMFMediaType> media_type{};
-    for (auto hr = transform->GetOutputAvailableType(stream_id, type_index++, media_type.GetAddressOf()); SUCCEEDED(hr);
-         hr = transform->GetOutputAvailableType(stream_id, type_index++, media_type.ReleaseAndGetAddressOf()))
+    com_ptr<IMFMediaType> media_type{};
+    for (auto hr = transform->GetOutputAvailableType(stream_id, type_index++, media_type.put()); SUCCEEDED(hr);
+         hr = transform->GetOutputAvailableType(stream_id, type_index++, media_type.put())) {
         co_yield media_type;
+        media_type = nullptr;
+    }
 }
 
-auto get_output_available_types(ComPtr<IMFTransform> transform, DWORD num_output, HRESULT& ec) noexcept(false)
-    -> std::experimental::generator<ComPtr<IMFMediaType>> {
+auto get_output_available_types(com_ptr<IMFTransform> transform, DWORD num_output, HRESULT& ec) noexcept(false)
+    -> generator<com_ptr<IMFMediaType>> {
     for (auto stream_id = 0u; stream_id < num_output; ++stream_id) {
         DWORD type_index = 0;
-        ComPtr<IMFMediaType> type{};
-        for (ec = transform->GetOutputAvailableType(stream_id, type_index++, type.GetAddressOf()); SUCCEEDED(ec);
-             ec = transform->GetOutputAvailableType(stream_id, type_index++, type.ReleaseAndGetAddressOf())) {
-            co_yield type;
+        com_ptr<IMFMediaType> media_type{};
+        for (ec = transform->GetOutputAvailableType(stream_id, type_index++, media_type.put()); SUCCEEDED(ec);
+             ec = transform->GetOutputAvailableType(stream_id, type_index++, media_type.put())) {
+            co_yield media_type;
+            media_type = nullptr;
         }
     }
 }
-auto try_input_available_types(ComPtr<IMFTransform> transform, DWORD stream_id, DWORD& type_index) noexcept(false)
-    -> std::experimental::generator<ComPtr<IMFMediaType>> {
+auto try_input_available_types(com_ptr<IMFTransform> transform, DWORD stream_id, DWORD& type_index) noexcept(false)
+    -> generator<com_ptr<IMFMediaType>> {
     type_index = 0;
-    ComPtr<IMFMediaType> media_type{};
-    for (auto hr = transform->GetInputAvailableType(stream_id, type_index++, media_type.GetAddressOf()); SUCCEEDED(hr);
-         hr = transform->GetInputAvailableType(stream_id, type_index++, media_type.ReleaseAndGetAddressOf()))
+    com_ptr<IMFMediaType> media_type{};
+    for (auto hr = transform->GetInputAvailableType(stream_id, type_index++, media_type.put()); SUCCEEDED(hr);
+         hr = transform->GetInputAvailableType(stream_id, type_index++, media_type.put())) {
         co_yield media_type;
+        media_type = nullptr;
+    }
 }
 
 HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr) {
@@ -224,7 +250,7 @@ HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStream
     return S_OK;
 }
 
-HRESULT configure_video(ComPtr<IMFMediaType> type) {
+HRESULT configure_video(com_ptr<IMFMediaType> type) {
     GUID subtype{};
     type->GetGUID(MF_MT_SUBTYPE, &subtype);
 
@@ -251,33 +277,33 @@ HRESULT configure_video(ComPtr<IMFMediaType> type) {
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video
-HRESULT configure(ComPtr<IMFStreamDescriptor> stream) noexcept {
-    ComPtr<IMFMediaTypeHandler> handler{};
-    if (auto hr = stream->GetMediaTypeHandler(handler.GetAddressOf()); SUCCEEDED(hr) == false)
+HRESULT configure(com_ptr<IMFStreamDescriptor> stream) noexcept {
+    com_ptr<IMFMediaTypeHandler> handler{};
+    if (auto hr = stream->GetMediaTypeHandler(handler.put()); SUCCEEDED(hr) == false)
         return hr;
     DWORD num_types = 0;
     if (auto hr = handler->GetMediaTypeCount(&num_types); SUCCEEDED(hr) == false)
         return hr;
-    ComPtr<IMFMediaType> type{};
+    com_ptr<IMFMediaType> type{};
     for (auto i = 0u; i < num_types; ++i) {
-        ComPtr<IMFMediaType> current{};
-        if (auto hr = handler->GetMediaTypeByIndex(i, current.GetAddressOf()); FAILED(hr))
+        com_ptr<IMFMediaType> current{};
+        if (auto hr = handler->GetMediaTypeByIndex(i, current.put()); FAILED(hr))
             return hr;
         if (type == nullptr)
             type = current;
 
-        print(current.Get());
+        print(current.get());
     }
-    return handler->SetCurrentMediaType(type.Get());
+    return handler->SetCurrentMediaType(type.get());
 }
 
-auto read_samples(ComPtr<IMFSourceReader> source_reader, //
+auto read_samples(com_ptr<IMFSourceReader> source_reader, //
                   DWORD& index, DWORD& flags, LONGLONG& timestamp, LONGLONG& duration) noexcept(false)
-    -> std::experimental::generator<ComPtr<IMFSample>> {
+    -> generator<com_ptr<IMFSample>> {
     while (true) {
-        ComPtr<IMFSample> input_sample{};
+        com_ptr<IMFSample> input_sample{};
         if (auto hr = source_reader->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, &index, &flags, &timestamp,
-                                                input_sample.GetAddressOf()))
+                                                input_sample.put()))
             throw winrt::hresult_error{hr};
 
         if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
@@ -290,21 +316,21 @@ auto read_samples(ComPtr<IMFSourceReader> source_reader, //
     }
 };
 
-auto decode(ComPtr<IMFTransform> transform, ComPtr<IMFMediaType> output_type, //
-            DWORD ostream) noexcept(false) -> std::experimental::generator<ComPtr<IMFSample>> {
+auto decode(com_ptr<IMFTransform> transform, com_ptr<IMFMediaType> output_type, //
+            DWORD ostream) noexcept(false) -> generator<com_ptr<IMFSample>> {
     MFT_OUTPUT_STREAM_INFO output_stream_info{};
     if (auto hr = transform->GetOutputStreamInfo(ostream, &output_stream_info))
         throw winrt::hresult_error{hr};
 
     while (true) {
         MFT_OUTPUT_DATA_BUFFER output_buffer{};
-        ComPtr<IMFSample> output_sample{};
+        com_ptr<IMFSample> output_sample{};
         if (output_stream_info.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES) {
             // ...
         } else {
-            if (auto hr = create_single_buffer_sample(output_stream_info.cbSize, output_sample.GetAddressOf()))
+            if (auto hr = create_single_buffer_sample(output_stream_info.cbSize, output_sample.put()))
                 throw winrt::hresult_error{hr};
-            output_buffer.pSample = output_sample.Get();
+            output_buffer.pSample = output_sample.get();
         }
 
         DWORD status = 0; // MFT_OUTPUT_STATUS_SAMPLE_READY
@@ -317,14 +343,14 @@ auto decode(ComPtr<IMFTransform> transform, ComPtr<IMFMediaType> output_type, //
                 co_return;
             }
             // ...
-            if (auto hr = transform->GetOutputAvailableType(output_buffer.dwStreamID, 0, output_type.GetAddressOf()))
+            if (auto hr = transform->GetOutputAvailableType(output_buffer.dwStreamID, 0, output_type.put()))
                 throw winrt::hresult_error{hr};
             // specify the format we want ...
             GUID output_subtype{};
             if (auto hr = output_type->GetGUID(MF_MT_SUBTYPE, &output_subtype))
                 throw winrt::hresult_error{hr};
 
-            if (auto hr = transform->SetOutputType(0, output_type.Get(), 0))
+            if (auto hr = transform->SetOutputType(0, output_type.get(), 0))
                 throw winrt::hresult_error{hr};
             continue;
         }
@@ -332,14 +358,14 @@ auto decode(ComPtr<IMFTransform> transform, ComPtr<IMFMediaType> output_type, //
             throw winrt::hresult_error{hr};
 
         if (output_stream_info.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES)
-            output_sample = output_buffer.pSample;
+            output_sample.attach(output_buffer.pSample);
         co_yield output_sample;
     }
 }
 
-auto process(ComPtr<IMFTransform> transform, DWORD istream, DWORD ostream, //
-             ComPtr<IMFSample> input_sample, ComPtr<IMFMediaType> output_type, HRESULT& ec) noexcept
-    -> std::experimental::generator<ComPtr<IMFSample>> {
+auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, //
+             com_ptr<IMFSample> input_sample, com_ptr<IMFMediaType> output_type, HRESULT& ec) noexcept
+    -> generator<com_ptr<IMFSample>> {
     DWORD index{};
     DWORD flags{};
     LONGLONG timestamp{}; // unit 100-nanosecond
@@ -347,7 +373,7 @@ auto process(ComPtr<IMFTransform> transform, DWORD istream, DWORD ostream, //
     if (ec = input_sample->SetSampleTime(timestamp))
         co_return;
 
-    switch (ec = transform->ProcessInput(istream, input_sample.Get(), 0)) {
+    switch (ec = transform->ProcessInput(istream, input_sample.get(), 0)) {
     case S_OK: // MF_E_TRANSFORM_TYPE_NOT_SET, MF_E_NO_SAMPLE_DURATION, MF_E_NO_SAMPLE_TIMESTAMP
         break;
     case MF_E_UNSUPPORTED_D3D_TYPE:
@@ -357,14 +383,14 @@ auto process(ComPtr<IMFTransform> transform, DWORD istream, DWORD ostream, //
         co_return;
     }
     // fetch output if available
-    for (ComPtr<IMFSample> output_sample : decode(transform, output_type, ostream))
+    for (com_ptr<IMFSample> output_sample : decode(transform, output_type, ostream))
         co_yield output_sample;
 }
 
-auto process(ComPtr<IMFTransform> transform, DWORD istream, DWORD ostream, ComPtr<IMFSourceReader> source_reader,
-             HRESULT& ec) -> std::experimental::generator<ComPtr<IMFSample>> {
-    ComPtr<IMFMediaType> output_type{};
-    if (ec = transform->GetOutputCurrentType(ostream, output_type.GetAddressOf()))
+auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, com_ptr<IMFSourceReader> source_reader,
+             HRESULT& ec) -> generator<com_ptr<IMFSample>> {
+    com_ptr<IMFMediaType> output_type{};
+    if (ec = transform->GetOutputCurrentType(ostream, output_type.put()))
         co_return;
 
     if (ec = transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL))
@@ -376,10 +402,10 @@ auto process(ComPtr<IMFTransform> transform, DWORD istream, DWORD ostream, ComPt
     DWORD flags{};
     LONGLONG timestamp{}; // unit 100-nanosecond
     LONGLONG duration{};
-    for (ComPtr<IMFSample> input_sample : read_samples(source_reader, //
-                                                       index, flags, timestamp, duration)) {
+    for (com_ptr<IMFSample> input_sample : read_samples(source_reader, //
+                                                        index, flags, timestamp, duration)) {
         input_sample->SetSampleTime(timestamp);
-        for (ComPtr<IMFSample> output_sample : process(transform, istream, ostream, input_sample, output_type, ec))
+        for (com_ptr<IMFSample> output_sample : process(transform, istream, ostream, input_sample, output_type, ec))
             co_yield output_sample;
         if (ec)
             co_return;
@@ -389,7 +415,7 @@ auto process(ComPtr<IMFTransform> transform, DWORD istream, DWORD ostream, ComPt
     if (ec = transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL))
         co_return;
 
-    for (ComPtr<IMFSample> output_sample : decode(transform, output_type, ostream))
+    for (com_ptr<IMFSample> output_sample : decode(transform, output_type, ostream))
         co_yield output_sample;
     ec = S_OK;
 }
@@ -397,11 +423,11 @@ auto process(ComPtr<IMFTransform> transform, DWORD istream, DWORD ostream, ComPt
 HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample) {
     if (auto hr = MFCreateSample(sample))
         return hr;
-    ComPtr<IMFMediaBuffer> buffer{};
-    if (auto hr = MFCreateMemoryBuffer(bufsz, buffer.GetAddressOf()))
+    com_ptr<IMFMediaBuffer> buffer{};
+    if (auto hr = MFCreateMemoryBuffer(bufsz, buffer.put()))
         return hr;
-    return (*sample)->AddBuffer(buffer.Get());
-    ComPtr<IMFSample> owner{};
+    return (*sample)->AddBuffer(buffer.get());
+    com_ptr<IMFSample> owner{};
 }
 
 HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst) {
@@ -412,10 +438,10 @@ HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst) {
         return hr;
     if (auto hr = src->CopyAllItems(*dst))
         return hr;
-    ComPtr<IMFMediaBuffer> buffer{};
-    if (auto hr = (*dst)->GetBufferByIndex(0, buffer.GetAddressOf()))
+    com_ptr<IMFMediaBuffer> buffer{};
+    if (auto hr = (*dst)->GetBufferByIndex(0, buffer.put()))
         return hr;
-    return src->CopyToBuffer(buffer.Get());
+    return src->CopyToBuffer(buffer.get());
 }
 
 HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& flushed) {
@@ -442,20 +468,20 @@ HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& 
 
     // see https://docs.microsoft.com/en-us/windows/win32/medfound/handling-stream-changes
     if (result == MF_E_TRANSFORM_STREAM_CHANGE) {
-        ComPtr<IMFMediaType> changed_output_type{};
+        com_ptr<IMFMediaType> changed_output_type{};
         if (output.dwStatus != MFT_OUTPUT_DATA_BUFFER_FORMAT_CHANGE) {
             // todo: add more works for this case
             return E_NOTIMPL;
         }
 
-        if (auto hr = transform->GetOutputAvailableType(0, 0, changed_output_type.GetAddressOf()))
+        if (auto hr = transform->GetOutputAvailableType(0, 0, changed_output_type.put()))
             return hr;
 
         // check new output media type
 
         if (auto hr = changed_output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_IYUV))
             return hr;
-        if (auto hr = transform->SetOutputType(0, changed_output_type.Get(), 0))
+        if (auto hr = transform->SetOutputType(0, changed_output_type.get(), 0))
             return hr;
 
         if (auto hr = transform->ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, NULL))
