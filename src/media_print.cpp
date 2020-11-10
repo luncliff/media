@@ -228,8 +228,8 @@ void print(gsl::not_null<IMFActivate*> device) noexcept {
     spdlog::info("- device:");
     std::string name{};
     if (auto hr = get_name(device, name))
-        return spdlog::info("    error: {:X}", hr);
-    spdlog::info("    name: {}", name);
+        spdlog::info("  error: {:x}", hr);
+    spdlog::info("  name: {}", name);
 }
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids
@@ -314,12 +314,14 @@ void print(gsl::not_null<IMFTransform*> transform) noexcept {
         spdlog::info("  - num_output_stream: {}", num_output);
         for (auto id = 0u; id < num_output; ++id) {
             MFT_OUTPUT_STREAM_INFO info{};
-            if (auto hr = transform->GetOutputStreamInfo(id, &info))
-                return spdlog::error("  - error: {:x}", hr);
-            spdlog::info("  - output_stream:");
-            spdlog::info("    size: {}", info.cbSize);
-            spdlog::info("    alignment: {}", info.cbAlignment);
-            spdlog::info("    flags: {}", info.dwFlags);
+            if (auto hr = transform->GetOutputStreamInfo(id, &info)) {
+                spdlog::error("  - error: {:x}", hr);
+            } else {
+                spdlog::info("  - output_stream:");
+                spdlog::info("    size: {}", info.cbSize);
+                spdlog::info("    alignment: {}", info.cbAlignment);
+                spdlog::info("    flags: {}", info.dwFlags);
+            }
             DWORD i = 0;
             ComPtr<IMFMediaType> media_type{};
             for (auto hr = transform->GetOutputAvailableType(id, i++, media_type.GetAddressOf()); SUCCEEDED(hr);
@@ -328,12 +330,7 @@ void print(gsl::not_null<IMFTransform*> transform) noexcept {
                     spdlog::info("    output_available_type:");
                 GUID major_type{};
                 media_type->GetGUID(MF_MT_MAJOR_TYPE, &major_type);
-                std::string txt{};
-                if (major_type == MFMediaType_Video)
-                    txt = "video";
-                else
-                    txt = to_readable(major_type);
-                spdlog::info("      - major: {}", txt);
+                spdlog::info("      - major: {}", to_readable(major_type));
                 GUID subtype{};
                 media_type->GetGUID(MF_MT_SUBTYPE, &subtype);
                 spdlog::info("        subtype: {}", to_readable(subtype));

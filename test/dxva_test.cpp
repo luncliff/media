@@ -250,11 +250,20 @@ SCENARIO("MFTransform with ID3D11Device", "[directx][!mayfail]") {
         {
             ComPtr<IMFAttributes> attrs{};
             REQUIRE(transform->GetAttributes(attrs.GetAddressOf()) == S_OK);
-            REQUIRE(attrs->SetUINT32(MF_SA_D3D_AWARE, TRUE) == S_OK);
-            REQUIRE(attrs->SetUINT32(MF_SA_D3D11_AWARE, TRUE) == S_OK);
+            UINT32 supported = FALSE;
+            REQUIRE(attrs->GetUINT32(MF_SA_D3D11_AWARE, &supported) == S_OK);
+            REQUIRE(supported);
             REQUIRE(transform->ProcessMessage(
                         MFT_MESSAGE_SET_D3D_MANAGER, //
                         reinterpret_cast<ULONG_PTR>(static_cast<IUnknown*>(device_manager.Get()))) == S_OK);
+        }
+        {
+            ComPtr<IMFVideoProcessorControl> control{};
+            REQUIRE(transform->QueryInterface(control.GetAddressOf()) == S_OK);
+            REQUIRE(control->SetMirror(MIRROR_NONE) == S_OK);
+            REQUIRE(control->SetRotation(ROTATION_NONE) == S_OK);
+            RECT region{0, 0, 1280, 720};
+            REQUIRE(control->SetDestinationRectangle(&region) == S_OK);
         }
         print(transform.Get());
 
@@ -288,16 +297,20 @@ SCENARIO("MFTransform with ID3D11Device", "[directx][!mayfail]") {
             ComPtr<IMFMediaType> input_type = output_h264;
 
             print(input_type.Get());
-            if (auto hr = transform->SetInputType(istream, input_type.Get(), 0)) {
-                auto msg = winrt::hresult_error{hr}.message();
+            if (auto hr = transform->SetInputType(istream, input_type.Get(), 0))
                 FAIL(hr);
+
+            ComPtr<IMFMediaType> output_type{}; // MFVideoFormat_RGB32
+            DWORD type_index = 0;
+            for (auto candidate : try_output_available_types(transform, ostream, type_index)) {
+                if (auto hr = transform->SetOutputType(ostream, candidate.Get(), MFT_SET_TYPE_TEST_ONLY))
+                    continue;
+                output_type = candidate;
+                break;
             }
-            ComPtr<IMFMediaType> output_type{};
-            if (auto hr = try_output_type(transform.Get(), ostream, MFVideoFormat_RGB32, //
-                                          output_type.GetAddressOf())) {
-                auto msg = winrt::hresult_error{hr}.message();
+            REQUIRE(output_type);
+            if (auto hr = transform->SetOutputType(ostream, output_type.Get(), 0))
                 FAIL(hr);
-            }
             print(output_type.Get());
 
             REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);

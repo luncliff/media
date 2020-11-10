@@ -44,6 +44,7 @@ HRESULT make_transform_video(IMFTransform** transform, const IID& iid) noexcept;
 
 /// @see CoCreateInstance
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
+/// @see CLSID_VideoProcessorMFT
 HRESULT make_transform_video(IMFTransform** transform) noexcept;
 
 /**
@@ -54,10 +55,8 @@ HRESULT make_video_output_RGB32(IMFMediaType** ptr) noexcept;
 
 HRESULT make_video_output_RGB565(IMFMediaType** ptr) noexcept;
 
-
 HRESULT try_output_type(IMFTransform* transform, DWORD ostream, const GUID& desired,
                         IMFMediaType** output_type) noexcept;
-
 
 auto get_input_available_types(ComPtr<IMFTransform> transform, DWORD num_input, HRESULT& ec) noexcept(false)
     -> std::experimental::generator<ComPtr<IMFMediaType>>;
@@ -123,4 +122,4 @@ std::string to_readable(const GUID& guid) noexcept;
 
 void print(gsl::not_null<IMFActivate*> device) noexcept;
 void print(gsl::not_null<IMFTransform*> transform) noexcept;
-void print(gsl::not_null<IMFMediaType*> media) noexcept;
+void print(gsl::not_null<IMFMediaType*> media_type) noexcept;
