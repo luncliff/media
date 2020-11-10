@@ -2,6 +2,7 @@
  * @file transform_test.cpp
  * @author github.com/luncliff (luncligg@gmail.com)
  */
+#define CATCH_CONFIG_WCHAR
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
 #include <winrt/Windows.Foundation.h>
@@ -10,7 +11,8 @@
 #include <filesystem>
 #include <media.hpp>
 
-#include <Codecapi.h>
+#include <codecapi.h> // for [codec]
+#include <mediaobj.h> // for [dsp]
 #include <mmdeviceapi.h>
 #include <wmsdkidl.h>
 
@@ -22,60 +24,45 @@ namespace fs = std::filesystem;
 fs::path get_asset_dir() noexcept;
 
 // there might be no device in test environment. if the case, it's an expected failure
-TEST_CASE("IMFActivate(IMFMediaSourceEx)", "[!mayfail]") {
+TEST_CASE("IMFActivate(VideoCapture)", "[!mayfail]") {
     auto on_return = media_startup();
 
     std::vector<com_ptr<IMFActivate>> devices{};
     {
         com_ptr<IMFAttributes> attrs{};
         REQUIRE(MFCreateAttributes(attrs.put(), 1) == S_OK);
-        REQUIRE(attrs->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, //
-                               MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID) == S_OK);
-        REQUIRE(get_devices(attrs.get(), devices) == S_OK);
+        REQUIRE(attrs->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID) ==
+                S_OK);
+        REQUIRE(get_devices(devices, attrs.get()) == S_OK);
     }
     REQUIRE(devices.size());
 
     for (com_ptr<IMFActivate> device : devices) {
         com_ptr<IMFMediaSourceEx> source{};
-        if (auto hr = device->ActivateObject(__uuidof(IMFMediaSourceEx), (void**)source.put()))
+        if (auto hr = device->ActivateObject(__uuidof(IMFMediaSourceEx), source.put_void()))
             FAIL(hr);
 
-        com_ptr<IMFAttributes> attributes{};
-        if (auto hr = source->GetSourceAttributes(attributes.put()))
+        com_ptr<IMFAttributes> attrs{};
+        if (auto hr = source->GetSourceAttributes(attrs.put()))
             FAIL(hr);
 
         GUID capture{};
-        if (auto hr = attributes->GetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &capture))
+        if (auto hr = attrs->GetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &capture))
             FAIL(hr);
         REQUIRE(capture == MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
-        // REQUIRE(attributes->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE) == S_OK);
 
-        // print more detail ...?
         print(device.get());
     }
 }
 
-TEST_CASE("IMFMediaSession(Unprotected)") {
-    auto on_return = media_startup();
-
-    com_ptr<IMFAttributes> session_attributes{};
-    com_ptr<IMFMediaSession> session{};
-    REQUIRE(MFCreateMediaSession(session_attributes.get(), session.put()) == S_OK);
-
-    SECTION("close without start") {
-        REQUIRE(session->Close() == S_OK);
-    }
-}
-
 TEST_CASE("IMFSourceResolver") {
-    auto on_return = media_startup();
-
     const auto fpath = fs::absolute(get_asset_dir() / "fm5p7flyCSY.mp4");
     REQUIRE(PathFileExistsW(fpath.c_str()));
 
+    auto on_return = media_startup();
+
     com_ptr<IMFSourceResolver> resolver{};
-    if (auto hr = MFCreateSourceResolver(resolver.put()))
-        FAIL(hr);
+    REQUIRE(MFCreateSourceResolver(resolver.put()) == S_OK);
 
     com_ptr<IUnknown> unknown{};
     MF_OBJECT_TYPE media_object_type{};
@@ -86,13 +73,11 @@ TEST_CASE("IMFSourceResolver") {
 
     SECTION("IMFMediaSource") {
         com_ptr<IMFMediaSource> source{};
-        REQUIRE(unknown->QueryInterface(IID_PPV_ARGS(source.put())) == S_OK);
-        // consume source ...
+        REQUIRE(unknown->QueryInterface(source.put()) == S_OK);
     }
     SECTION("IMFMediaSourceEx") {
         com_ptr<IMFMediaSourceEx> source{};
-        REQUIRE(unknown->QueryInterface(IID_PPV_ARGS(source.put())) == S_OK);
-        // consume source ...
+        REQUIRE(unknown->QueryInterface(source.put()) == S_OK);
     }
 }
 
@@ -122,6 +107,56 @@ TEST_CASE("MFCreateSourceReader", "[!mayfail]") {
     }
 }
 
+TEST_CASE("IMFSourceReaderEx(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING)") {
+    auto on_return = media_startup();
+
+    com_ptr<IMFMediaSourceEx> source{};
+    MF_OBJECT_TYPE media_object_type = MF_OBJECT_INVALID;
+    REQUIRE(resolve(get_asset_dir() / "fm5p7flyCSY.mp4", source.put(), media_object_type) == S_OK);
+
+    com_ptr<IMFSourceReaderEx> source_reader{};
+    {
+        com_ptr<IMFAttributes> attrs{};
+        REQUIRE(MFCreateAttributes(attrs.put(), 2) == S_OK);
+        REQUIRE(attrs->SetUINT32(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING, TRUE) == S_OK);
+        REQUIRE(attrs->SetUINT32(MF_READWRITE_DISABLE_CONVERTERS, FALSE) == S_OK);
+        com_ptr<IMFSourceReader> reader{};
+        REQUIRE(MFCreateSourceReaderFromMediaSource(source.get(), attrs.get(), reader.put()) == S_OK);
+        REQUIRE(reader->QueryInterface(source_reader.put()) == S_OK);
+    }
+
+    // https://docs.microsoft.com/en-us/windows/win32/medfound/mf-source-reader-enable-advanced-video-processing#remarks
+    com_ptr<IMFMediaType> source_type{};
+    DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
+    REQUIRE(source_reader->GetCurrentMediaType(stream, source_type.put()) == S_OK);
+
+    // make a copy instead of modification
+    com_ptr<IMFMediaType> output_type{};
+    REQUIRE(MFCreateMediaType(output_type.put()) == S_OK);
+    REQUIRE(source_type->CopyAllItems(output_type.get()) == S_OK);
+
+    SECTION("MF_MT_SUBTYPE(MFVideoFormat_NV12)") {
+        REQUIRE(output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_NV12) == S_OK);
+        REQUIRE(source_reader->SetCurrentMediaType(stream, NULL, output_type.get()) == S_OK);
+    }
+    SECTION("MF_MT_SUBTYPE(MFVideoFormat_RGB32)") {
+        REQUIRE(output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32) == S_OK);
+        REQUIRE(source_reader->SetCurrentMediaType(stream, NULL, output_type.get()) == S_OK);
+    }
+    // The followings may not pass. Will be resolved in future
+    SECTION("MF_MT_INTERLACE_MODE") {
+        REQUIRE(output_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Unknown) == S_OK);
+        const auto hr = source_reader->SetCurrentMediaType(stream, NULL, output_type.get());
+        REQUIRE(FAILED(hr));
+    }
+    SECTION("MF_MT_FRAME_RATE/MF_MT_FRAME_SIZE") {
+        REQUIRE(output_type->SetUINT64(MF_MT_FRAME_RATE, (30 << 32) + 1) == S_OK); // 30 fps
+        REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, 1280, 720) == S_OK);
+        const auto hr = source_reader->SetCurrentMediaType(stream, NULL, output_type.get());
+        REQUIRE(FAILED(hr));
+    }
+}
+
 HRESULT check_sample(com_ptr<IMFSample> sample) {
     com_ptr<IMFMediaBuffer> buffer{};
     if (auto hr = sample->ConvertToContiguousBuffer(buffer.put()))
@@ -146,83 +181,77 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
     auto on_return = media_startup();
 
     com_ptr<IMFMediaSourceEx> source{};
-    MF_OBJECT_TYPE media_object_type = MF_OBJECT_INVALID;
-    REQUIRE(resolve(get_asset_dir() / "fm5p7flyCSY.mp4", source.put(), media_object_type) == S_OK);
-
+    {
+        MF_OBJECT_TYPE media_object_type = MF_OBJECT_INVALID;
+        REQUIRE(resolve(get_asset_dir() / "fm5p7flyCSY.mp4", source.put(), media_object_type) == S_OK);
+    }
     com_ptr<IMFSourceReader> source_reader{};
     {
         com_ptr<IMFAttributes> attrs{};
         REQUIRE(MFCreateAttributes(attrs.put(), 2) == S_OK);
-        REQUIRE(attrs->SetUINT32(MF_READWRITE_DISABLE_CONVERTERS, FALSE) == S_OK);
         REQUIRE(attrs->SetUINT32(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING, TRUE) == S_OK);
-        if (auto hr = MFCreateSourceReaderFromMediaSource(source.get(), attrs.get(), source_reader.put()))
-            FAIL(hr);
+        REQUIRE(attrs->SetUINT32(MF_READWRITE_DISABLE_CONVERTERS, FALSE) == S_OK);
+        REQUIRE(MFCreateSourceReaderFromMediaSource(source.get(), attrs.get(), source_reader.put()) == S_OK);
     }
 
-    com_ptr<IMFMediaType> video_media_type{};
-    REQUIRE(source_reader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, video_media_type.put()) ==
-            S_OK);
+    com_ptr<IMFMediaType> source_type{};
+    {
+        DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
+        REQUIRE(source_reader->GetCurrentMediaType(stream, source_type.put()) == S_OK);
+        // https://docs.microsoft.com/en-us/windows/win32/medfound/mf-source-reader-enable-advanced-video-processing#remarks
+        // REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_NV12) == S_OK);
+        // REQUIRE(source_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Unknown) == S_OK);
+        // REQUIRE(source_type->SetUINT64(MF_MT_FRAME_RATE, (30 << 32) + 1) == S_OK); // 30 fps
+        // REQUIRE(MFSetAttributeSize(source_type.get(), MF_MT_FRAME_SIZE, 1280, 720));
+        switch (auto hr = source_reader->SetCurrentMediaType(stream, NULL, source_type.get())) {
+        case S_OK:
+            break;
+        case MF_E_INVALIDMEDIATYPE:
+            FAIL("MF_E_INVALIDMEDIATYPE");
+        default:
+            FAIL(hr);
+        }
+    }
 
     com_ptr<IMFTransform> transform{};
     REQUIRE(make_transform_H264(transform.put()) == S_OK);
     {
         // https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder#transform-attributes
-        com_ptr<IMFAttributes> attributes{};
-        REQUIRE(transform->GetAttributes(attributes.put()) == S_OK);
-        CAPTURE(attributes->SetUINT32(CODECAPI_AVDecVideoAcceleration_H264, TRUE)); // Codecapi.h
-        CAPTURE(attributes->SetUINT32(CODECAPI_AVLowLatencyMode, TRUE));
-        CAPTURE(attributes->SetUINT32(CODECAPI_AVDecNumWorkerThreads, 1));
+        com_ptr<IMFAttributes> attrs{};
+        REQUIRE(transform->GetAttributes(attrs.put()) == S_OK);
+        CAPTURE(attrs->SetUINT32(CODECAPI_AVDecVideoAcceleration_H264, TRUE)); // Codecapi.h
+        CAPTURE(attrs->SetUINT32(CODECAPI_AVLowLatencyMode, TRUE));
+        CAPTURE(attrs->SetUINT32(CODECAPI_AVDecNumWorkerThreads, 1));
+        print(transform.get()); // this modifies input/output configuration
     }
 
     // Valid configuration order can be I->O or O->I. `CLSID_CMSH264DecoderMFT` uses I->O ordering
-    const DWORD istream_id = 0;
-    const DWORD ostream_id = 0;
+    const DWORD istream = 0, ostream = 0;
+    const GUID desired_subtype = MFVideoFormat_IYUV;
     {
-        if constexpr (false) {
-            com_ptr<IMFMediaType> input{};
-            REQUIRE(MFCreateMediaType(input.put()) == S_OK);
-            REQUIRE(video_media_type->CopyAllItems(input.get()) == S_OK);
-            if (auto hr = transform->SetInputType(istream_id, input.get(), 0))
-                FAIL(hr);
-        } else {
-            if (auto hr = transform->SetInputType(istream_id, video_media_type.get(), 0))
-                FAIL(hr);
-        }
-
+        REQUIRE(transform->SetInputType(istream, source_type.get(), 0) == S_OK);
         com_ptr<IMFMediaType> output{};
         REQUIRE(MFCreateMediaType(output.put()) == S_OK);
-        REQUIRE(video_media_type->CopyAllItems(output.get()) == S_OK);
+        REQUIRE(source_type->CopyAllItems(output.get()) == S_OK);
 
-        if (auto hr = output->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_IYUV))
-            FAIL(hr);
-        if (auto hr = transform->SetOutputType(ostream_id, output.get(), 0))
-            FAIL(hr);
+        REQUIRE(output->SetGUID(MF_MT_SUBTYPE, desired_subtype) == S_OK);
+        REQUIRE(transform->SetOutputType(ostream, output.get(), 0) == S_OK);
 
         DWORD status = 0;
-        REQUIRE(transform->GetInputStatus(istream_id, &status) == S_OK);
+        REQUIRE(transform->GetInputStatus(istream, &status) == S_OK);
         REQUIRE(status == MFT_INPUT_STATUS_ACCEPT_DATA);
     }
     // for Asynchronous MFT
     REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
-
     // @todo https://docs.microsoft.com/en-us/windows/win32/medfound/basic-mft-processing-model#get-buffer-requirements
-
+    // ...
     // @see https://docs.microsoft.com/en-us/windows/win32/medfound/basic-mft-processing-model#process-data
     // all types are configured. prepare for upcoming processing
     REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
 
-    SECTION("Synchronous Transform - 1") {
-        print(transform.get());
-
-        MFT_INPUT_STREAM_INFO input_stream_info{};
-        if (auto hr = transform->GetInputStreamInfo(istream_id, &input_stream_info))
-            FAIL(hr);
-        MFT_OUTPUT_STREAM_INFO output_stream_info{};
-        if (auto hr = transform->GetOutputStreamInfo(ostream_id, &output_stream_info))
-            FAIL(hr);
-
+    SECTION("Synchronous(Simplified)") {
         com_ptr<IMFMediaType> output_type{};
-        if (auto hr = transform->GetOutputCurrentType(ostream_id, output_type.put()))
+        if (auto hr = transform->GetOutputCurrentType(ostream, output_type.put()))
             FAIL(hr);
 
         size_t count = 0;
@@ -232,7 +261,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
         LONGLONG duration{};
         for (com_ptr<IMFSample> input_sample : read_samples(source_reader, //
                                                             index, flags, timestamp, duration)) {
-            switch (auto hr = transform->ProcessInput(istream_id, input_sample.get(), 0)) {
+            switch (auto hr = transform->ProcessInput(istream, input_sample.get(), 0)) {
             case S_OK: // MF_E_TRANSFORM_TYPE_NOT_SET, MF_E_NO_SAMPLE_DURATION, MF_E_NO_SAMPLE_TIMESTAMP
                 break;
             case MF_E_NOTACCEPTING:
@@ -241,7 +270,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
             default:
                 FAIL(hr);
             }
-            for (com_ptr<IMFSample> output_sample : decode(transform, output_type, ostream_id)) {
+            for (com_ptr<IMFSample> output_sample : decode(transform, output_type, ostream)) {
                 if (auto hr = check_sample(output_sample))
                     FAIL(hr);
                 ++count;
@@ -252,7 +281,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
         REQUIRE(count);
         count = 0;
         // fetch remaining output in the transform
-        for (com_ptr<IMFSample> output_sample : decode(transform, output_type, ostream_id)) {
+        for (com_ptr<IMFSample> output_sample : decode(transform, output_type, ostream)) {
             if (auto hr = check_sample(output_sample))
                 FAIL(hr);
             ++count;
@@ -260,7 +289,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
         REQUIRE(count);
     }
 
-    SECTION("Synchronous Transform - 2") {
+    SECTION("Synchronous(Detailed)") {
         bool input_available = true;
         while (input_available) {
             DWORD stream_index{};
@@ -320,10 +349,11 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
                         FAIL("MFT_OUTPUT_DATA_BUFFER_FORMAT_CHANGE");
                     }
                     // ...
+                    output_type = nullptr;
                     if (auto hr = transform->GetOutputAvailableType(output.dwStreamID, 0, output_type.put()))
                         FAIL(hr);
                     // specify the format we want ...
-                    if (auto hr = output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_IYUV))
+                    if (auto hr = output_type->SetGUID(MF_MT_SUBTYPE, desired_subtype))
                         FAIL(hr);
                     if (auto hr = transform->SetOutputType(0, output_type.get(), 0))
                         FAIL(hr);
@@ -338,123 +368,123 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
     }
 }
 
-/// @see OnReadSample
-struct read_item_t final {
-    HRESULT status;
-    DWORD index;
-    DWORD flags;
-    std::chrono::nanoseconds timestamp; // unit: 100 nanosecond
-    com_ptr<IMFSample> sample;
-};
-static_assert(sizeof(read_item_t) == 32);
+// see https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder
+// see https://docs.microsoft.com/en-us/windows/win32/medfound/basic-mft-processing-model
+TEST_CASE("MFTransform - Color Converter DSP", "[dsp]") {
+    auto on_return = media_startup();
 
-struct reader_impl_t : public IMFSourceReaderCallback {
-    com_ptr<IMFSourceReader> reader{};
-    qpc_timer_t timer{};
-    SHORT ref_count = 0;
+    com_ptr<IMFTransform> transform{};
+    REQUIRE(make_transform_video(transform.put(), CLSID_CColorConvertDMO) == S_OK);
+    {
+        // Microsoft DirectX Media Object https://docs.microsoft.com/en-us/previous-versions/windows/desktop/api/mediaobj/nn-mediaobj-imediaobject
+        com_ptr<IMediaObject> media_object{};
+        REQUIRE(transform->QueryInterface(media_object.put()) == S_OK);
 
-  private:
-    STDMETHODIMP OnEvent(DWORD, IMFMediaEvent* event) noexcept override {
-        return S_OK;
+        com_ptr<IPropertyStore> props{};
+        REQUIRE(transform->QueryInterface(props.put()) == S_OK);
+        PROPVARIANT var{};
+        REQUIRE(SUCCEEDED(props->GetValue(MFPKEY_COLORCONV_MODE, &var)));
+        spdlog::debug("- MFPKEY_COLORCONV_MODE: {}", var.intVal);
     }
-    STDMETHODIMP OnFlush(DWORD) noexcept override {
-        return S_OK;
+    com_ptr<IMFMediaSourceEx> source{};
+    com_ptr<IMFSourceReader> source_reader{};
+    com_ptr<IMFMediaType> source_type{};
+    {
+        MF_OBJECT_TYPE source_object_type = MF_OBJECT_INVALID;
+        REQUIRE(resolve(get_asset_dir() / "fm5p7flyCSY.mp4", source.put(), source_object_type) == S_OK);
+        REQUIRE(MFCreateSourceReaderFromMediaSource(source.get(), nullptr, source_reader.put()) == S_OK);
+        DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
+        REQUIRE(source_reader->GetCurrentMediaType(stream, source_type.put()) == S_OK);
+        REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_NV12) == S_OK);
+        REQUIRE(source_reader->SetCurrentMediaType(stream, NULL, source_type.get()) == S_OK);
     }
-    STDMETHODIMP OnReadSample(HRESULT status, DWORD index, DWORD flags, LONGLONG timestamp,
-                              IMFSample* sample) noexcept override {
-        static_assert(sizeof(time_t) == sizeof(LONGLONG));
-        if (timer.pick() >= 2'000)
-            return S_OK;
-        if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
-            return S_OK;
 
-        if (flags & MF_SOURCE_READERF_NATIVEMEDIATYPECHANGED) {
-            // must configure the reader again
+    SECTION("MP4(NV12) - RGB32") {
+        spdlog::warn("MP4(NV12) - RGB32");
+        print(source_type.get());
+        if (auto hr = transform->SetInputType(0, source_type.get(), 0))
+            FAIL(hr);
+
+        com_ptr<IMFMediaType> output_type{};
+        {
+            REQUIRE(make_video_output_RGB32(output_type.put()) == S_OK);
+            UINT32 w = 1280, h = 720;
+            REQUIRE(MFGetAttributeSize(source_type.get(), MF_MT_FRAME_SIZE, &w, &h) == S_OK);
+            REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, w, h) == S_OK);
+            UINT32 num = 0, denom = 1;
+            REQUIRE(MFGetAttributeRatio(source_type.get(), MF_MT_FRAME_RATE, &num, &denom) == S_OK);
+            REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_RATE, num, denom) == S_OK);
         }
-        // MF_SOURCE_READERF_ERROR
-        // MF_SOURCE_READERF_ENDOFSTREAM
-        // MF_SOURCE_READERF_NEWSTREAM
-        // MF_SOURCE_READERF_NATIVEMEDIATYPECHANGED
-        // MF_SOURCE_READERF_CURRENTMEDIATYPECHANGED
-        // MF_SOURCE_READERF_STREAMTICK
-        // MF_SOURCE_READERF_ALLEFFECTSREMOVED
-        read_item_t item{};
-        item.status = status;
-        item.index = index;
-        item.sample.attach(sample);
-        item.flags = flags;
-        item.timestamp = std::chrono::nanoseconds{timestamp * 100};
-        try {
-            // request again
-            if (auto hr = reader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, NULL, NULL, NULL, NULL);
-                SUCCEEDED(hr) == false)
-                throw winrt::hresult_error{hr};
-            return S_OK;
-        } catch (const winrt::hresult_error& ex) {
-            //winrt::to_string(ex.message());
-            return ex.code();
+        print(output_type.get());
+        if (auto hr = transform->SetOutputType(0, output_type.get(), 0))
+            FAIL(hr);
+
+        print(transform.get(), CLSID_CColorConvertDMO); // requires input/output configuration
+    }
+    SECTION("MP4(I420) - RGB32") {
+        spdlog::warn("MP4(I420) - RGB32");
+        print(source_type.get());
+        if (auto hr = transform->SetInputType(0, source_type.get(), 0))
+            FAIL(hr);
+
+        com_ptr<IMFMediaType> output_type{};
+        {
+            REQUIRE(make_video_output_RGB32(output_type.put()) == S_OK);
+            UINT32 w = 1280, h = 720;
+            REQUIRE(MFGetAttributeSize(source_type.get(), MF_MT_FRAME_SIZE, &w, &h) == S_OK);
+            REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, w, h) == S_OK);
+            UINT32 num = 0, denom = 1;
+            REQUIRE(MFGetAttributeRatio(source_type.get(), MF_MT_FRAME_RATE, &num, &denom) == S_OK);
+            REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_RATE, num, denom) == S_OK);
         }
+        print(output_type.get());
+        if (auto hr = transform->SetOutputType(0, output_type.get(), 0))
+            FAIL(hr);
+
+        print(transform.get(), CLSID_CColorConvertDMO); // requires input/output configuration
     }
+    SECTION("MP4(IYUV) - RGB32") {
+        spdlog::warn("MP4(IYUV) - RGB32");
+        print(source_type.get());
+        if (auto hr = transform->SetInputType(0, source_type.get(), 0))
+            FAIL(hr);
 
-  public:
-    STDMETHODIMP QueryInterface(REFIID iid, void** ppv) {
-        const QITAB qit[] = {
-            QITABENT(reader_impl_t, IMFSourceReaderCallback),
-            {},
-        };
-        return QISearch(this, qit, iid, ppv);
+        com_ptr<IMFMediaType> output_type{};
+        {
+            REQUIRE(make_video_output_RGB32(output_type.put()) == S_OK);
+            UINT32 w = 1280, h = 720;
+            REQUIRE(MFGetAttributeSize(source_type.get(), MF_MT_FRAME_SIZE, &w, &h) == S_OK);
+            REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, w, h) == S_OK);
+            UINT32 num = 0, denom = 1;
+            REQUIRE(MFGetAttributeRatio(source_type.get(), MF_MT_FRAME_RATE, &num, &denom) == S_OK);
+            REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_RATE, num, denom) == S_OK);
+        }
+        print(output_type.get());
+        if (auto hr = transform->SetOutputType(0, output_type.get(), 0))
+            FAIL(hr);
+
+        print(transform.get(), CLSID_CColorConvertDMO); // requires input/output configuration
     }
-    STDMETHODIMP_(ULONG) AddRef() {
-        return InterlockedIncrement16(&ref_count);
+    SECTION("MP4(I420) - RGB565") {
+        spdlog::warn("MP4(I420) - RGB565");
+        print(source_type.get());
+        if (auto hr = transform->SetInputType(0, source_type.get(), 0))
+            FAIL(hr);
+
+        com_ptr<IMFMediaType> output_type{};
+        {
+            REQUIRE(make_video_output_RGB565(output_type.put()) == S_OK);
+            UINT32 w = 1280, h = 720;
+            REQUIRE(MFGetAttributeSize(source_type.get(), MF_MT_FRAME_SIZE, &w, &h) == S_OK);
+            REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, w, h) == S_OK);
+            UINT32 num = 0, denom = 1;
+            REQUIRE(MFGetAttributeRatio(source_type.get(), MF_MT_FRAME_RATE, &num, &denom) == S_OK);
+            REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_RATE, num, denom) == S_OK);
+        }
+        print(output_type.get());
+        if (auto hr = transform->SetOutputType(0, output_type.get(), 0))
+            FAIL(hr);
+
+        print(transform.get(), CLSID_CColorConvertDMO); // requires input/output configuration
     }
-    STDMETHODIMP_(ULONG) Release() {
-        return InterlockedDecrement16(&ref_count);
-    }
-};
-
-void consume_source(com_ptr<IMFMediaSource> source, IMFSourceReaderCallback* callback, IMFSourceReader** reader_ptr) {
-    com_ptr<IMFPresentationDescriptor> presentation{};
-    if (auto hr = source->CreatePresentationDescriptor(presentation.put()))
-        REQUIRE(SUCCEEDED(hr));
-    com_ptr<IMFStreamDescriptor> stream{};
-    if (auto hr = get_stream_descriptor(presentation.get(), stream.put()))
-        REQUIRE(SUCCEEDED(hr));
-    if (auto hr = configure(stream))
-        REQUIRE(SUCCEEDED(hr));
-
-    com_ptr<IMFAttributes> attrs{};
-    if (auto hr = MFCreateAttributes(attrs.put(), 1))
-        REQUIRE(SUCCEEDED(hr));
-    if (auto hr = attrs->SetUnknown(MF_SOURCE_READER_ASYNC_CALLBACK, callback))
-        REQUIRE(SUCCEEDED(hr));
-    if (auto hr = MFCreateSourceReaderFromMediaSource(source.get(), attrs.get(), reader_ptr))
-        REQUIRE(SUCCEEDED(hr));
-}
-
-[[deprecated]] HRESULT configure(com_ptr<IMFSourceReader> reader, DWORD stream) noexcept {
-    // native format of the stream
-    com_ptr<IMFMediaType> native{};
-    if (auto hr = reader->GetNativeMediaType(stream, 0, native.put()); FAILED(hr))
-        return hr;
-
-    // decoding output
-    com_ptr<IMFMediaType> output{};
-    if (auto hr = MFCreateMediaType(output.put()); FAILED(hr))
-        return hr;
-
-    // sync major type (video)
-    GUID major{};
-    if (auto hr = native->GetGUID(MF_MT_MAJOR_TYPE, &major); FAILED(hr))
-        return hr;
-    if (auto hr = output->SetGUID(MF_MT_MAJOR_TYPE, major); FAILED(hr))
-        return hr;
-
-    // subtype configuration (video format)
-    GUID subtype{}; // MFVideoFormat_RGB32
-    if (auto hr = native->GetGUID(MF_MT_SUBTYPE, &subtype); FAILED(hr))
-        return hr;
-    if (auto hr = output->SetGUID(MF_MT_SUBTYPE, subtype); FAILED(hr))
-        return hr;
-
-    return reader->SetCurrentMediaType(stream, NULL, output.get());
 }

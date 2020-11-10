@@ -25,7 +25,10 @@ namespace fs = std::filesystem;
 auto media_startup() noexcept(false) -> gsl::final_action<HRESULT(WINAPI*)()>;
 
 /// @see MFEnumDeviceSources
-HRESULT get_devices(gsl::not_null<IMFAttributes*> attrs, std::vector<com_ptr<IMFActivate>>& devices) noexcept;
+HRESULT get_devices(std::vector<com_ptr<IMFActivate>>& devices, IMFAttributes* attributes) noexcept;
+
+/// @see https://docs.microsoft.com/en-us/windows/win32/api/mfobjects/nf-mfobjects-imfattributes-getstring
+HRESULT get_string(gsl::not_null<IMFAttributes*> attribute, const GUID& uuid, winrt::hstring& name) noexcept;
 
 /// @see MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME
 HRESULT get_name(gsl::not_null<IMFActivate*> device, winrt::hstring& name) noexcept;
@@ -126,6 +129,21 @@ class qpc_timer_t final {
 
 std::string to_readable(const GUID& guid) noexcept;
 
+/**
+ * @brief print description for the `media_type` with logging
+ * @note the argument is considered immutable
+ */
 void print(gsl::not_null<IMFActivate*> device) noexcept;
-void print(gsl::not_null<IMFTransform*> transform) noexcept;
+
+/**
+ * @brief print description for the `media_type` with logging
+ * @note the argument is considered immutable
+ */
 void print(gsl::not_null<IMFMediaType*> media_type) noexcept;
+
+/**
+ * @brief print description for the `media_type` with logging
+ * @note the function may change modify input/output configuration
+ */
+void print(gsl::not_null<IMFTransform*> transform) noexcept;
+void print(gsl::not_null<IMFTransform*> transform, const GUID& iid) noexcept;

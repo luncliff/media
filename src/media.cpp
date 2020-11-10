@@ -35,10 +35,10 @@ auto media_startup() noexcept(false) -> gsl::final_action<HRESULT(WINAPI*)()> {
     return gsl::finally(&MFShutdown);
 }
 
-HRESULT get_devices(gsl::not_null<IMFAttributes*> attrs, vector<com_ptr<IMFActivate>>& devices) noexcept {
+HRESULT get_devices(std::vector<com_ptr<IMFActivate>>& devices, IMFAttributes* attributes) noexcept {
     IMFActivate** handles = nullptr;
     UINT32 count = 0;
-    if (auto hr = MFEnumDeviceSources(attrs, &handles, &count); FAILED(hr))
+    if (auto hr = MFEnumDeviceSources(attributes, &handles, &count); FAILED(hr))
         return hr;
     auto on_return = gsl::finally([handles]() {
         CoTaskMemFree(handles); // must be deallocated
@@ -51,14 +51,18 @@ HRESULT get_devices(gsl::not_null<IMFAttributes*> attrs, vector<com_ptr<IMFActiv
     return S_OK;
 }
 
-HRESULT get_name(gsl::not_null<IMFActivate*> device, winrt::hstring& name) noexcept {
+HRESULT get_string(gsl::not_null<IMFAttributes*> attribute, const GUID& uuid, winrt::hstring& name) noexcept {
     constexpr UINT32 max_size = 240;
     WCHAR buf[max_size]{};
     UINT32 buflen{};
-    HRESULT hr = device->GetString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, buf, max_size, &buflen);
+    HRESULT hr = attribute->GetString(uuid, buf, max_size, &buflen);
     if (SUCCEEDED(hr))
         name = {buf, buflen};
     return hr;
+}
+
+HRESULT get_name(gsl::not_null<IMFActivate*> device, winrt::hstring& name) noexcept {
+    return get_string(device, MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, name);
 }
 
 HRESULT get_name(gsl::not_null<IMFActivate*> device, std::string& ref) noexcept {
@@ -342,7 +346,8 @@ auto decode(com_ptr<IMFTransform> transform, com_ptr<IMFMediaType> output_type, 
                 // todo: add more works for this case
                 co_return;
             }
-            // ...
+            // the type is changed. update after reset
+            output_type = nullptr;
             if (auto hr = transform->GetOutputAvailableType(output_buffer.dwStreamID, 0, output_type.put()))
                 throw winrt::hresult_error{hr};
             // specify the format we want ...

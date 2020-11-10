@@ -42,7 +42,7 @@ std::string to_string(const GUID& guid) {
     constexpr auto bufsz = 40;
     wchar_t buf[bufsz]{};
     size_t buflen = StringFromGUID2(guid, buf, bufsz);
-    return w2mb({buf, buflen});
+    return w2mb({buf + 1, buflen - 3});
 }
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/wmformat/media-type-identifiers
@@ -224,12 +224,33 @@ std::string to_readable(const GUID& guid) noexcept {
     // MFVideoFormat_YVYU // 4:2:2 Packed 8
 }
 
+/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/capture-device-attributes
 void print(gsl::not_null<IMFActivate*> device) noexcept {
     spdlog::info("- device:");
-    std::string name{};
-    if (auto hr = get_name(device, name))
-        spdlog::info("  error: {:x}", hr);
-    spdlog::info("  name: {}", name);
+    winrt::hstring txt{};
+    if SUCCEEDED (get_name(device, txt))
+        spdlog::info("  name: {}", winrt::to_string(txt));
+    if SUCCEEDED (get_string(device, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, txt))
+        spdlog::debug("  symlink: '{}'", winrt::to_string(txt));
+
+    UINT32 is_hardware = FALSE;
+    if SUCCEEDED (device->GetUINT32(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_HW_SOURCE, &is_hardware))
+        spdlog::info("  hardware: {}", static_cast<bool>(is_hardware));
+
+    UINT32 max_buffers = 0;
+    if SUCCEEDED (device->GetUINT32(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_MAX_BUFFERS, &max_buffers))
+        spdlog::debug("  max_buffers: {}", max_buffers);
+
+    //UINT32 count = 0;
+    //if SUCCEEDED (device->GetBlobSize(MF_DEVSOURCE_ATTRIBUTE_MEDIA_TYPE, &count)) {
+    //    auto types = std::make_unique<MFT_REGISTER_TYPE_INFO[]>(count);
+    //    if FAILED (device->GetBlob(MF_DEVSOURCE_ATTRIBUTE_MEDIA_TYPE, reinterpret_cast<UINT8*>(types.get()), count,
+    //                               &count))
+    //        return;
+    //    spdlog::info("  type_info:");
+    //    for (auto i = 0u; i < count; ++i)
+    //        spdlog::info("  - {}", to_readable(types[i].guidSubtype)); // MF_MT_SUBTYPE
+    //}
 }
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids
@@ -239,21 +260,82 @@ void print(gsl::not_null<IMFMediaType*> media_type) noexcept {
 
     GUID major{};
     media_type->GetGUID(MF_MT_MAJOR_TYPE, &major);
-    spdlog::info("    major: {}", to_readable(major));
+    spdlog::info("  major: {}", to_readable(major));
 
     if (major == MFMediaType_Video) {
         GUID subtype{};
         media_type->GetGUID(MF_MT_SUBTYPE, &subtype);
-        spdlog::info("    subtype: {}", to_readable(subtype));
+        spdlog::info("  subtype: {}", to_readable(subtype));
         UINT64 value = 0;
         if (auto hr = media_type->GetUINT64(MF_MT_FRAME_SIZE, &value); SUCCEEDED(hr)) {
             UINT32 w = value >> 32, h = value & UINT32_MAX;
-            spdlog::info("    width: {}", w);
-            spdlog::info("    height: {}", h);
+            spdlog::info("  width: {}", w);
+            spdlog::info("  height: {}", h);
         }
         if (auto hr = media_type->GetUINT64(MF_MT_FRAME_RATE_RANGE_MAX, &value); SUCCEEDED(hr)) {
             UINT32 framerate = value >> 32;
-            spdlog::info("    fps: {}", framerate);
+            spdlog::info("  fps: {}", framerate);
+        }
+    }
+}
+
+void print(gsl::not_null<IMFTransform*> transform, const GUID& iid) noexcept {
+    if (iid != CLSID_CColorConvertDMO)
+        return spdlog::error("iid != CLSID_CColorConvertDMO");
+
+    spdlog::info("- transform:");
+    spdlog::info("  - iid: {}", to_readable(iid));
+    DWORD num_input = 0;
+    DWORD num_output = 0;
+    if (auto hr = transform->GetStreamCount(&num_input, &num_output); FAILED(hr))
+        return spdlog::error("transform->GetStreamCount: {:#08x}", hr);
+    auto istreams = std::make_unique<DWORD[]>(num_input);
+    auto ostreams = std::make_unique<DWORD[]>(num_output);
+    if (auto hr = transform->GetStreamIDs(num_input, istreams.get(), num_output, ostreams.get()); FAILED(hr))
+        spdlog::warn("transform->GetStreamCount: {:#08x}", hr);
+
+    if (num_input) {
+        spdlog::info("  - num_input: {}", num_input);
+        for (auto i = 0u; i < num_input; ++i) {
+            const auto istream = istreams[i];
+            MFT_INPUT_STREAM_INFO info{};
+            if (auto hr = transform->GetInputStreamInfo(istream, &info)) {
+                spdlog::error("transform->GetInputStreamInfo: {:#08x}", hr);
+            } else {
+                spdlog::info("  - input_stream:");
+                spdlog::info("    size: {}", info.cbSize);
+                spdlog::info("    alignment: {}", info.cbAlignment);
+                spdlog::info("    flags: {}", info.dwFlags);
+                spdlog::debug("    max_latency: {}", info.hnsMaxLatency);
+            }
+
+            DWORD ostream = ostreams[0];
+            DWORD output_index = 0;
+            com_ptr<IMFMediaType> output_type{};
+            for (auto hr = transform->GetOutputAvailableType(ostream, output_index++, output_type.put()); SUCCEEDED(hr);
+                 hr = transform->GetOutputAvailableType(ostream, output_index++, output_type.put())) {
+                if (output_index == 1)
+                    spdlog::debug("    output_available_type:");
+                GUID subtype{};
+                output_type->GetGUID(MF_MT_SUBTYPE, &subtype);
+                spdlog::debug("    - {}", to_readable(subtype));
+                output_type = nullptr;
+            }
+        }
+    }
+    if (num_output) {
+        spdlog::info("  - num_output: {}", num_output);
+        for (auto i = 0u; i < num_output; ++i) {
+            const auto ostream = ostreams[i];
+            MFT_OUTPUT_STREAM_INFO info{};
+            if (auto hr = transform->GetOutputStreamInfo(ostream, &info)) {
+                spdlog::error("transform->GetOutputStreamInfo: {:#08x}", hr);
+            } else {
+                spdlog::info("  - output_stream:");
+                spdlog::info("    size: {}", info.cbSize);
+                spdlog::info("    alignment: {}", info.cbAlignment);
+                spdlog::info("    flags: {}", info.dwFlags);
+            }
         }
     }
 }
@@ -263,19 +345,25 @@ void print(gsl::not_null<IMFTransform*> transform) noexcept {
 
     DWORD num_input = 0, num_output = 0;
     if (auto hr = transform->GetStreamCount(&num_input, &num_output); FAILED(hr))
-        return spdlog::error("  - error: {:x}", hr);
+        return spdlog::error("transform->GetStreamCount: {:#08x}", hr);
+
+    auto istreams = std::make_unique<DWORD[]>(num_input);
+    auto ostreams = std::make_unique<DWORD[]>(num_output);
+    if (auto hr = transform->GetStreamIDs(num_input, istreams.get(), num_output, ostreams.get()); FAILED(hr))
+        spdlog::warn("transform->GetStreamCount: {:#08x}", hr);
+
     if (num_input) {
-        spdlog::info("  - num_input_stream: {}", num_input);
+        spdlog::info("  - num_input: {}", num_input);
         for (auto istream = 0u; istream < num_input; ++istream) {
             MFT_INPUT_STREAM_INFO info{};
             if (auto hr = transform->GetInputStreamInfo(istream, &info)) {
-                spdlog::error("  - error: {:x}", hr);
+                spdlog::error("transform->GetInputStreamInfo: {:#08x}", hr);
             } else {
                 spdlog::info("  - input_stream:");
                 spdlog::info("    size: {}", info.cbSize);
                 spdlog::info("    alignment: {}", info.cbAlignment);
                 spdlog::info("    flags: {}", info.dwFlags);
-                spdlog::info("    max_latency: {}", info.hnsMaxLatency);
+                spdlog::debug("    max_latency: {}", info.hnsMaxLatency);
             }
             DWORD input_index = 0;
             com_ptr<IMFMediaType> input_type{};
@@ -283,38 +371,35 @@ void print(gsl::not_null<IMFTransform*> transform) noexcept {
                  hr = transform->GetInputAvailableType(istream, input_index++, input_type.put())) {
                 if (input_index == 1)
                     spdlog::info("    input_available_type:");
-                GUID major_type{};
-                input_type->GetGUID(MF_MT_MAJOR_TYPE, &major_type);
                 GUID subtype{};
                 input_type->GetGUID(MF_MT_SUBTYPE, &subtype);
-                spdlog::info("      - {}: {}", to_readable(major_type), to_readable(subtype));
+                spdlog::info("    - subtype: {}", to_readable(subtype));
 
                 if (auto hr = transform->SetInputType(istream, input_type.get(), 0)) {
-                    spdlog::info("      - error: {:x}", hr);
-                    input_type = nullptr;
-                    continue;
+                    spdlog::error("transform->SetInputType: {:#08x}", hr);
+                } else {
+                    DWORD ostream = 0;
+                    DWORD output_index = 0;
+                    com_ptr<IMFMediaType> output_type{};
+                    for (auto hr = transform->GetOutputAvailableType(ostream, output_index++, output_type.put());
+                         SUCCEEDED(hr);
+                         hr = transform->GetOutputAvailableType(ostream, output_index++, output_type.put())) {
+                        if (output_index == 1)
+                            spdlog::debug("      output_available_type:");
+                        output_type->GetGUID(MF_MT_SUBTYPE, &subtype);
+                        spdlog::debug("      - {}", to_readable(subtype));
+                        output_type = nullptr;
+                    }
                 }
-                DWORD ostream = 0;
-                DWORD output_index = 0;
-                com_ptr<IMFMediaType> output_type{};
-                for (auto hr = transform->GetOutputAvailableType(ostream, output_index++, output_type.put());
-                     SUCCEEDED(hr);
-                     hr = transform->GetOutputAvailableType(ostream, output_index++, output_type.put())) {
-                    if (output_index == 1)
-                        spdlog::info("        output_available_type:");
-                    GUID subtype{};
-                    output_type->GetGUID(MF_MT_SUBTYPE, &subtype);
-                    spdlog::info("          - subtype: {}", to_readable(subtype));
-                    output_type = nullptr;
-                }
+                input_type = nullptr;
             }
         }
     }
     if (num_output) {
-        spdlog::info("  - num_output_stream: {}", num_output);
-        for (auto id = 0u; id < num_output; ++id) {
+        spdlog::info("  - num_output: {}", num_output);
+        for (auto ostream = 0u; ostream < num_output; ++ostream) {
             MFT_OUTPUT_STREAM_INFO info{};
-            if (auto hr = transform->GetOutputStreamInfo(id, &info)) {
+            if (auto hr = transform->GetOutputStreamInfo(ostream, &info)) {
                 spdlog::error("  - error: {:x}", hr);
             } else {
                 spdlog::info("  - output_stream:");
@@ -324,15 +409,13 @@ void print(gsl::not_null<IMFTransform*> transform) noexcept {
             }
             DWORD i = 0;
             com_ptr<IMFMediaType> output_type{};
-            for (auto hr = transform->GetOutputAvailableType(id, i++, output_type.put()); SUCCEEDED(hr);
-                 hr = transform->GetOutputAvailableType(id, i++, output_type.put())) {
+            for (auto hr = transform->GetOutputAvailableType(ostream, i++, output_type.put()); SUCCEEDED(hr);
+                 hr = transform->GetOutputAvailableType(ostream, i++, output_type.put())) {
                 if (i == 1)
-                    spdlog::info("    output_available_type:");
-                GUID major_type{};
-                output_type->GetGUID(MF_MT_MAJOR_TYPE, &major_type);
+                    spdlog::debug("    output_available_type:");
                 GUID subtype{};
                 output_type->GetGUID(MF_MT_SUBTYPE, &subtype);
-                spdlog::info("      - {}: {}", to_readable(major_type), to_readable(subtype));
+                spdlog::debug("    - {}", to_readable(subtype));
                 output_type = nullptr;
             }
         }

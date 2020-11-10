@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 
     //auto log = spdlog::basic_logger_st("report", "log.yaml");
     //spdlog::set_default_logger(log);
-    spdlog::set_pattern("%v");
+    spdlog::set_pattern("[%^%l%$] %v");
     spdlog::set_level(spdlog::level::level_enum::debug);
 
     Catch::Session session{};

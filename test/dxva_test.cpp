@@ -246,6 +246,7 @@ SCENARIO("MFTransform with ID3D11Device", "[directx][!mayfail]") {
             com_ptr<IMFMediaType> output_type{};
             if (auto hr = transform->GetOutputCurrentType(ostream_id, output_type.put()))
                 FAIL(hr);
+            REQUIRE(output_type);
 
             size_t count = 0;
             DWORD index{};
