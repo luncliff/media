@@ -1,6 +1,6 @@
 /**
  * @file main.cpp
- * @author github.com/luncliff (luncligg@gmail.com)
+ * @author github.com/luncliff (luncliff@gmail.com)
  * 
  * @see https://docs.microsoft.com/en-us/windows/win32/medfound/processing-media-data-with-the-source-reader
  * @see https://docs.microsoft.com/en-us/windows/win32/medfound/using-the-source-reader-in-asynchronous-mode

@@ -1,6 +1,8 @@
 /**
- * @file sink_test.cpp
- * @author github.com/luncliff (luncligg@gmail.com)
+ * @file    sink_test.cpp
+ * @author  github.com/luncliff (luncliff@gmail.com)
+ * @see     https://docs.microsoft.com/en-us/windows/win32/medfound/sink-writer
+ * @see     https://docs.microsoft.com/en-us/windows/win32/api/mfreadwrite/nn-mfreadwrite-imfsinkwriter
  */
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
@@ -21,6 +23,54 @@
 #include <mfreadwrite.h>
 
 #pragma comment(lib, "strmiids") // for MR_VIDEO_RENDER_SERVICE
+
+// https://docs.microsoft.com/en-us/windows/win32/medfound/using-the-sink-writer
+// https://docs.microsoft.com/en-us/windows/win32/medfound/tutorial--using-the-sink-writer-to-encode-video#define-the-video-format
+TEST_CASE("IMFMediaSink(MPEG4)", "[window][!mayfail]") {
+    auto on_return = media_startup();
+
+    // todo: MFCreateSinkWriterFromURL(L"output.mp4", NULL, NULL, sink_writer.put());
+    com_ptr<IMFReadWriteClassFactory> factory{};
+    REQUIRE(CoCreateInstance(CLSID_MFReadWriteClassFactory, NULL, CLSCTX_INPROC_SERVER, //
+                             IID_PPV_ARGS(factory.put())) == S_OK);
+
+    com_ptr<IMFSinkWriterEx> sink_writer{};
+    {
+        com_ptr<IMFAttributes> attrs{};
+        REQUIRE(MFCreateAttributes(attrs.put(), 1) == S_OK);
+        REQUIRE(attrs->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE) == S_OK);
+
+        com_ptr<IMFSinkWriter> writer{};
+        const auto fpath = fs::current_path() / L"output.mp4";
+        REQUIRE(factory->CreateInstanceFromURL(CLSID_MFSinkWriter, fpath.c_str(), attrs.get(), //
+                                               IID_PPV_ARGS(writer.put())) == S_OK);
+        REQUIRE(writer->QueryInterface(sink_writer.put()) == S_OK);
+    }
+
+    SECTION("MF_SINK_WRITER_STATISTICS") {
+        MF_SINK_WRITER_STATISTICS stats{};
+        REQUIRE(sink_writer->GetStatistics(0, &stats) == S_OK);
+    }
+    SECTION("IMFMediaSink") {
+        com_ptr<IMFMediaType> video_type{};
+        REQUIRE(video_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video) == S_OK);
+        REQUIRE(video_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264) == S_OK);
+        REQUIRE(video_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) == S_OK);
+        REQUIRE(video_type->SetUINT32(MF_MT_AVG_BITRATE, 800'000) == S_OK);
+        REQUIRE(MFSetAttributeRatio(video_type.get(), MF_MT_FRAME_RATE, 30, 1) == S_OK); // 30 fps
+
+        // ... The sink writer supports the following combinations: Uncompressed input with compressed output ...
+        // ... Uncompressed input with identical output ...
+        com_ptr<IMFByteStream> byte_stream{};
+        com_ptr<IMFMediaType> audio_type{};
+        com_ptr<IMFMediaSink> sink{};
+        REQUIRE(MFCreateMPEG4MediaSink(byte_stream.get(), video_type.get(), audio_type.get(), sink.put()) == S_OK);
+
+        // https://docs.microsoft.com/en-us/windows/win32/medfound/tutorial--using-the-sink-writer-to-encode-video#send-video-frames-to-the-sink-writer
+        com_ptr<IMFSample> sample{};
+        REQUIRE(sink_writer->WriteSample(0, sample.get()) == S_OK);
+    }
+}
 
 // @see https://github.com/sipsorcery/mediafoundationsamples - MFVideoEVR/MFVideoEVR.cpp
 TEST_CASE("IMFMediaSink(MFVideoEVR)", "[window][!mayfail]") {

@@ -1,6 +1,6 @@
 /**
  * @file dxva_test.cpp
- * @author github.com/luncliff (luncligg@gmail.com)
+ * @author github.com/luncliff (luncliff@gmail.com)
  */
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
@@ -331,6 +331,7 @@ SCENARIO("MFTransform with ID3D11Device", "[directx][!mayfail]") {
         //CAPTURE(transform->GetStreamIDs(num_input, istreams.get(), num_output, ostreams.get()));
 
         WHEN("Synchronous Transform") {
+            WARN("the case needs more refinement");
             com_ptr<IMFMediaType> input_type = output_h264;
 
             print(input_type.get());
@@ -510,7 +511,7 @@ TEST_CASE("MFTransform with Direct11 Device", "[directx][!mayfail]") {
             }
 
             HRESULT ec = S_OK;
-            spdlog::info("- available_transform:");
+            spdlog::debug("- available_transform:");
 
             for (com_ptr<IMFMediaType> output_type : get_output_available_types(transform, num_output, ec)) {
                 if (auto hr = transform->SetOutputType(ostream_id, output_type.get(), 0))
@@ -523,8 +524,8 @@ TEST_CASE("MFTransform with Direct11 Device", "[directx][!mayfail]") {
                     GUID in_subtype{};
                     if (auto hr = input_type->GetGUID(MF_MT_SUBTYPE, &in_subtype))
                         FAIL(hr);
-                    spdlog::info("  - output: {}", to_readable(out_subtype));
-                    spdlog::info("    input: {}", to_readable(in_subtype));
+                    spdlog::debug("  - output: {}", to_readable(out_subtype));
+                    spdlog::debug("    input: {}", to_readable(in_subtype));
                 }
             }
             REQUIRE(ec == MF_E_TRANSFORM_TYPE_NOT_SET);
@@ -541,9 +542,8 @@ TEST_CASE("MFTransform with Direct11 Device", "[directx][!mayfail]") {
                     GUID out_subtype{};
                     if (auto hr = output_type->GetGUID(MF_MT_SUBTYPE, &out_subtype))
                         FAIL(hr);
-
-                    spdlog::info("  - input: {}", to_readable(in_subtype));
-                    spdlog::info("    output: {}", to_readable(out_subtype));
+                    spdlog::debug("  - input: {}", to_readable(in_subtype));
+                    spdlog::debug("    output: {}", to_readable(out_subtype));
                 }
             }
             REQUIRE(ec == MF_E_NO_MORE_TYPES);

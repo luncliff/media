@@ -1,6 +1,6 @@
 /**
  * @file transform_test.cpp
- * @author github.com/luncliff (luncligg@gmail.com)
+ * @author github.com/luncliff (luncliff@gmail.com)
  */
 #define CATCH_CONFIG_WCHAR
 #define CATCH_CONFIG_WINDOWS_CRTDBG
@@ -250,6 +250,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
     REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
 
     SECTION("Synchronous(Simplified)") {
+        INFO("testing synchronous read/transform with simplified code");
         com_ptr<IMFMediaType> output_type{};
         if (auto hr = transform->GetOutputCurrentType(ostream, output_type.put()))
             FAIL(hr);
@@ -290,6 +291,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
     }
 
     SECTION("Synchronous(Detailed)") {
+        INFO("testing synchronous read/transform");
         bool input_available = true;
         while (input_available) {
             DWORD stream_index{};
@@ -398,9 +400,9 @@ TEST_CASE("MFTransform - Color Converter DSP", "[dsp]") {
         REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_NV12) == S_OK);
         REQUIRE(source_reader->SetCurrentMediaType(stream, NULL, source_type.get()) == S_OK);
     }
+    WARN("IMFSourceReader will convert color from MP4");
 
     SECTION("MP4(NV12) - RGB32") {
-        spdlog::warn("MP4(NV12) - RGB32");
         print(source_type.get());
         if (auto hr = transform->SetInputType(0, source_type.get(), 0))
             FAIL(hr);
@@ -422,7 +424,6 @@ TEST_CASE("MFTransform - Color Converter DSP", "[dsp]") {
         print(transform.get(), CLSID_CColorConvertDMO); // requires input/output configuration
     }
     SECTION("MP4(I420) - RGB32") {
-        spdlog::warn("MP4(I420) - RGB32");
         print(source_type.get());
         if (auto hr = transform->SetInputType(0, source_type.get(), 0))
             FAIL(hr);
@@ -444,7 +445,6 @@ TEST_CASE("MFTransform - Color Converter DSP", "[dsp]") {
         print(transform.get(), CLSID_CColorConvertDMO); // requires input/output configuration
     }
     SECTION("MP4(IYUV) - RGB32") {
-        spdlog::warn("MP4(IYUV) - RGB32");
         print(source_type.get());
         if (auto hr = transform->SetInputType(0, source_type.get(), 0))
             FAIL(hr);
@@ -466,7 +466,6 @@ TEST_CASE("MFTransform - Color Converter DSP", "[dsp]") {
         print(transform.get(), CLSID_CColorConvertDMO); // requires input/output configuration
     }
     SECTION("MP4(I420) - RGB565") {
-        spdlog::warn("MP4(I420) - RGB565");
         print(source_type.get());
         if (auto hr = transform->SetInputType(0, source_type.get(), 0))
             FAIL(hr);
