@@ -42,19 +42,31 @@ HRESULT get_hardware_url(gsl::not_null<IMFTransform*> transform, winrt::hstring&
 HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE& media_object_type) noexcept;
 
 /// @see CoCreateInstance
+/// @see Color Converter DSP https://docs.microsoft.com/en-us/windows/win32/medfound/colorconverter
+/// @param iid CLSID_CColorConvertDMO
+HRESULT make_transform_video(IMFTransform** transform, const IID& iid) noexcept;
+
+/// @see CoCreateInstance
 /// @see CLSID_CMSH264DecoderMFT
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder
 [[deprecated]] HRESULT make_transform_H264(IMFTransform** transform) noexcept;
+
+/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder#transform-attributes
+HRESULT configure_acceleration_H264(gsl::not_null<IMFTransform*> transform) noexcept;
 
 /// @see CoCreateInstance
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
 /// @see CLSID_VideoProcessorMFT
 [[deprecated]] HRESULT make_transform_video(IMFTransform** transform) noexcept;
 
-/// @see CoCreateInstance
-/// @see Color Converter DSP https://docs.microsoft.com/en-us/windows/win32/medfound/colorconverter
-/// @param iid CLSID_CColorConvertDMO
-HRESULT make_transform_video(IMFTransform** transform, const IID& iid) noexcept;
+/// @brief configure D3D11 if the transform supports it
+/// @return E_NOTIMPL, E_FAIL ...
+/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/hardware-mfts
+HRESULT configure_D3D11_DXGI(gsl::not_null<IMFTransform*> transform, IMFDXGIDeviceManager* device_manager) noexcept;
+
+/// @brief exactly same sized src/dst rectangle;
+HRESULT configure_rectangle(gsl::not_null<IMFVideoProcessorControl*> control,
+                            gsl::not_null<IMFMediaType*> media_type) noexcept;
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer
 HRESULT configure_source_rectangle(gsl::not_null<IPropertyStore*> props, const RECT& rect) noexcept;
@@ -84,6 +96,7 @@ auto get_output_available_types(com_ptr<IMFTransform> transform, DWORD num_outpu
 auto try_input_available_types(com_ptr<IMFTransform> transform, DWORD stream_id, DWORD& type_index) noexcept(false)
     -> generator<com_ptr<IMFMediaType>>;
 
+/// @todo https://docs.microsoft.com/en-us/windows/win32/medfound/mf-source-reader-enable-advanced-video-processing#remarks
 auto read_samples(com_ptr<IMFSourceReader> source_reader, //
                   DWORD& index, DWORD& flags, LONGLONG& timestamp, LONGLONG& duration) noexcept(false)
     -> generator<com_ptr<IMFSample>>;

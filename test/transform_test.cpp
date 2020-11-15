@@ -157,6 +157,7 @@ TEST_CASE("IMFSourceReaderEx(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING)"
     }
 }
 
+/// @todo https://docs.microsoft.com/en-us/windows/win32/medfound/mf-source-reader-enable-advanced-video-processing#remarks
 void make_test_source(com_ptr<IMFMediaSourceEx>& source, com_ptr<IMFSourceReader>& source_reader,
                       com_ptr<IMFMediaType>& source_type, //
                       const GUID& output_subtype, const fs::path& fpath) {
@@ -172,11 +173,6 @@ void make_test_source(com_ptr<IMFMediaSourceEx>& source, com_ptr<IMFSourceReader
     DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
     REQUIRE(source_reader->GetCurrentMediaType(stream, source_type.put()) == S_OK);
     REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, output_subtype) == S_OK);
-    // https://docs.microsoft.com/en-us/windows/win32/medfound/mf-source-reader-enable-advanced-video-processing#remarks
-    // REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_NV12) == S_OK);
-    // REQUIRE(source_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Unknown) == S_OK);
-    // REQUIRE(source_type->SetUINT64(MF_MT_FRAME_RATE, (30 << 32) + 1) == S_OK); // 30 fps
-    // REQUIRE(MFSetAttributeSize(source_type.get(), MF_MT_FRAME_SIZE, 1280, 720));
     switch (auto hr = source_reader->SetCurrentMediaType(stream, NULL, source_type.get())) {
     case S_OK:
         break;
@@ -185,18 +181,6 @@ void make_test_source(com_ptr<IMFMediaSourceEx>& source, com_ptr<IMFSourceReader
     default:
         FAIL(hr);
     }
-}
-
-HRESULT configure_acceleration_H264(gsl::not_null<IMFTransform*> transform) noexcept {
-    // https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder#transform-attributes
-    com_ptr<IMFAttributes> attrs{};
-    if (auto hr = transform->GetAttributes(attrs.put()))
-        return hr;
-    CAPTURE(attrs->SetUINT32(CODECAPI_AVDecVideoAcceleration_H264, TRUE)); // Codecapi.h
-    CAPTURE(attrs->SetUINT32(CODECAPI_AVLowLatencyMode, TRUE));
-    CAPTURE(attrs->SetUINT32(CODECAPI_AVDecNumWorkerThreads, 1));
-    // print(transform.get()); // this modifies input/output configuration
-    return S_OK;
 }
 
 HRESULT check_sample(com_ptr<IMFSample> sample) {
@@ -236,14 +220,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
 
     com_ptr<IMFTransform> transform{};
     REQUIRE(make_transform_H264(transform.put()) == S_OK);
-    {
-        // https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder#transform-attributes
-        com_ptr<IMFAttributes> attrs{};
-        REQUIRE(transform->GetAttributes(attrs.put()) == S_OK);
-        CAPTURE(attrs->SetUINT32(CODECAPI_AVDecVideoAcceleration_H264, TRUE)); // Codecapi.h
-        CAPTURE(attrs->SetUINT32(CODECAPI_AVLowLatencyMode, TRUE));
-        CAPTURE(attrs->SetUINT32(CODECAPI_AVDecNumWorkerThreads, 1));
-    }
+    REQUIRE(configure_acceleration_H264(transform.get()) == S_OK);
     print(transform.get(), CLSID_CMSH264DecoderMFT); // this may modifies input/output configuration
 
     // Valid configuration order can be I->O or O->I. `CLSID_CMSH264DecoderMFT` uses I->O ordering
@@ -567,8 +544,8 @@ TEST_CASE("MFTransform - Color Converter DSP", "[dsp]") {
     }
 }
 
-HRESULT configure_type_bypass(com_ptr<IMFTransform> transform, com_ptr<IMFMediaType> input_type, DWORD& istream,
-                              DWORD& ostream) {
+HRESULT configure_type_bypass(com_ptr<IMFTransform> transform, com_ptr<IMFMediaType> input_type, //
+                              DWORD& istream, DWORD& ostream) {
     spdlog::debug("configure_type_bypass");
     DWORD num_input = 0, num_output = 0;
     if (auto hr = transform->GetStreamCount(&num_input, &num_output); FAILED(hr))
@@ -595,6 +572,7 @@ HRESULT configure_type_bypass(com_ptr<IMFTransform> transform, com_ptr<IMFMediaT
     for (auto candidate : try_output_available_types(transform, ostream, otype)) {
         if (auto hr = MFSetAttributeSize(candidate.get(), MF_MT_FRAME_SIZE, w, h); FAILED(hr))
             return hr;
+        spdlog::debug("changinged output candidate frame size");
         print(candidate.get());
         if (auto hr = transform->SetOutputType(ostream, candidate.get(), 0); FAILED(hr))
             return hr;
@@ -693,18 +671,6 @@ TEST_CASE("MFTransform - Video Resizer DSP", "[dsp]") {
         }
         REQUIRE(count == 0); // CLSID_CResizerDMO won't have leftover
     }
-}
-
-// we will use exactly same sized src/dst rectangle;
-HRESULT configure_rectangle(gsl::not_null<IMFVideoProcessorControl*> control, gsl::not_null<IMFMediaType*> media_type) {
-    UINT32 w = 0, h = 0;
-    if (auto hr = MFGetAttributeSize(media_type, MF_MT_FRAME_SIZE, &w, &h); FAILED(hr))
-        return hr;
-
-    RECT rect{0, 0, w, h}; // LTRB rectangle
-    if (auto hr = control->SetSourceRectangle(&rect); FAILED(hr))
-        return hr;
-    return control->SetDestinationRectangle(&rect);
 }
 
 // see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft#remarks

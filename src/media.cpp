@@ -4,7 +4,9 @@
 #include <media.hpp>
 #include <spdlog/spdlog.h>
 
+#include <codecapi.h> // for [codec]
 #include <dshowasf.h>
+#include <mediaobj.h> // for [dsp]
 
 using namespace std;
 
@@ -125,6 +127,33 @@ HRESULT make_transform_video(IMFTransform** transform) noexcept {
     return make_transform_video(transform, CLSID_VideoProcessorMFT);
 }
 
+HRESULT configure_D3D11_DXGI(gsl::not_null<IMFTransform*> transform, IMFDXGIDeviceManager* device_manager) noexcept {
+    com_ptr<IMFAttributes> attrs{};
+    if (auto hr = transform->GetAttributes(attrs.put())) // return can be E_NOTIMPL
+        return hr;
+    UINT32 supported{};
+    if (auto hr = attrs->GetUINT32(MF_SA_D3D11_AWARE, &supported); FAILED(hr))
+        return hr;
+    if (supported == false)
+        return E_FAIL;
+    return transform->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, //
+                                     reinterpret_cast<ULONG_PTR>(static_cast<IUnknown*>(device_manager)));
+}
+
+// @see https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder#transform-attributes
+HRESULT configure_acceleration_H264(gsl::not_null<IMFTransform*> transform) noexcept {
+    com_ptr<IMFAttributes> attrs{};
+    if (auto hr = transform->GetAttributes(attrs.put()))
+        return hr;
+    if (auto hr = attrs->SetUINT32(CODECAPI_AVDecVideoAcceleration_H264, TRUE); FAILED(hr))
+        spdlog::error("CODECAPI_AVDecVideoAcceleration_H264: {:#08x}", hr);
+    if (auto hr = attrs->SetUINT32(CODECAPI_AVLowLatencyMode, TRUE); FAILED(hr))
+        spdlog::error("CODECAPI_AVLowLatencyMode: {:#08x}", hr);
+    if (auto hr = attrs->SetUINT32(CODECAPI_AVDecNumWorkerThreads, 1); FAILED(hr))
+        spdlog::error("CODECAPI_AVDecNumWorkerThreads: {:#08x}", hr);
+    return S_OK;
+}
+
 HRESULT configure_video_output_RGB565(IMFMediaType* type) noexcept {
     if (type == nullptr)
         return E_INVALIDARG;
@@ -241,6 +270,19 @@ auto try_input_available_types(com_ptr<IMFTransform> transform, DWORD stream_id,
     }
 }
 
+HRESULT configure_rectangle(gsl::not_null<IMFVideoProcessorControl*> control,
+                            gsl::not_null<IMFMediaType*> media_type) noexcept {
+    UINT32 w = 0, h = 0;
+    if (auto hr = MFGetAttributeSize(media_type, MF_MT_FRAME_SIZE, &w, &h); FAILED(hr))
+        return hr;
+
+    RECT rect{0, 0, w, h}; // LTRB rectangle
+    if (auto hr = control->SetSourceRectangle(&rect); FAILED(hr))
+        return hr;
+    return control->SetDestinationRectangle(&rect);
+}
+
+
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer
 HRESULT configure_source_rectangle(gsl::not_null<IPropertyStore*> props, const RECT& rect) noexcept {
     PROPVARIANT val{};
@@ -337,10 +379,10 @@ HRESULT configure(com_ptr<IMFStreamDescriptor> stream) noexcept {
 auto read_samples(com_ptr<IMFSourceReader> source_reader, //
                   DWORD& index, DWORD& flags, LONGLONG& timestamp, LONGLONG& duration) noexcept(false)
     -> generator<com_ptr<IMFSample>> {
+    const DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
     while (true) {
         com_ptr<IMFSample> input_sample{};
-        if (auto hr = source_reader->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, &index, &flags, &timestamp,
-                                                input_sample.put()))
+        if (auto hr = source_reader->ReadSample(stream, 0, &index, &flags, &timestamp, input_sample.put()))
             throw winrt::hresult_error{hr};
 
         if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
