@@ -275,13 +275,13 @@ HRESULT configure_rectangle(gsl::not_null<IMFVideoProcessorControl*> control,
     UINT32 w = 0, h = 0;
     if (auto hr = MFGetAttributeSize(media_type, MF_MT_FRAME_SIZE, &w, &h); FAILED(hr))
         return hr;
-
-    RECT rect{0, 0, w, h}; // LTRB rectangle
+    RECT rect{};
+    rect.right = w; // LTRB rectangle
+    rect.bottom = h;
     if (auto hr = control->SetSourceRectangle(&rect); FAILED(hr))
         return hr;
     return control->SetDestinationRectangle(&rect);
 }
-
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer
 HRESULT configure_source_rectangle(gsl::not_null<IPropertyStore*> props, const RECT& rect) noexcept {
@@ -379,7 +379,7 @@ HRESULT configure(com_ptr<IMFStreamDescriptor> stream) noexcept {
 auto read_samples(com_ptr<IMFSourceReader> source_reader, //
                   DWORD& index, DWORD& flags, LONGLONG& timestamp, LONGLONG& duration) noexcept(false)
     -> generator<com_ptr<IMFSample>> {
-    const DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
+    const auto stream = static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
     while (true) {
         com_ptr<IMFSample> input_sample{};
         if (auto hr = source_reader->ReadSample(stream, 0, &index, &flags, &timestamp, input_sample.put()))
@@ -449,7 +449,7 @@ auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, //
     DWORD flags{};
     LONGLONG timestamp{}; // unit 100-nanosecond
     LONGLONG duration{};
-    if (ec = input_sample->SetSampleTime(timestamp))
+    if (ec = input_sample->SetSampleTime(timestamp); FAILED(ec))
         co_return;
 
     switch (ec = transform->ProcessInput(istream, input_sample.get(), 0)) {
@@ -469,12 +469,11 @@ auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, //
 auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, com_ptr<IMFSourceReader> source_reader,
              HRESULT& ec) -> generator<com_ptr<IMFSample>> {
     com_ptr<IMFMediaType> output_type{};
-    if (ec = transform->GetOutputCurrentType(ostream, output_type.put()))
+    if (ec = transform->GetOutputCurrentType(ostream, output_type.put()); FAILED(ec))
         co_return;
-
-    if (ec = transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL))
+    if (ec = transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL); FAILED(ec))
         co_return;
-    if (ec = transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL))
+    if (ec = transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL); FAILED(ec))
         co_return;
 
     DWORD index{};
@@ -489,9 +488,9 @@ auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, com_
         if (ec)
             co_return;
     }
-    if (ec = transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL))
+    if (ec = transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL); FAILED(ec))
         co_return;
-    if (ec = transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL))
+    if (ec = transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL); FAILED(ec))
         co_return;
 
     for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec))
@@ -505,7 +504,6 @@ HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample) {
     if (auto hr = MFCreateMemoryBuffer(bufsz, buffer.put()))
         return hr;
     return (*sample)->AddBuffer(buffer.get());
-    com_ptr<IMFSample> owner{};
 }
 
 HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst) {

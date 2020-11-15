@@ -7,7 +7,6 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS true)
 endif()
 set(CMAKE_VS_WINRT_BY_DEFAULT true)
-
 message(STATUS "using Windows: ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
 
 find_package(Microsoft.GSL CONFIG)
@@ -97,6 +96,15 @@ write_basic_package_version_file(${VERSION_FILE_PATH}
 install(FILES           ${VERSION_FILE_PATH} 
         DESTINATION     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}
 )
+
+if(BUILD_DRIVER)
+    include(CPack)
+    set_target_properties(media
+    PROPERTIES
+        VS_GLOBAL_DriverTargetPlatform  Universal
+        VS_PLATFORM_TOOLSET             WindowsApplicationForDrivers10.0
+    )
+endif()
 
 if(NOT BUILD_TESTING)
     return()

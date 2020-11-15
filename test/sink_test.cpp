@@ -268,6 +268,6 @@ class app_context_t final {
         while (consume_messages(msg) == false) {
             // ...
         }
-        return msg.wParam;
+        return static_cast<DWORD>(msg.wParam);
     }
 };

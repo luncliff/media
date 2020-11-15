@@ -1,7 +1,6 @@
 #pragma once
 #include <winrt/base.h>
 
-#include <experimental/coroutine>
 #include <experimental/generator>
 #include <filesystem>
 #include <gsl/gsl>
@@ -10,7 +9,6 @@
 #include <mferror.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
-#include <shlwapi.h>
 #include <wmcodecdsp.h>
 
 // C++ 17 Coroutines TS
@@ -124,7 +122,8 @@ HRESULT configure(com_ptr<IMFStreamDescriptor> stream) noexcept;
 
 /// @todo use `static_assert` for Windows SDK
 class qpc_timer_t final {
-    LARGE_INTEGER start{}, const frequency{};
+    LARGE_INTEGER start{};
+    LARGE_INTEGER frequency{};
 
   public:
     qpc_timer_t() noexcept {
