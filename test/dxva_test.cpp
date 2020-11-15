@@ -264,22 +264,28 @@ SCENARIO("MFTransform with ID3D11Device", "[directx][!mayfail]") {
                 default:
                     FAIL(hr);
                 }
-                for (com_ptr<IMFSample> output_sample : decode(transform, output_type, ostream_id)) {
+                HRESULT ec = S_OK;
+                for (com_ptr<IMFSample> output_sample : decode(transform, ostream_id, output_type, ec)) {
                     if (auto hr = check_sample(output_sample))
                         FAIL(hr);
                     ++count;
                 }
+                if FAILED (ec)
+                    FAIL(ec);
             }
             REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL) == S_OK);
             REQUIRE(transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL) == S_OK);
             REQUIRE(count);
             count = 0;
             // fetch remaining output in the transform
-            for (com_ptr<IMFSample> output_sample : decode(transform, output_type, ostream_id)) {
+            HRESULT ec = S_OK;
+            for (com_ptr<IMFSample> output_sample : decode(transform, ostream_id, output_type, ec)) {
                 if (auto hr = check_sample(output_sample))
                     FAIL(hr);
                 ++count;
             }
+            if FAILED (ec)
+                FAIL(ec);
             REQUIRE(count);
         }
     }
@@ -304,7 +310,7 @@ SCENARIO("MFTransform with ID3D11Device", "[directx][!mayfail]") {
             RECT region{0, 0, 1280, 720};
             REQUIRE(control->SetDestinationRectangle(&region) == S_OK);
         }
-        print(transform.get());
+        print(transform.get(), CLSID_VideoProcessorMFT);
 
         com_ptr<IMFMediaSourceEx> source_h264{};
         com_ptr<IMFSourceReader> reader_h264{};
@@ -365,22 +371,29 @@ SCENARIO("MFTransform with ID3D11Device", "[directx][!mayfail]") {
                 default:
                     FAIL(hr);
                 }
-                for (com_ptr<IMFSample> output_sample : decode(transform, output_type, ostream)) {
+                for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
                     if (auto hr = check_sample(output_sample))
                         FAIL(hr);
                     ++count;
                 }
+                if FAILED (ec)
+                    FAIL(ec);
             }
+            if FAILED (ec)
+                FAIL(ec);
+
             REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL) == S_OK);
             REQUIRE(transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL) == S_OK);
             REQUIRE(count);
             count = 0;
             // fetch remaining output in the transform
-            for (com_ptr<IMFSample> output_sample : decode(transform, output_type, ostream)) {
+            for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
                 if (auto hr = check_sample(output_sample))
                     FAIL(hr);
                 ++count;
             }
+            if FAILED (ec)
+                FAIL(ec);
             REQUIRE(count);
         }
     }

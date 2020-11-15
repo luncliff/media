@@ -53,6 +53,7 @@ TEST_CASE("IMFMediaSink(MPEG4)", "[window][!mayfail]") {
     }
     SECTION("IMFMediaSink") {
         com_ptr<IMFMediaType> video_type{};
+        REQUIRE(video_type);
         REQUIRE(video_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video) == S_OK);
         REQUIRE(video_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264) == S_OK);
         REQUIRE(video_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) == S_OK);

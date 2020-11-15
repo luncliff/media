@@ -99,6 +99,9 @@ install(FILES           ${VERSION_FILE_PATH}
 if(NOT BUILD_TESTING)
     return()
 endif()
+# see 'docs/cmake-integration.md' in https://github.com/catchorg/catch2
+find_package(Catch2 CONFIG REQUIRED)
+include(Catch)
 
 add_executable(media_test_suite
     test/main.cpp
@@ -119,11 +122,12 @@ PRIVATE
 )
 
 get_filename_component(asset_path ${PROJECT_SOURCE_DIR}/test ABSOLUTE)
-
 target_compile_definitions(media_test_suite
 PRIVATE
     ASSET_DIR="${asset_path}"
 )
+
+catch_discover_tests(media_test_suite)
 
 install(TARGETS  media_test_suite
         RUNTIME  DESTINATION ${CMAKE_INSTALL_PREFIX}/tools

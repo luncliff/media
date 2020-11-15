@@ -1,6 +1,7 @@
 #pragma once
 #include <winrt/base.h>
 
+#include <experimental/coroutine>
 #include <experimental/generator>
 #include <filesystem>
 #include <gsl/gsl>
@@ -35,7 +36,7 @@ HRESULT get_name(gsl::not_null<IMFActivate*> device, winrt::hstring& name) noexc
 [[deprecated]] HRESULT get_name(gsl::not_null<IMFActivate*> device, std::wstring& name) noexcept;
 [[deprecated]] HRESULT get_name(gsl::not_null<IMFActivate*> device, std::string& name) noexcept;
 
-HRESULT get_hardware_url(gsl::not_null<IMFTransform*> transform, std::wstring& name) noexcept;
+HRESULT get_hardware_url(gsl::not_null<IMFTransform*> transform, winrt::hstring& name) noexcept;
 
 /// @see MFCreateSourceResolver
 HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE& media_object_type) noexcept;
@@ -43,17 +44,23 @@ HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE
 /// @see CoCreateInstance
 /// @see CLSID_CMSH264DecoderMFT
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder
-HRESULT make_transform_H264(IMFTransform** transform) noexcept;
+[[deprecated]] HRESULT make_transform_H264(IMFTransform** transform) noexcept;
+
+/// @see CoCreateInstance
+/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
+/// @see CLSID_VideoProcessorMFT
+[[deprecated]] HRESULT make_transform_video(IMFTransform** transform) noexcept;
 
 /// @see CoCreateInstance
 /// @see Color Converter DSP https://docs.microsoft.com/en-us/windows/win32/medfound/colorconverter
 /// @param iid CLSID_CColorConvertDMO
 HRESULT make_transform_video(IMFTransform** transform, const IID& iid) noexcept;
 
-/// @see CoCreateInstance
-/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
-/// @see CLSID_VideoProcessorMFT
-HRESULT make_transform_video(IMFTransform** transform) noexcept;
+/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer
+HRESULT configure_source_rectangle(gsl::not_null<IPropertyStore*> props, const RECT& rect) noexcept;
+
+/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer
+HRESULT configure_destination_rectangle(gsl::not_null<IPropertyStore*> props, const RECT& rect) noexcept;
 
 /**
  * @todo: configure MF_MT_FRAME_SIZE, MF_MT_FRAME_RATE
@@ -81,12 +88,12 @@ auto read_samples(com_ptr<IMFSourceReader> source_reader, //
                   DWORD& index, DWORD& flags, LONGLONG& timestamp, LONGLONG& duration) noexcept(false)
     -> generator<com_ptr<IMFSample>>;
 
-auto decode(com_ptr<IMFTransform> transform, com_ptr<IMFMediaType> output_type, DWORD ostream_id) noexcept(false)
-    -> generator<com_ptr<IMFSample>>;
+auto decode(com_ptr<IMFTransform> transform, DWORD ostream, com_ptr<IMFMediaType> output_type, //
+            HRESULT& ec) noexcept -> generator<com_ptr<IMFSample>>;
 
 auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream,      //
              com_ptr<IMFSample> input_sample, com_ptr<IMFMediaType> output_type, //
-             HRESULT& hr) noexcept -> generator<com_ptr<IMFSample>>;
+             HRESULT& ec) noexcept -> generator<com_ptr<IMFSample>>;
 auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, //
              com_ptr<IMFSourceReader> source_reader,                        //
              HRESULT& ec) -> generator<com_ptr<IMFSample>>;
@@ -127,7 +134,10 @@ class qpc_timer_t final {
     }
 };
 
+std::string to_string(const GUID& guid) noexcept;
 std::string to_readable(const GUID& guid) noexcept;
+
+winrt::hstring to_hstring(const GUID& guid) noexcept;
 
 /**
  * @brief print description for the `media_type` with logging
@@ -145,5 +155,4 @@ void print(gsl::not_null<IMFMediaType*> media_type) noexcept;
  * @brief print description for the `media_type` with logging
  * @note the function may change modify input/output configuration
  */
-void print(gsl::not_null<IMFTransform*> transform) noexcept;
 void print(gsl::not_null<IMFTransform*> transform, const GUID& iid) noexcept;

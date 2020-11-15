@@ -23,10 +23,11 @@ namespace fs = std::filesystem;
 
 fs::path get_asset_dir() noexcept {
 #if defined(ASSET_DIR)
-    return {ASSET_DIR};
-#else
-    return fs::current_path();
+    fs::path asset_dir{ASSET_DIR};
+    if (fs::exists(asset_dir))
+        return asset_dir;
 #endif
+    return fs::current_path();
 }
 
 /// @todo catch `winrt::hresult_error`

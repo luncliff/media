@@ -81,7 +81,7 @@ HRESULT get_name(gsl::not_null<IMFActivate*> device, std::wstring& ref) noexcept
     return hr;
 }
 
-HRESULT get_hardware_url(gsl::not_null<IMFTransform*> transform, std::wstring& name) noexcept {
+HRESULT get_hardware_url(gsl::not_null<IMFTransform*> transform, winrt::hstring& name) noexcept {
     com_ptr<IMFAttributes> attrs{};
     if (auto hr = transform->GetAttributes(attrs.put()))
         return hr;
@@ -102,22 +102,23 @@ HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE
     if (auto hr = resolver->CreateObjectFromURL(fpath.c_str(), MF_RESOLUTION_MEDIASOURCE | MF_RESOLUTION_READ, NULL,
                                                 &media_object_type, unknown.put()))
         return hr;
-    return unknown->QueryInterface(IID_PPV_ARGS(source));
+    return unknown->QueryInterface(source);
 }
 
 HRESULT make_transform_H264(IMFTransform** transform) noexcept {
     com_ptr<IUnknown> unknown{};
-    if (auto hr =
-            CoCreateInstance(CLSID_CMSH264DecoderMFT, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown, (void**)unknown.put()))
+    if (auto hr = CoCreateInstance(CLSID_CMSH264DecoderMFT, NULL, CLSCTX_INPROC_SERVER, //
+                                   IID_PPV_ARGS(unknown.put())))
         return hr;
-    return unknown->QueryInterface(IID_PPV_ARGS(transform));
+    return unknown->QueryInterface(transform);
 }
 
 HRESULT make_transform_video(IMFTransform** transform, const IID& iid) noexcept {
     com_ptr<IUnknown> unknown{};
-    if (auto hr = CoCreateInstance(iid, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown, (void**)unknown.put()))
+    if (auto hr = CoCreateInstance(iid, NULL, CLSCTX_INPROC_SERVER, //
+                                   IID_PPV_ARGS(unknown.put())))
         return hr;
-    return unknown->QueryInterface(IID_PPV_ARGS(transform));
+    return unknown->QueryInterface(transform);
 }
 
 HRESULT make_transform_video(IMFTransform** transform) noexcept {
@@ -240,6 +241,38 @@ auto try_input_available_types(com_ptr<IMFTransform> transform, DWORD stream_id,
     }
 }
 
+/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer
+HRESULT configure_source_rectangle(gsl::not_null<IPropertyStore*> props, const RECT& rect) noexcept {
+    PROPVARIANT val{};
+    val.intVal = rect.left;
+    if (auto hr = props->SetValue(MFPKEY_RESIZE_SRC_LEFT, val))
+        return hr;
+    val.intVal = rect.top;
+    if (auto hr = props->SetValue(MFPKEY_RESIZE_SRC_TOP, val))
+        return hr;
+    val.intVal = rect.right - rect.left;
+    if (auto hr = props->SetValue(MFPKEY_RESIZE_SRC_WIDTH, val))
+        return hr;
+    val.intVal = rect.bottom - rect.top;
+    return props->SetValue(MFPKEY_RESIZE_SRC_HEIGHT, val);
+}
+
+/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer
+HRESULT configure_destination_rectangle(gsl::not_null<IPropertyStore*> props, const RECT& rect) noexcept {
+    PROPVARIANT val{};
+    val.intVal = rect.left;
+    if (auto hr = props->SetValue(MFPKEY_RESIZE_DST_LEFT, val))
+        return hr;
+    val.intVal = rect.top;
+    if (auto hr = props->SetValue(MFPKEY_RESIZE_DST_TOP, val))
+        return hr;
+    val.intVal = rect.right - rect.left;
+    if (auto hr = props->SetValue(MFPKEY_RESIZE_DST_WIDTH, val))
+        return hr;
+    val.intVal = rect.bottom - rect.top;
+    return props->SetValue(MFPKEY_RESIZE_DST_HEIGHT, val);
+}
+
 HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr) {
     DWORD num_stream = 0;
     if (auto hr = presentation->GetStreamDescriptorCount(&num_stream); SUCCEEDED(hr) == false)
@@ -320,11 +353,11 @@ auto read_samples(com_ptr<IMFSourceReader> source_reader, //
     }
 };
 
-auto decode(com_ptr<IMFTransform> transform, com_ptr<IMFMediaType> output_type, //
-            DWORD ostream) noexcept(false) -> generator<com_ptr<IMFSample>> {
+auto decode(com_ptr<IMFTransform> transform, DWORD ostream, com_ptr<IMFMediaType> output_type, HRESULT& ec) noexcept
+    -> generator<com_ptr<IMFSample>> {
     MFT_OUTPUT_STREAM_INFO output_stream_info{};
-    if (auto hr = transform->GetOutputStreamInfo(ostream, &output_stream_info))
-        throw winrt::hresult_error{hr};
+    if (ec = transform->GetOutputStreamInfo(ostream, &output_stream_info); FAILED(ec))
+        co_return;
 
     while (true) {
         MFT_OUTPUT_DATA_BUFFER output_buffer{};
@@ -332,35 +365,34 @@ auto decode(com_ptr<IMFTransform> transform, com_ptr<IMFMediaType> output_type, 
         if (output_stream_info.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES) {
             // ...
         } else {
-            if (auto hr = create_single_buffer_sample(output_stream_info.cbSize, output_sample.put()))
-                throw winrt::hresult_error{hr};
+            if (ec = create_single_buffer_sample(output_stream_info.cbSize, output_sample.put()); FAILED(ec))
+                co_return;
             output_buffer.pSample = output_sample.get();
         }
 
         DWORD status = 0; // MFT_OUTPUT_STATUS_SAMPLE_READY
-        auto hr = transform->ProcessOutput(0, 1, &output_buffer, &status);
-        if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT)
+        ec = transform->ProcessOutput(0, 1, &output_buffer, &status);
+        if (ec == MF_E_TRANSFORM_NEED_MORE_INPUT)
             break;
-        if (hr == MF_E_TRANSFORM_STREAM_CHANGE) {
+        if (ec == MF_E_TRANSFORM_STREAM_CHANGE) {
             if (output_buffer.dwStatus != MFT_OUTPUT_DATA_BUFFER_FORMAT_CHANGE) {
                 // todo: add more works for this case
                 co_return;
             }
             // the type is changed. update after reset
             output_type = nullptr;
-            if (auto hr = transform->GetOutputAvailableType(output_buffer.dwStreamID, 0, output_type.put()))
-                throw winrt::hresult_error{hr};
+            if (ec = transform->GetOutputAvailableType(output_buffer.dwStreamID, 0, output_type.put()); FAILED(ec))
+                co_return;
             // specify the format we want ...
             GUID output_subtype{};
-            if (auto hr = output_type->GetGUID(MF_MT_SUBTYPE, &output_subtype))
-                throw winrt::hresult_error{hr};
-
-            if (auto hr = transform->SetOutputType(0, output_type.get(), 0))
-                throw winrt::hresult_error{hr};
+            if (ec = output_type->GetGUID(MF_MT_SUBTYPE, &output_subtype); FAILED(ec))
+                co_return;
+            if (ec = transform->SetOutputType(ostream, output_type.get(), 0); FAILED(ec))
+                co_return;
             continue;
         }
-        if (hr != S_OK)
-            throw winrt::hresult_error{hr};
+        if (ec != S_OK)
+            co_return;
 
         if (output_stream_info.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES)
             output_sample.attach(output_buffer.pSample);
@@ -388,7 +420,7 @@ auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, //
         co_return;
     }
     // fetch output if available
-    for (com_ptr<IMFSample> output_sample : decode(transform, output_type, ostream))
+    for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec))
         co_yield output_sample;
 }
 
@@ -420,9 +452,8 @@ auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, com_
     if (ec = transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL))
         co_return;
 
-    for (com_ptr<IMFSample> output_sample : decode(transform, output_type, ostream))
+    for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec))
         co_yield output_sample;
-    ec = S_OK;
 }
 
 HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample) {
