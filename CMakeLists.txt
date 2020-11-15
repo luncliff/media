@@ -20,7 +20,9 @@ check_include_file_cxx("wincodecsdk.h" found_codecsdk)
 check_include_file_cxx("wrl/client.h" found_wrl)
 check_include_file_cxx("d3d11.h" found_direcx11)
 
-check_include_file_cxx("winrt/Windows.Foundation.h" found_winrt)
+# see https://github.com/microsoft/wil
+find_path(WIL_INCLUDE_DIRS "wil/com.h")
+message(STATUS "WIL: ${WIL_INCLUDE_DIRS}")
 
 add_library(media STATIC
     src/media.hpp
