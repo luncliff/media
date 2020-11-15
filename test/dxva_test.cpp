@@ -159,14 +159,14 @@ SCENARIO("MFTransform with ID3D11Device", "[dxva][!mayfail]") {
         com_ptr<IMFTransform> transform{};
         REQUIRE(make_transform_video(transform.put(), CLSID_CMSH264DecoderMFT) == S_OK);
         REQUIRE(configure_acceleration_H264(transform.get()) == S_OK);
-        REQUIRE(configure_D3D11_DXGI(transform.get(), device_manager.get()) == S_OK);
+        CAPTURE(configure_D3D11_DXGI(transform.get(), device_manager.get()));
 
         print(transform.get(), CLSID_CMSH264DecoderMFT);
     }
     GIVEN("CLSID_VideoProcessorMFT") {
         com_ptr<IMFTransform> transform{};
         REQUIRE(make_transform_video(transform.put(), CLSID_VideoProcessorMFT) == S_OK);
-        REQUIRE(configure_D3D11_DXGI(transform.get(), device_manager.get()) == S_OK);
+        CAPTURE(configure_D3D11_DXGI(transform.get(), device_manager.get()));
         {
             com_ptr<IMFVideoProcessorControl> control{};
             REQUIRE(transform->QueryInterface(control.put()) == S_OK);
