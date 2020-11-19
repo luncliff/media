@@ -57,7 +57,7 @@ TEST_CASE("IMFActivate(VideoCapture)", "[!mayfail]") {
 
 TEST_CASE("IMFSourceResolver") {
     const auto fpath = fs::absolute(get_asset_dir() / "fm5p7flyCSY.mp4");
-    REQUIRE(PathFileExistsW(fpath.c_str()));
+    REQUIRE(fs::exists(fpath));
 
     auto on_return = media_startup();
 

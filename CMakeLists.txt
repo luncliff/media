@@ -7,7 +7,6 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS true)
 endif()
 set(CMAKE_VS_WINRT_BY_DEFAULT true)
-
 message(STATUS "using Windows: ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
 
 find_package(Microsoft.GSL CONFIG)
@@ -20,7 +19,9 @@ check_include_file_cxx("wincodecsdk.h" found_codecsdk)
 check_include_file_cxx("wrl/client.h" found_wrl)
 check_include_file_cxx("d3d11.h" found_direcx11)
 
-check_include_file_cxx("winrt/Windows.Foundation.h" found_winrt)
+# see https://github.com/microsoft/wil
+find_path(WIL_INCLUDE_DIRS "wil/com.h")
+message(STATUS "WIL: ${WIL_INCLUDE_DIRS}")
 
 add_library(media STATIC
     src/media.hpp
@@ -95,6 +96,15 @@ write_basic_package_version_file(${VERSION_FILE_PATH}
 install(FILES           ${VERSION_FILE_PATH} 
         DESTINATION     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}
 )
+
+if(BUILD_DRIVER)
+    include(CPack)
+    set_target_properties(media
+    PROPERTIES
+        VS_GLOBAL_DriverTargetPlatform  Universal
+        VS_PLATFORM_TOOLSET             WindowsApplicationForDrivers10.0
+    )
+endif()
 
 if(NOT BUILD_TESTING)
     return()
