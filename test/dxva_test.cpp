@@ -32,6 +32,40 @@ namespace fs = std::filesystem;
 
 fs::path get_asset_dir() noexcept;
 
+TEST_CASE("ID3D11Texture2D as DXGISurface", "[!mayfail]") {
+    auto on_return = media_startup();
+
+    com_ptr<ID3D11Device> graphics_device{};
+    com_ptr<ID3D11DeviceContext> graphics_device_context{};
+    {
+        D3D_FEATURE_LEVEL level{};
+        D3D_FEATURE_LEVEL levels[]{D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1};
+        REQUIRE(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_VIDEO_SUPPORT, levels, 3,
+                                  D3D11_SDK_VERSION, graphics_device.put(), &level,
+                                  graphics_device_context.put()) == S_OK);
+    }
+
+    com_ptr<ID3D11Texture2D> texture2d{};
+    {
+        D3D11_TEXTURE2D_DESC desc{};
+        REQUIRE(graphics_device->CreateTexture2D(&desc, nullptr, texture2d.put()) == S_OK);
+    }
+    com_ptr<IDXGISurface> surface{};
+    REQUIRE(texture2d->QueryInterface(surface.put()) == S_OK);
+    com_ptr<IMFMediaBuffer> media_buffer{};
+    REQUIRE(MFCreateDXGISurfaceBuffer(IID_ID3D11Texture2D, surface.get(), 0, TRUE, media_buffer.put()) == S_OK);
+    com_ptr<IMFDXGIBuffer> dxgi_buffer{};
+    REQUIRE(media_buffer->QueryInterface(dxgi_buffer.put()) == S_OK);
+    {
+
+        UINT index = 0;
+        REQUIRE(dxgi_buffer->GetSubresourceIndex(&index) == S_OK);
+        com_ptr<ID3D11Texture2D> tex{};
+        REQUIRE(dxgi_buffer->GetResource(IID_PPV_ARGS(tex.put())) == S_OK);
+        REQUIRE(texture2d == tex);
+    }
+}
+
 void make_test_source(com_ptr<IMFMediaSourceEx>& source, com_ptr<IMFSourceReader>& source_reader,
                       com_ptr<IMFMediaType>& source_type, //
                       const GUID& output_subtype, const fs::path& fpath);

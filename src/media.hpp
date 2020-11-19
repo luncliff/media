@@ -44,6 +44,7 @@ HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE
 /// @see CoCreateInstance
 /// @see Color Converter DSP https://docs.microsoft.com/en-us/windows/win32/medfound/colorconverter
 /// @param iid CLSID_CColorConvertDMO
+/// @todo test CLSID_OpenCLMFTDx11
 HRESULT make_transform_video(IMFTransform** transform, const IID& iid) noexcept;
 
 /// @see CoCreateInstance
