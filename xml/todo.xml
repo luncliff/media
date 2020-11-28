@@ -5,7 +5,7 @@
     <title>Todo List</title>
     <detaileddescription>
 <para><variablelist>
-<varlistentry><term><anchor id="todo_1_todo000001"/>Class <ref refid="classqpc__timer__t" kindref="compound">qpc_timer_t</ref>  </term></varlistentry>
+<varlistentry><term><anchor id="todo_1_todo000004"/>Class <ref refid="classqpc__timer__t" kindref="compound">qpc_timer_t</ref>  </term></varlistentry>
 <listitem><para>use <computeroutput>static_assert</computeroutput> for Windows SDK </para></listitem>
 </variablelist>
 </para>    </detaileddescription>

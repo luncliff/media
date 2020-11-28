@@ -4,6 +4,7 @@
     <compoundname>src</compoundname>
     <innerfile refid="media_8cpp">media.cpp</innerfile>
     <innerfile refid="media_8hpp">media.hpp</innerfile>
+    <innerfile refid="media__print_8cpp">media_print.cpp</innerfile>
     <briefdescription>
     </briefdescription>
     <detaileddescription>

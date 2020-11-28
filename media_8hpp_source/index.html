@@ -91,36 +91,99 @@
 <p><a href="../files/"><strong>File List</strong></a> <strong>&gt;</strong> <a href="../dir_68267d1309a1af8e8297ef4c3efbcdba/"><strong>src</strong></a> <strong>&gt;</strong> <a href="../media_8hpp/"><strong>media.hpp</strong></a></p>
 <p><a href="../media_8hpp/">Go to the documentation of this file.</a> </p>
 <pre><code class="cpp">#pragma once
-#include &lt;winrt/Windows.Foundation.h&gt;
-#include &lt;winrt/Windows.System.Threading.h&gt;
+#include &lt;winrt/base.h&gt;
 
 #include &lt;experimental/generator&gt;
+#include &lt;filesystem&gt;
 #include &lt;gsl/gsl&gt;
 
-#include &lt;comdef.h&gt;
 #include &lt;mfapi.h&gt;
 #include &lt;mferror.h&gt;
 #include &lt;mfidl.h&gt;
 #include &lt;mfreadwrite.h&gt;
-#include &lt;shlwapi.h&gt;
 #include &lt;wmcodecdsp.h&gt;
-#include &lt;wrl/client.h&gt;
 
-using Microsoft::WRL::ComPtr;
+// C++ 17 Coroutines TS
+using std::experimental::generator;
+// replaces Microsoft::WRL::ComPtr. see https://docs.microsoft.com/en-us/windows/uwp/cpp-and-winrt-apis/move-to-winrt-from-wrl
+using winrt::com_ptr;
+
+namespace fs = std::filesystem;
 
 auto media_startup() noexcept(false) -&gt; gsl::final_action&lt;HRESULT(WINAPI*)()&gt;;
 
-HRESULT get_devices(IMFAttributes* attrs, std::vector&lt;ComPtr&lt;IMFActivate&gt;&gt;&amp; devices) noexcept;
-HRESULT get_name(IMFActivate* device, std::wstring&amp; name) noexcept;
+HRESULT get_devices(std::vector&lt;com_ptr&lt;IMFActivate&gt;&gt;&amp; devices, IMFAttributes* attributes) noexcept;
 
-gsl::czstring&lt;&gt; get_name(const GUID&amp; guid) noexcept;
+HRESULT get_string(gsl::not_null&lt;IMFAttributes*&gt; attribute, const GUID&amp; uuid, winrt::hstring&amp; name) noexcept;
+
+HRESULT get_name(gsl::not_null&lt;IMFActivate*&gt; device, winrt::hstring&amp; name) noexcept;
+[[deprecated]] HRESULT get_name(gsl::not_null&lt;IMFActivate*&gt; device, std::wstring&amp; name) noexcept;
+[[deprecated]] HRESULT get_name(gsl::not_null&lt;IMFActivate*&gt; device, std::string&amp; name) noexcept;
+
+HRESULT get_hardware_url(gsl::not_null&lt;IMFTransform*&gt; transform, winrt::hstring&amp; name) noexcept;
+
+HRESULT resolve(const fs::path&amp; fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE&amp; media_object_type) noexcept;
+
+HRESULT make_transform_video(IMFTransform** transform, const IID&amp; iid) noexcept;
+
+[[deprecated]] HRESULT make_transform_H264(IMFTransform** transform) noexcept;
+
+HRESULT configure_acceleration_H264(gsl::not_null&lt;IMFTransform*&gt; transform) noexcept;
+
+[[deprecated]] HRESULT make_transform_video(IMFTransform** transform) noexcept;
+
+HRESULT configure_D3D11_DXGI(gsl::not_null&lt;IMFTransform*&gt; transform, IMFDXGIDeviceManager* device_manager) noexcept;
+
+HRESULT configure_rectangle(gsl::not_null&lt;IMFVideoProcessorControl*&gt; control,
+                            gsl::not_null&lt;IMFMediaType*&gt; media_type) noexcept;
+
+HRESULT configure_source_rectangle(gsl::not_null&lt;IPropertyStore*&gt; props, const RECT&amp; rect) noexcept;
+
+HRESULT configure_destination_rectangle(gsl::not_null&lt;IPropertyStore*&gt; props, const RECT&amp; rect) noexcept;
+
+HRESULT make_video_output_RGB32(IMFMediaType** ptr) noexcept;
+
+HRESULT make_video_output_RGB565(IMFMediaType** ptr) noexcept;
+
+HRESULT try_output_type(com_ptr&lt;IMFTransform&gt; transform, DWORD ostream, const GUID&amp; desired,
+                        IMFMediaType** output_type) noexcept;
+
+auto get_input_available_types(com_ptr&lt;IMFTransform&gt; transform, DWORD num_input, HRESULT&amp; ec) noexcept(false)
+    -&gt; generator&lt;com_ptr&lt;IMFMediaType&gt;&gt;;
+
+auto try_output_available_types(com_ptr&lt;IMFTransform&gt; transform, DWORD stream_id, DWORD&amp; type_index) noexcept(false)
+    -&gt; generator&lt;com_ptr&lt;IMFMediaType&gt;&gt;;
+
+auto get_output_available_types(com_ptr&lt;IMFTransform&gt; transform, DWORD num_output, HRESULT&amp; ec) noexcept(false)
+    -&gt; generator&lt;com_ptr&lt;IMFMediaType&gt;&gt;;
+auto try_input_available_types(com_ptr&lt;IMFTransform&gt; transform, DWORD stream_id, DWORD&amp; type_index) noexcept(false)
+    -&gt; generator&lt;com_ptr&lt;IMFMediaType&gt;&gt;;
+
+auto read_samples(com_ptr&lt;IMFSourceReader&gt; source_reader, //
+                  DWORD&amp; index, DWORD&amp; flags, LONGLONG&amp; timestamp, LONGLONG&amp; duration) noexcept(false)
+    -&gt; generator&lt;com_ptr&lt;IMFSample&gt;&gt;;
+
+auto decode(com_ptr&lt;IMFTransform&gt; transform, DWORD ostream, com_ptr&lt;IMFMediaType&gt; output_type, //
+            HRESULT&amp; ec) noexcept -&gt; generator&lt;com_ptr&lt;IMFSample&gt;&gt;;
+
+auto process(com_ptr&lt;IMFTransform&gt; transform, DWORD istream, DWORD ostream,      //
+             com_ptr&lt;IMFSample&gt; input_sample, com_ptr&lt;IMFMediaType&gt; output_type, //
+             HRESULT&amp; ec) noexcept -&gt; generator&lt;com_ptr&lt;IMFSample&gt;&gt;;
+auto process(com_ptr&lt;IMFTransform&gt; transform, DWORD istream, DWORD ostream, //
+             com_ptr&lt;IMFSourceReader&gt; source_reader,                        //
+             HRESULT&amp; ec) -&gt; generator&lt;com_ptr&lt;IMFSample&gt;&gt;;
+
+HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample);
+HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst);
+HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL&amp; flushed);
 
 HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr);
 
-HRESULT configure(ComPtr&lt;IMFStreamDescriptor&gt; stream) noexcept;
+HRESULT configure(com_ptr&lt;IMFStreamDescriptor&gt; stream) noexcept;
 
 class qpc_timer_t final {
-    LARGE_INTEGER start{}, const frequency{};
+    LARGE_INTEGER start{};
+    LARGE_INTEGER frequency{};
 
   public:
     qpc_timer_t() noexcept {
@@ -142,12 +205,16 @@ class qpc_timer_t final {
     }
 };
 
-auto decode(ComPtr&lt;IMFSourceReader&gt; source_reader, ComPtr&lt;IMFTransform&gt; decoding_transform) noexcept(false)
-    -&gt; std::experimental::generator&lt;ComPtr&lt;IMFSample&gt;&gt;;
+std::string to_string(const GUID&amp; guid) noexcept;
+std::string to_readable(const GUID&amp; guid) noexcept;
 
-HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample);
-HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst);
-HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL&amp; flushed);
+winrt::hstring to_hstring(const GUID&amp; guid) noexcept;
+
+void print(gsl::not_null&lt;IMFActivate*&gt; device) noexcept;
+
+void print(gsl::not_null&lt;IMFMediaType*&gt; media_type) noexcept;
+
+void print(gsl::not_null&lt;IMFTransform*&gt; transform, const GUID&amp; iid) noexcept;
 </code></pre>
               
             </div>

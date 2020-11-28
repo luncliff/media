@@ -1,0 +1,705 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="media__print_8cpp" kind="file" language="C++">
+    <compoundname>media_print.cpp</compoundname>
+    <includes refid="media_8hpp" local="yes">media.hpp</includes>
+    <includes local="no">dshowasf.h</includes>
+    <includes local="no">fmt/format.h</includes>
+    <includes local="no">spdlog/spdlog.h</includes>
+    <incdepgraph>
+      <node id="41">
+        <label>fmt/format.h</label>
+      </node>
+      <node id="33">
+        <label>filesystem</label>
+      </node>
+      <node id="37">
+        <label>mfidl.h</label>
+      </node>
+      <node id="39">
+        <label>wmcodecdsp.h</label>
+      </node>
+      <node id="32">
+        <label>experimental/generator</label>
+      </node>
+      <node id="34">
+        <label>gsl/gsl</label>
+      </node>
+      <node id="29">
+        <label>src/media_print.cpp</label>
+        <link refid="media__print_8cpp"/>
+        <childnode refid="30" relation="include">
+        </childnode>
+        <childnode refid="40" relation="include">
+        </childnode>
+        <childnode refid="41" relation="include">
+        </childnode>
+        <childnode refid="42" relation="include">
+        </childnode>
+      </node>
+      <node id="40">
+        <label>dshowasf.h</label>
+      </node>
+      <node id="35">
+        <label>mfapi.h</label>
+      </node>
+      <node id="42">
+        <label>spdlog/spdlog.h</label>
+      </node>
+      <node id="30">
+        <label>media.hpp</label>
+        <link refid="media_8hpp_source"/>
+        <childnode refid="31" relation="include">
+        </childnode>
+        <childnode refid="32" relation="include">
+        </childnode>
+        <childnode refid="33" relation="include">
+        </childnode>
+        <childnode refid="34" relation="include">
+        </childnode>
+        <childnode refid="35" relation="include">
+        </childnode>
+        <childnode refid="36" relation="include">
+        </childnode>
+        <childnode refid="37" relation="include">
+        </childnode>
+        <childnode refid="38" relation="include">
+        </childnode>
+        <childnode refid="39" relation="include">
+        </childnode>
+      </node>
+      <node id="36">
+        <label>mferror.h</label>
+      </node>
+      <node id="31">
+        <label>winrt/base.h</label>
+      </node>
+      <node id="38">
+        <label>mfreadwrite.h</label>
+      </node>
+    </incdepgraph>
+      <sectiondef kind="define">
+      <memberdef kind="define" id="media__print_8cpp_1a85c5e4f7e3930d9fe946207a2408a312" prot="public" static="no">
+        <name>SPDLOG_FMT_EXTERNAL</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media_print.cpp" line="7" column="9" bodyfile="src/media_print.cpp" bodystart="7" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="media__print_8cpp_1aeed8a54bf1b281ad1bab5e9e64351879" prot="public" static="no">
+        <name>IF_EQUAL_RETURN</name>
+        <param><defname>param</defname></param>
+        <param><defname>val</defname></param>
+        <initializer>if (val == param)                                                                                                  \
+    return #val</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media_print.cpp" line="61" column="9"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="media__print_8cpp_1a9c52d5b635c48b6a21fb18d5f35229c2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>string</type>
+        <definition>string w2mb</definition>
+        <argsstring>(wstring_view in) noexcept(false)</argsstring>
+        <name>w2mb</name>
+        <param>
+          <type>wstring_view</type>
+          <declname>in</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media_print.cpp" line="13" column="1" bodyfile="src/media_print.cpp" bodystart="13" bodyend="23"/>
+      </memberdef>
+      <memberdef kind="function" id="media__print_8cpp_1abec54f680a8854558b1f36a839fc339c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>wstring</type>
+        <definition>wstring mb2w</definition>
+        <argsstring>(string_view in) noexcept(false)</argsstring>
+        <name>mb2w</name>
+        <param>
+          <type>string_view</type>
+          <declname>in</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media_print.cpp" line="25" column="1" bodyfile="src/media_print.cpp" bodystart="25" bodyend="41"/>
+      </memberdef>
+      <memberdef kind="function" id="media__print_8cpp_1acabd627e6cdaf9021a3df6a73bdc1142" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string to_string</definition>
+        <argsstring>(const GUID &amp;guid) noexcept</argsstring>
+        <name>to_string</name>
+        <param>
+          <type>const GUID &amp;</type>
+          <declname>guid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media_print.cpp" line="43" column="1" bodyfile="src/media_print.cpp" bodystart="43" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="media__print_8cpp_1a50e075478b124dc4ce5ded4896888aa0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>winrt::hstring</type>
+        <definition>winrt::hstring to_hstring</definition>
+        <argsstring>(const GUID &amp;guid) noexcept</argsstring>
+        <name>to_hstring</name>
+        <param>
+          <type>const GUID &amp;</type>
+          <declname>guid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media_print.cpp" line="50" column="1" bodyfile="src/media_print.cpp" bodystart="50" bodyend="55"/>
+      </memberdef>
+      <memberdef kind="function" id="media__print_8cpp_1ad84dd7d8c4e22a9b4bb7f886a02e8bf3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string to_readable</definition>
+        <argsstring>(const GUID &amp;guid) noexcept</argsstring>
+        <name>to_readable</name>
+        <param>
+          <type>const GUID &amp;</type>
+          <declname>guid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/wmformat/media-type-identifiers">https://docs.microsoft.com/en-us/windows/win32/wmformat/media-type-identifiers</ulink> </para></simplesect>
+<simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/media-type-debugging-code">https://docs.microsoft.com/en-us/windows/win32/medfound/media-type-debugging-code</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media_print.cpp" line="59" column="1" bodyfile="src/media_print.cpp" bodystart="59" bodyend="234"/>
+      </memberdef>
+      <memberdef kind="function" id="media__print_8cpp_1a7f6dedbd34d0ae258f045e3ab84b36fa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void print</definition>
+        <argsstring>(gsl::not_null&lt; IMFActivate *&gt; device) noexcept</argsstring>
+        <name>print</name>
+        <param>
+          <type>gsl::not_null&lt; IMFActivate *&gt;</type>
+          <declname>device</declname>
+        </param>
+        <briefdescription>
+<para>print description for the <computeroutput>media_type</computeroutput> with logging </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/capture-device-attributes">https://docs.microsoft.com/en-us/windows/win32/medfound/capture-device-attributes</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media_print.cpp" line="237" column="1" bodyfile="src/media_print.cpp" bodystart="237" bodyend="263"/>
+      </memberdef>
+      <memberdef kind="function" id="media__print_8cpp_1aba157eeb91007ec196cf64eb94dbf0dc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void print</definition>
+        <argsstring>(gsl::not_null&lt; IMFMediaType *&gt; media_type) noexcept</argsstring>
+        <name>print</name>
+        <param>
+          <type>gsl::not_null&lt; IMFMediaType *&gt;</type>
+          <declname>media_type</declname>
+        </param>
+        <briefdescription>
+<para>print description for the <computeroutput>media_type</computeroutput> with logging </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids">https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids</ulink> </para></simplesect>
+<simplesect kind="see"><para><ulink url="https://stackoverflow.com/a/9681384">https://stackoverflow.com/a/9681384</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media_print.cpp" line="267" column="1" bodyfile="src/media_print.cpp" bodystart="267" bodyend="289"/>
+      </memberdef>
+      <memberdef kind="function" id="media__print_8cpp_1a760312d37220646004f0e51078eae76f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void print_CLSID_CResizerDMO</definition>
+        <argsstring>(gsl::not_null&lt; IMFTransform *&gt; transform, const GUID &amp;iid) noexcept</argsstring>
+        <name>print_CLSID_CResizerDMO</name>
+        <param>
+          <type>gsl::not_null&lt; IMFTransform *&gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>const GUID &amp;</type>
+          <declname>iid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media_print.cpp" line="290" column="1" bodyfile="src/media_print.cpp" bodystart="290" bodyend="337"/>
+      </memberdef>
+      <memberdef kind="function" id="media__print_8cpp_1a6700ed8804b48e1cc82981941e2b5ab3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void print_CLSID_CColorConvertDMO</definition>
+        <argsstring>(gsl::not_null&lt; IMFTransform *&gt; transform, const GUID &amp;iid) noexcept</argsstring>
+        <name>print_CLSID_CColorConvertDMO</name>
+        <param>
+          <type>gsl::not_null&lt; IMFTransform *&gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>const GUID &amp;</type>
+          <declname>iid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media_print.cpp" line="338" column="1" bodyfile="src/media_print.cpp" bodystart="338" bodyend="394"/>
+      </memberdef>
+      <memberdef kind="function" id="media__print_8cpp_1ab3ea16ebb42e242cc309a69055780b8c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void print</definition>
+        <argsstring>(gsl::not_null&lt; IMFTransform *&gt; transform, const GUID &amp;iid) noexcept</argsstring>
+        <name>print</name>
+        <param>
+          <type>gsl::not_null&lt; IMFTransform *&gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>const GUID &amp;</type>
+          <declname>iid</declname>
+        </param>
+        <briefdescription>
+<para>print description for the <computeroutput>media_type</computeroutput> with logging </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="note"><para>the function may change modify input/output configuration </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media_print.cpp" line="396" column="1" bodyfile="src/media_print.cpp" bodystart="396" bodyend="405"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#include<sp/>&quot;media.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;dshowasf.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fmt/format.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>SPDLOG_FMT_EXTERNAL</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>SPDLOG_FMT_EXTERNAL</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;spdlog/spdlog.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="keyword">using<sp/>namespace<sp/></highlight><highlight class="normal"><ref refid="namespacestd" kindref="compound">std</ref>;</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/>w2mb(wstring_view<sp/>in)<sp/>noexcept(</highlight><highlight class="keyword">false</highlight><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/>out{};</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"><sp/><sp/><sp/><sp/>out.reserve(MB_CUR_MAX<sp/>*<sp/>in.length());</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/><sp/>mbstate_t<sp/>state{};</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">wchar_t</highlight><highlight class="normal"><sp/>wc<sp/>:<sp/>in)<sp/>{</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>mb[8]{};<sp/></highlight><highlight class="comment">//<sp/>ensure<sp/>null-terminated<sp/>for<sp/>UTF-8<sp/>(maximum<sp/>4<sp/>byte)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>len<sp/>=<sp/>wcrtomb(mb,<sp/>wc,<sp/>&amp;state);</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>out<sp/>+=<sp/>string_view{mb,<sp/>len};</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>out;</highlight></codeline>
+<codeline lineno="23"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal">wstring<sp/>mb2w(string_view<sp/>in)<sp/>noexcept(</highlight><highlight class="keyword">false</highlight><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/>wstring<sp/>out{};</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/>out.reserve(in.length());</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>ptr<sp/>=<sp/>in.data();</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>end<sp/>=<sp/>in.data()<sp/>+<sp/>in.length();</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/>mbstate_t<sp/>state{};</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">wchar_t</highlight><highlight class="normal"><sp/>wc;</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/>len<sp/>=<sp/>mbrtowc(&amp;wc,<sp/>ptr,<sp/>end<sp/>-<sp/>ptr,<sp/>&amp;state))<sp/>{</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(len<sp/>==<sp/>static_cast&lt;size_t&gt;(-1))<sp/></highlight><highlight class="comment">//<sp/>bad<sp/>encoding</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>system_error{errno,<sp/>system_category(),<sp/></highlight><highlight class="stringliteral">&quot;mbrtowc&quot;</highlight><highlight class="normal">};</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(len<sp/>==<sp/>static_cast&lt;size_t&gt;(-2))<sp/></highlight><highlight class="comment">//<sp/>valid<sp/>but<sp/>incomplete</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>nothing<sp/>to<sp/>do<sp/>more</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>out.push_back(wc);</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ptr<sp/>+=<sp/>len;<sp/></highlight><highlight class="comment">//<sp/>advance<sp/>[1...n]</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>out;</highlight></codeline>
+<codeline lineno="41"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight></codeline>
+<codeline lineno="43"><highlight class="normal">std::string<sp/>to_string(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>GUID&amp;<sp/>guid)<sp/>noexcept<sp/>{</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/>constexpr<sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>bufsz<sp/>=<sp/>40;</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">wchar_t</highlight><highlight class="normal"><sp/>buf[bufsz]{};</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/>buflen<sp/>=<sp/>StringFromGUID2(guid,<sp/>buf,<sp/>bufsz);</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>w2mb({buf<sp/>+<sp/>1,<sp/>buflen<sp/>-<sp/>3});<sp/></highlight><highlight class="comment">//<sp/>GUID<sp/>requires<sp/>36<sp/>characters</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="48"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="normal">winrt::hstring<sp/>to_hstring(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>GUID&amp;<sp/>guid)<sp/>noexcept<sp/>{</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/>constexpr<sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>bufsz<sp/>=<sp/>40;</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">wchar_t</highlight><highlight class="normal"><sp/>buf[bufsz]{};</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/>uint32_t<sp/>buflen<sp/>=<sp/>StringFromGUID2(guid,<sp/>buf,<sp/>bufsz);</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>{buf<sp/>+<sp/>1,<sp/>buflen<sp/>-<sp/>3};<sp/></highlight><highlight class="comment">//<sp/>GUID<sp/>requires<sp/>36<sp/>characters</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="55"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"></highlight></codeline>
+<codeline lineno="59"><highlight class="normal">std::string<sp/>to_readable(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>GUID&amp;<sp/>guid)<sp/>noexcept<sp/>{</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>IF_EQUAL_RETURN</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="61"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>IF_EQUAL_RETURN(param,<sp/>val)<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="62"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>if<sp/>(val<sp/>==<sp/>param)<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="63"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>return<sp/>#val</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="64"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_MAJOR_TYPE);</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_MAJOR_TYPE);</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_SUBTYPE);</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_ALL_SAMPLES_INDEPENDENT);</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_FIXED_SIZE_SAMPLES);</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_COMPRESSED);</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_SAMPLE_SIZE);</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_WRAPPED_TYPE);</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_NUM_CHANNELS);</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_SAMPLES_PER_SECOND);</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_FLOAT_SAMPLES_PER_SECOND);</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_AVG_BYTES_PER_SECOND);</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_BLOCK_ALIGNMENT);</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_BITS_PER_SAMPLE);</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_VALID_BITS_PER_SAMPLE);</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_SAMPLES_PER_BLOCK);</highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_CHANNEL_MASK);</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_FOLDDOWN_MATRIX);</highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_WMADRC_PEAKREF);</highlight></codeline>
+<codeline lineno="84"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_WMADRC_PEAKTARGET);</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_WMADRC_AVGREF);</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_WMADRC_AVGTARGET);</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AUDIO_PREFER_WAVEFORMATEX);</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AAC_PAYLOAD_TYPE);</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AAC_AUDIO_PROFILE_LEVEL_INDICATION);</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_FRAME_SIZE);</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_FRAME_RATE);</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_FRAME_RATE_RANGE_MAX);</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_FRAME_RATE_RANGE_MIN);</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_PIXEL_ASPECT_RATIO);</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_DRM_FLAGS);</highlight></codeline>
+<codeline lineno="96"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_PAD_CONTROL_FLAGS);</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_SOURCE_CONTENT_HINT);</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_VIDEO_CHROMA_SITING);</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_INTERLACE_MODE);</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_TRANSFER_FUNCTION);</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_VIDEO_PRIMARIES);</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_CUSTOM_VIDEO_PRIMARIES);</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_YUV_MATRIX);</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_VIDEO_LIGHTING);</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_VIDEO_NOMINAL_RANGE);</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_GEOMETRIC_APERTURE);</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_MINIMUM_DISPLAY_APERTURE);</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_PAN_SCAN_APERTURE);</highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_PAN_SCAN_ENABLED);</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AVG_BITRATE);</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AVG_BIT_ERROR_RATE);</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_MAX_KEYFRAME_SPACING);</highlight></codeline>
+<codeline lineno="113"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_DEFAULT_STRIDE);</highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_PALETTE);</highlight></codeline>
+<codeline lineno="115"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_USER_DATA);</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_AM_FORMAT_TYPE);</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_MPEG_START_TIME_CODE);</highlight></codeline>
+<codeline lineno="118"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_MPEG2_PROFILE);</highlight></codeline>
+<codeline lineno="119"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_MPEG2_LEVEL);</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_MPEG2_FLAGS);</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_MPEG_SEQUENCE_HEADER);</highlight></codeline>
+<codeline lineno="122"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_DV_AAUX_SRC_PACK_0);</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_DV_AAUX_CTRL_PACK_0);</highlight></codeline>
+<codeline lineno="124"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_DV_AAUX_SRC_PACK_1);</highlight></codeline>
+<codeline lineno="125"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_DV_AAUX_CTRL_PACK_1);</highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_DV_VAUX_SRC_PACK);</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_DV_VAUX_CTRL_PACK);</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_ARBITRARY_HEADER);</highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_ARBITRARY_FORMAT);</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_IMAGE_LOSS_TOLERANT);</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_MPEG4_SAMPLE_DESCRIPTION);</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_MPEG4_CURRENT_SAMPLE_ENTRY);</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_ORIGINAL_4CC);</highlight></codeline>
+<codeline lineno="134"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MF_MT_ORIGINAL_WAVE_FORMAT_TAG);</highlight></codeline>
+<codeline lineno="135"><highlight class="normal"></highlight></codeline>
+<codeline lineno="136"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MF_MT_MAJOR_TYPE</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="137"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFMediaType_Audio);</highlight></codeline>
+<codeline lineno="138"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFMediaType_Video);</highlight></codeline>
+<codeline lineno="139"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFMediaType_Protected);</highlight></codeline>
+<codeline lineno="140"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFMediaType_SAMI);</highlight></codeline>
+<codeline lineno="141"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFMediaType_Script);</highlight></codeline>
+<codeline lineno="142"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFMediaType_Image);</highlight></codeline>
+<codeline lineno="143"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFMediaType_HTML);</highlight></codeline>
+<codeline lineno="144"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFMediaType_Binary);</highlight></codeline>
+<codeline lineno="145"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFMediaType_FileTransfer);</highlight></codeline>
+<codeline lineno="146"><highlight class="normal"></highlight></codeline>
+<codeline lineno="147"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>subtype</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="148"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_AI44);<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;AI44&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="149"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_ARGB32);<sp/><sp/></highlight><highlight class="comment">//<sp/>D3DFMT_A8R8G8B8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="150"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_AYUV);<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;AYUV&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="151"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_DV25);<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;dv25&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="152"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_DV50);<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;dv50&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="153"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_DVH1);<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;dvh1&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="154"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_DVSD);<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;dvsd&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="155"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_DVSL);<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;dvsl&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="156"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_H264);<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;H264&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="157"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_H264_ES);<sp/></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="158"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_I420);<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;I420&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="159"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_IYUV);<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;IYUV&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="160"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_M4S2);<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;M4S2&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="161"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_MJPG);</highlight></codeline>
+<codeline lineno="162"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_MP43);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;MP43&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="163"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_MP4S);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;MP4S&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="164"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_MP4V);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;MP4V&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="165"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_MPG1);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;MPG1&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="166"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_MSS1);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;MSS1&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="167"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_MSS2);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;MSS2&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="168"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_NV11);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;NV11&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="169"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_NV12);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;NV12&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="170"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_P010);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;P010&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="171"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_P016);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;P016&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="172"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_P210);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;P210&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="173"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_P216);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;P216&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="174"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_RGB24);<sp/><sp/></highlight><highlight class="comment">//<sp/>D3DFMT_R8G8B8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="175"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_RGB32);<sp/><sp/></highlight><highlight class="comment">//<sp/>D3DFMT_X8R8G8B8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="176"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_RGB555);<sp/></highlight><highlight class="comment">//<sp/>D3DFMT_X1R5G5B5</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="177"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_RGB565);<sp/></highlight><highlight class="comment">//<sp/>D3DFMT_R5G6B5</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="178"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_RGB8);</highlight></codeline>
+<codeline lineno="179"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_UYVY);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;UYVY&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="180"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_v210);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;v210&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="181"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_v410);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;v410&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="182"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_WMV1);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;WMV1&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="183"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_WMV2);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;WMV2&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="184"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_WMV3);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;WMV3&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="185"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_WVC1);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;WVC1&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="186"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_Y210);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;Y210&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="187"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_Y216);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;Y216&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="188"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_Y410);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;Y410&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="189"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_Y416);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;Y416&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="190"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_Y41P);</highlight></codeline>
+<codeline lineno="191"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_Y41T);</highlight></codeline>
+<codeline lineno="192"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_YUY2);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;YUY2&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="193"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_YV12);<sp/></highlight><highlight class="comment">//<sp/>FCC(&apos;YV12&apos;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="194"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFVideoFormat_YVYU);</highlight></codeline>
+<codeline lineno="195"><highlight class="normal"></highlight></codeline>
+<codeline lineno="196"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_PCM);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_PCM</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="197"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_Float);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_IEEE_FLOAT</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="198"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_DTS);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_DTS</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="199"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_Dolby_AC3_SPDIF);<sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_DOLBY_AC3_SPDIF</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="200"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_DRM);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_DRM</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="201"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_WMAudioV8);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_WMAUDIO2</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="202"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_WMAudioV9);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_WMAUDIO3</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="203"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_WMAudio_Lossless);<sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_WMAUDIO_LOSSLESS</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="204"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_WMASPDIF);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_WMASPDIF</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="205"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_MSP1);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_WMAVOICE9</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="206"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_MP3);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_MPEGLAYER3</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="207"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_MPEG);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_MPEG</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="208"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_AAC);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_MPEG_HEAAC</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="209"><highlight class="normal"><sp/><sp/><sp/><sp/>IF_EQUAL_RETURN(guid,<sp/>MFAudioFormat_ADTS);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>WAVE_FORMAT_MPEG_ADTS_AAC</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="210"><highlight class="normal"></highlight><highlight class="preprocessor">#undef<sp/>IF_EQUAL_RETURN</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="211"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>to_string(guid);</highlight></codeline>
+<codeline lineno="212"><highlight class="normal"></highlight></codeline>
+<codeline lineno="213"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_RGB32<sp/>//<sp/>444<sp/>(32<sp/>bpp)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="214"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_ARGB32</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="215"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_RGB24</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="216"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_I420<sp/>//<sp/>420<sp/>(16<sp/>bpp)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="217"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_NV12<sp/>//<sp/>420<sp/>(12<sp/>bpp)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="218"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_UYVY<sp/>//<sp/>422<sp/>(12<sp/>bpp)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="219"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_MJPG</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="220"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_AI44<sp/>//<sp/>4:4:4<sp/>Packed<sp/>P</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="221"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_AYUV<sp/>//<sp/>4:4:4<sp/>Packed<sp/>8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="222"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_I420<sp/>//<sp/>4:2:0<sp/>Planar<sp/>8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="223"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_IYUV<sp/>//<sp/>4:2:0<sp/>Planar<sp/>8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="224"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_NV11<sp/>//<sp/>4:1:1<sp/>Planar<sp/>8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="225"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_NV12<sp/>//<sp/>4:2:0<sp/>Planar<sp/>8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="226"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_UYVY<sp/>//<sp/>4:2:2<sp/>Packed<sp/>8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="227"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_Y41P<sp/>//<sp/>4:1:1<sp/>Packed<sp/>8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="228"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_Y41T<sp/>//<sp/>4:1:1<sp/>Packed<sp/>8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="229"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_Y42T<sp/>//<sp/>4:2:2<sp/>Packed<sp/>8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="230"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_YUY2<sp/>//<sp/>4:2:2<sp/>Packed<sp/>8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="231"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_YVU9<sp/>//<sp/>8:4:4<sp/>Planar<sp/>9</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="232"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_YV12<sp/>//<sp/>4:2:0<sp/>Planar<sp/>8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="233"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>MFVideoFormat_YVYU<sp/>//<sp/>4:2:2<sp/>Packed<sp/>8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="234"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="235"><highlight class="normal"></highlight></codeline>
+<codeline lineno="237"><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>print(gsl::not_null&lt;IMFActivate*&gt;<sp/>device)<sp/>noexcept<sp/>{</highlight></codeline>
+<codeline lineno="238"><highlight class="normal"><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;-<sp/>device:&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="239"><highlight class="normal"><sp/><sp/><sp/><sp/>winrt::hstring<sp/>txt{};</highlight></codeline>
+<codeline lineno="240"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>SUCCEEDED<sp/>(get_name(device,<sp/>txt))</highlight></codeline>
+<codeline lineno="241"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>name:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>winrt::to_string(txt));</highlight></codeline>
+<codeline lineno="242"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>SUCCEEDED<sp/>(get_string(device,<sp/>MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK,<sp/>txt))</highlight></codeline>
+<codeline lineno="243"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::debug(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>symlink:<sp/>&apos;{}&apos;&quot;</highlight><highlight class="normal">,<sp/>winrt::to_string(txt));</highlight></codeline>
+<codeline lineno="244"><highlight class="normal"></highlight></codeline>
+<codeline lineno="245"><highlight class="normal"><sp/><sp/><sp/><sp/>UINT32<sp/>is_hardware<sp/>=<sp/>FALSE;</highlight></codeline>
+<codeline lineno="246"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>SUCCEEDED<sp/>(device-&gt;GetUINT32(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_HW_SOURCE,<sp/>&amp;is_hardware))</highlight></codeline>
+<codeline lineno="247"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>hardware:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>static_cast&lt;bool&gt;(is_hardware));</highlight></codeline>
+<codeline lineno="248"><highlight class="normal"></highlight></codeline>
+<codeline lineno="249"><highlight class="normal"><sp/><sp/><sp/><sp/>UINT32<sp/>max_buffers<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="250"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>SUCCEEDED<sp/>(device-&gt;GetUINT32(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_MAX_BUFFERS,<sp/>&amp;max_buffers))</highlight></codeline>
+<codeline lineno="251"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::debug(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>max_buffers:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>max_buffers);</highlight></codeline>
+<codeline lineno="252"><highlight class="normal"></highlight></codeline>
+<codeline lineno="253"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//UINT32<sp/>count<sp/>=<sp/>0;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="254"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//if<sp/>SUCCEEDED<sp/>(device-&gt;GetBlobSize(MF_DEVSOURCE_ATTRIBUTE_MEDIA_TYPE,<sp/>&amp;count))<sp/>{</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="255"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>auto<sp/>types<sp/>=<sp/>std::make_unique&lt;MFT_REGISTER_TYPE_INFO[]&gt;(count);</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="256"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>if<sp/>FAILED<sp/>(device-&gt;GetBlob(MF_DEVSOURCE_ATTRIBUTE_MEDIA_TYPE,<sp/>reinterpret_cast&lt;UINT8*&gt;(types.get()),<sp/>count,</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="257"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&amp;count))</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="258"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>return;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="259"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>spdlog::info(&quot;<sp/><sp/>type_info:&quot;);</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="260"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>for<sp/>(auto<sp/>i<sp/>=<sp/>0u;<sp/>i<sp/>&lt;<sp/>count;<sp/>++i)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="261"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(&quot;<sp/><sp/>-<sp/>{}&quot;,<sp/>to_readable(types[i].guidSubtype));<sp/>//<sp/>MF_MT_SUBTYPE</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="262"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="263"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="264"><highlight class="normal"></highlight></codeline>
+<codeline lineno="267"><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>print(gsl::not_null&lt;IMFMediaType*&gt;<sp/>media_type)<sp/>noexcept<sp/>{</highlight></codeline>
+<codeline lineno="268"><highlight class="normal"><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;-<sp/>media_type:&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="269"><highlight class="normal"></highlight></codeline>
+<codeline lineno="270"><highlight class="normal"><sp/><sp/><sp/><sp/>GUID<sp/>major{};</highlight></codeline>
+<codeline lineno="271"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>hr<sp/>=<sp/>media_type-&gt;GetGUID(MF_MT_MAJOR_TYPE,<sp/>&amp;major);<sp/>FAILED(hr))</highlight></codeline>
+<codeline lineno="272"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>spdlog::error(</highlight><highlight class="stringliteral">&quot;type-&gt;GetGUID(MF_MT_MAJOR_TYPE):<sp/>{:#08x}&quot;</highlight><highlight class="normal">,<sp/>hr);</highlight></codeline>
+<codeline lineno="273"><highlight class="normal"></highlight></codeline>
+<codeline lineno="274"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(major<sp/>==<sp/>MFMediaType_Video)<sp/>{</highlight></codeline>
+<codeline lineno="275"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GUID<sp/>subtype{};</highlight></codeline>
+<codeline lineno="276"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>SUCCEEDED<sp/>(media_type-&gt;GetGUID(MF_MT_SUBTYPE,<sp/>&amp;subtype))<sp/>{</highlight></codeline>
+<codeline lineno="277"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>subtype:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>to_readable(subtype));</highlight></codeline>
+<codeline lineno="278"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="279"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>UINT32<sp/>w<sp/>=<sp/>0,<sp/>h<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="280"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>SUCCEEDED<sp/>(MFGetAttributeSize(media_type,<sp/>MF_MT_FRAME_SIZE,<sp/>&amp;w,<sp/>&amp;h))<sp/>{</highlight></codeline>
+<codeline lineno="281"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>width:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>w);</highlight></codeline>
+<codeline lineno="282"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>height:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>h);</highlight></codeline>
+<codeline lineno="283"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="284"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>UINT32<sp/>num<sp/>=<sp/>0,<sp/>denom<sp/>=<sp/>1;</highlight></codeline>
+<codeline lineno="285"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>SUCCEEDED<sp/>(MFGetAttributeRatio(media_type,<sp/>MF_MT_FRAME_RATE,<sp/>&amp;num,<sp/>&amp;denom))<sp/>{</highlight></codeline>
+<codeline lineno="286"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>fps:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>static_cast&lt;float&gt;(num)<sp/>/<sp/>denom);</highlight></codeline>
+<codeline lineno="287"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="288"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="289"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="290"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>print_CLSID_CResizerDMO(gsl::not_null&lt;IMFTransform*&gt;<sp/>transform,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>GUID&amp;<sp/>iid)<sp/>noexcept<sp/>{</highlight></codeline>
+<codeline lineno="291"><highlight class="normal"><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;-<sp/>transform:&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="292"><highlight class="normal"><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>-<sp/>iid:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>to_readable(iid));</highlight></codeline>
+<codeline lineno="293"><highlight class="normal"></highlight></codeline>
+<codeline lineno="294"><highlight class="normal"><sp/><sp/><sp/><sp/>DWORD<sp/>num_input<sp/>=<sp/>0,<sp/>num_output<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="295"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>hr<sp/>=<sp/>transform-&gt;GetStreamCount(&amp;num_input,<sp/>&amp;num_output);<sp/>FAILED(hr))</highlight></codeline>
+<codeline lineno="296"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>spdlog::error(</highlight><highlight class="stringliteral">&quot;transform-&gt;GetStreamCount:<sp/>{:#08x}&quot;</highlight><highlight class="normal">,<sp/>hr);</highlight></codeline>
+<codeline lineno="297"><highlight class="normal"></highlight></codeline>
+<codeline lineno="298"><highlight class="normal"><sp/><sp/><sp/><sp/>DWORD<sp/>istream<sp/>=<sp/>0,<sp/>ostream<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="299"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">switch</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>hr<sp/>=<sp/>transform-&gt;GetStreamIDs(1,<sp/>&amp;istream,<sp/>1,<sp/>&amp;ostream))<sp/>{</highlight></codeline>
+<codeline lineno="300"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/>E_NOTIMPL:</highlight></codeline>
+<codeline lineno="301"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>istream<sp/>=<sp/>num_input<sp/>-<sp/>1;</highlight></codeline>
+<codeline lineno="302"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ostream<sp/>=<sp/>num_output<sp/>-<sp/>1;</highlight></codeline>
+<codeline lineno="303"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/>S_OK:</highlight></codeline>
+<codeline lineno="304"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="305"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">default</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="306"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>spdlog::error(</highlight><highlight class="stringliteral">&quot;transform-&gt;GetStreamIDs:<sp/>{:#08x}&quot;</highlight><highlight class="normal">,<sp/>hr);</highlight></codeline>
+<codeline lineno="307"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="308"><highlight class="normal"></highlight></codeline>
+<codeline lineno="309"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>print<sp/>=<sp/>[](IMFMediaType*<sp/>media_type)<sp/>{</highlight></codeline>
+<codeline lineno="310"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GUID<sp/>subtype{};</highlight></codeline>
+<codeline lineno="311"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>media_type-&gt;GetGUID(MF_MT_SUBTYPE,<sp/>&amp;subtype);</highlight></codeline>
+<codeline lineno="312"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>subtype:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>to_readable(subtype));</highlight></codeline>
+<codeline lineno="313"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>UINT32<sp/>w<sp/>=<sp/>0,<sp/>h<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="314"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>SUCCEEDED<sp/>(MFGetAttributeSize(media_type,<sp/>MF_MT_FRAME_SIZE,<sp/>&amp;w,<sp/>&amp;h))<sp/>{</highlight></codeline>
+<codeline lineno="315"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>width:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>w);</highlight></codeline>
+<codeline lineno="316"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>height:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>h);</highlight></codeline>
+<codeline lineno="317"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="318"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>UINT32<sp/>num<sp/>=<sp/>0,<sp/>denom<sp/>=<sp/>1;</highlight></codeline>
+<codeline lineno="319"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>SUCCEEDED<sp/>(MFGetAttributeRatio(media_type,<sp/>MF_MT_FRAME_RATE,<sp/>&amp;num,<sp/>&amp;denom))<sp/>{</highlight></codeline>
+<codeline lineno="320"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>fps:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>static_cast&lt;float&gt;(num)<sp/>/<sp/>denom);</highlight></codeline>
+<codeline lineno="321"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="322"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="323"><highlight class="normal"><sp/><sp/><sp/><sp/>com_ptr&lt;IMFMediaType&gt;<sp/>input{};</highlight></codeline>
+<codeline lineno="324"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>hr<sp/>=<sp/>transform-&gt;GetInputCurrentType(istream,<sp/>input.put()))</highlight></codeline>
+<codeline lineno="325"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::error(</highlight><highlight class="stringliteral">&quot;transform-&gt;GetInputCurrentType:<sp/>{:#08x}&quot;</highlight><highlight class="normal">,<sp/>hr);</highlight></codeline>
+<codeline lineno="326"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="327"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>-<sp/>input_type:&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="328"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>print(input.get());</highlight></codeline>
+<codeline lineno="329"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="330"><highlight class="normal"><sp/><sp/><sp/><sp/>com_ptr&lt;IMFMediaType&gt;<sp/>output{};</highlight></codeline>
+<codeline lineno="331"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>hr<sp/>=<sp/>transform-&gt;GetOutputCurrentType(ostream,<sp/>output.put()))</highlight></codeline>
+<codeline lineno="332"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::error(</highlight><highlight class="stringliteral">&quot;transform-&gt;GetOutputCurrentType:<sp/>{:#08x}&quot;</highlight><highlight class="normal">,<sp/>hr);</highlight></codeline>
+<codeline lineno="333"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="334"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>-<sp/>output_type:&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="335"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>print(input.get());</highlight></codeline>
+<codeline lineno="336"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="337"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="338"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>print_CLSID_CColorConvertDMO(gsl::not_null&lt;IMFTransform*&gt;<sp/>transform,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>GUID&amp;<sp/>iid)<sp/>noexcept<sp/>{</highlight></codeline>
+<codeline lineno="339"><highlight class="normal"><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;-<sp/>transform:&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="340"><highlight class="normal"><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>-<sp/>iid:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>to_readable(iid));</highlight></codeline>
+<codeline lineno="341"><highlight class="normal"><sp/><sp/><sp/><sp/>DWORD<sp/>num_input<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="342"><highlight class="normal"><sp/><sp/><sp/><sp/>DWORD<sp/>num_output<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="343"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>hr<sp/>=<sp/>transform-&gt;GetStreamCount(&amp;num_input,<sp/>&amp;num_output);<sp/>FAILED(hr))</highlight></codeline>
+<codeline lineno="344"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>spdlog::error(</highlight><highlight class="stringliteral">&quot;transform-&gt;GetStreamCount:<sp/>{:#08x}&quot;</highlight><highlight class="normal">,<sp/>hr);</highlight></codeline>
+<codeline lineno="345"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>istreams<sp/>=<sp/>std::make_unique&lt;DWORD[]&gt;(num_input);</highlight></codeline>
+<codeline lineno="346"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>ostreams<sp/>=<sp/>std::make_unique&lt;DWORD[]&gt;(num_output);</highlight></codeline>
+<codeline lineno="347"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>hr<sp/>=<sp/>transform-&gt;GetStreamIDs(num_input,<sp/>istreams.get(),<sp/>num_output,<sp/>ostreams.get());<sp/>FAILED(hr))</highlight></codeline>
+<codeline lineno="348"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::warn(</highlight><highlight class="stringliteral">&quot;transform-&gt;GetStreamCount:<sp/>{:#08x}&quot;</highlight><highlight class="normal">,<sp/>hr);</highlight></codeline>
+<codeline lineno="349"><highlight class="normal"></highlight></codeline>
+<codeline lineno="350"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(num_input)<sp/>{</highlight></codeline>
+<codeline lineno="351"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>-<sp/>num_input:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>num_input);</highlight></codeline>
+<codeline lineno="352"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0u;<sp/>i<sp/>&lt;<sp/>num_input;<sp/>++i)<sp/>{</highlight></codeline>
+<codeline lineno="353"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>istream<sp/>=<sp/>istreams[i];</highlight></codeline>
+<codeline lineno="354"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>MFT_INPUT_STREAM_INFO<sp/>info{};</highlight></codeline>
+<codeline lineno="355"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>hr<sp/>=<sp/>transform-&gt;GetInputStreamInfo(istream,<sp/>&amp;info))<sp/>{</highlight></codeline>
+<codeline lineno="356"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::error(</highlight><highlight class="stringliteral">&quot;transform-&gt;GetInputStreamInfo:<sp/>{:#08x}&quot;</highlight><highlight class="normal">,<sp/>hr);</highlight></codeline>
+<codeline lineno="357"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="358"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>-<sp/>input_stream:&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="359"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>size:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>info.cbSize);</highlight></codeline>
+<codeline lineno="360"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>alignment:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>info.cbAlignment);</highlight></codeline>
+<codeline lineno="361"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>flags:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>info.dwFlags);</highlight></codeline>
+<codeline lineno="362"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::debug(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>max_latency:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>info.hnsMaxLatency);</highlight></codeline>
+<codeline lineno="363"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="364"><highlight class="normal"></highlight></codeline>
+<codeline lineno="365"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>DWORD<sp/>ostream<sp/>=<sp/>ostreams[0];</highlight></codeline>
+<codeline lineno="366"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>DWORD<sp/>output_index<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="367"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>com_ptr&lt;IMFMediaType&gt;<sp/>output_type{};</highlight></codeline>
+<codeline lineno="368"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>hr<sp/>=<sp/>transform-&gt;GetOutputAvailableType(ostream,<sp/>output_index++,<sp/>output_type.put());<sp/>SUCCEEDED(hr);</highlight></codeline>
+<codeline lineno="369"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>hr<sp/>=<sp/>transform-&gt;GetOutputAvailableType(ostream,<sp/>output_index++,<sp/>output_type.put()))<sp/>{</highlight></codeline>
+<codeline lineno="370"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(output_index<sp/>==<sp/>1)</highlight></codeline>
+<codeline lineno="371"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::debug(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>output_available_type:&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="372"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GUID<sp/>subtype{};</highlight></codeline>
+<codeline lineno="373"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>output_type-&gt;GetGUID(MF_MT_SUBTYPE,<sp/>&amp;subtype);</highlight></codeline>
+<codeline lineno="374"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::debug(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>-<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>to_readable(subtype));</highlight></codeline>
+<codeline lineno="375"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>output_type<sp/>=<sp/></highlight><highlight class="keyword">nullptr</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="376"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="377"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="378"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="379"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(num_output)<sp/>{</highlight></codeline>
+<codeline lineno="380"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>-<sp/>num_output:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>num_output);</highlight></codeline>
+<codeline lineno="381"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0u;<sp/>i<sp/>&lt;<sp/>num_output;<sp/>++i)<sp/>{</highlight></codeline>
+<codeline lineno="382"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>ostream<sp/>=<sp/>ostreams[i];</highlight></codeline>
+<codeline lineno="383"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>MFT_OUTPUT_STREAM_INFO<sp/>info{};</highlight></codeline>
+<codeline lineno="384"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>hr<sp/>=<sp/>transform-&gt;GetOutputStreamInfo(ostream,<sp/>&amp;info))<sp/>{</highlight></codeline>
+<codeline lineno="385"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::error(</highlight><highlight class="stringliteral">&quot;transform-&gt;GetOutputStreamInfo:<sp/>{:#08x}&quot;</highlight><highlight class="normal">,<sp/>hr);</highlight></codeline>
+<codeline lineno="386"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="387"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>-<sp/>output_stream:&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="388"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>size:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>info.cbSize);</highlight></codeline>
+<codeline lineno="389"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>alignment:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>info.cbAlignment);</highlight></codeline>
+<codeline lineno="390"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spdlog::info(</highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>flags:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/>info.dwFlags);</highlight></codeline>
+<codeline lineno="391"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="392"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="393"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="394"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="395"><highlight class="normal"></highlight></codeline>
+<codeline lineno="396"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>print(gsl::not_null&lt;IMFTransform*&gt;<sp/>transform,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>GUID&amp;<sp/>iid)<sp/>noexcept<sp/>{</highlight></codeline>
+<codeline lineno="397"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(iid<sp/>==<sp/>CLSID_CColorConvertDMO)</highlight></codeline>
+<codeline lineno="398"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>print_CLSID_CColorConvertDMO(transform,<sp/>iid);</highlight></codeline>
+<codeline lineno="399"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(iid<sp/>==<sp/>CLSID_VideoProcessorMFT)</highlight></codeline>
+<codeline lineno="400"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="401"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(iid<sp/>==<sp/>CLSID_CMSH264DecoderMFT)</highlight></codeline>
+<codeline lineno="402"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="403"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(iid<sp/>==<sp/>CLSID_CResizerDMO)</highlight></codeline>
+<codeline lineno="404"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>print_CLSID_CResizerDMO(transform,<sp/>iid);</highlight></codeline>
+<codeline lineno="405"><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="src/media_print.cpp"/>
+  </compounddef>
+</doxygen>

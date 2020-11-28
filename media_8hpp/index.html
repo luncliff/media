@@ -91,18 +91,15 @@
 <p><a href="../files/"><strong>File List</strong></a> <strong>&gt;</strong> <a href="../dir_68267d1309a1af8e8297ef4c3efbcdba/"><strong>src</strong></a> <strong>&gt;</strong> <a href="./"><strong>media.hpp</strong></a></p>
 <p><a href="../media_8hpp_source/">Go to the source code of this file.</a></p>
 <ul>
-<li><code>#include &lt;winrt/Windows.Foundation.h&gt;</code></li>
-<li><code>#include &lt;winrt/Windows.System.Threading.h&gt;</code></li>
+<li><code>#include &lt;winrt/base.h&gt;</code></li>
 <li><code>#include &lt;experimental/generator&gt;</code></li>
+<li><code>#include &lt;filesystem&gt;</code></li>
 <li><code>#include &lt;gsl/gsl&gt;</code></li>
-<li><code>#include &lt;comdef.h&gt;</code></li>
 <li><code>#include &lt;mfapi.h&gt;</code></li>
 <li><code>#include &lt;mferror.h&gt;</code></li>
 <li><code>#include &lt;mfidl.h&gt;</code></li>
 <li><code>#include &lt;mfreadwrite.h&gt;</code></li>
-<li><code>#include &lt;shlwapi.h&gt;</code></li>
 <li><code>#include &lt;wmcodecdsp.h&gt;</code></li>
-<li><code>#include &lt;wrl/client.h&gt;</code></li>
 </ul>
 <h2 id="classes">Classes</h2>
 <table>
@@ -130,7 +127,27 @@
 <tbody>
 <tr>
 <td align="right">HRESULT</td>
-<td align="left"><a href="./#function-configure"><strong>configure</strong></a> (ComPtr&lt; IMFStreamDescriptor &gt; stream) noexcept<br></td>
+<td align="left"><a href="./#function-configure"><strong>configure</strong></a> (com_ptr&lt; IMFStreamDescriptor &gt; stream) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-configure-d3d11-dxgi"><strong>configure_D3D11_DXGI</strong></a> (gsl::not_null&lt; IMFTransform *&gt; transform, IMFDXGIDeviceManager * device_manager) noexcept<br><em>configure D3D11 if the transform supports it</em></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-configure-acceleration-h264"><strong>configure_acceleration_H264</strong></a> (gsl::not_null&lt; IMFTransform *&gt; transform) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-configure-destination-rectangle"><strong>configure_destination_rectangle</strong></a> (gsl::not_null&lt; IPropertyStore *&gt; props, const RECT &amp; rect) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-configure-rectangle"><strong>configure_rectangle</strong></a> (gsl::not_null&lt; IMFVideoProcessorControl *&gt; control, gsl::not_null&lt; IMFMediaType *&gt; media_type) noexcept<br><em>exactly same sized src/dst rectangle;</em></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-configure-source-rectangle"><strong>configure_source_rectangle</strong></a> (gsl::not_null&lt; IPropertyStore *&gt; props, const RECT &amp; rect) noexcept<br></td>
 </tr>
 <tr>
 <td align="right">HRESULT</td>
@@ -142,19 +159,35 @@
 </tr>
 <tr>
 <td align="right">auto</td>
-<td align="left"><a href="./#function-decode"><strong>decode</strong></a> (ComPtr&lt; IMFSourceReader &gt; source_reader, ComPtr&lt; IMFTransform &gt; decoding_transform) noexcept<br></td>
+<td align="left"><a href="./#function-decode"><strong>decode</strong></a> (com_ptr&lt; IMFTransform &gt; transform, DWORD ostream, com_ptr&lt; IMFMediaType &gt; output_type, HRESULT &amp; ec) noexcept<br></td>
 </tr>
 <tr>
 <td align="right">HRESULT</td>
-<td align="left"><a href="./#function-get-devices"><strong>get_devices</strong></a> (IMFAttributes * attrs, std::vector&lt; ComPtr&lt; IMFActivate &gt;&gt; &amp; devices) noexcept<br></td>
+<td align="left"><a href="./#function-get-devices"><strong>get_devices</strong></a> (std::vector&lt; com_ptr&lt; IMFActivate &gt;&gt; &amp; devices, IMFAttributes * attributes) noexcept<br></td>
 </tr>
 <tr>
 <td align="right">HRESULT</td>
-<td align="left"><a href="./#function-get-name"><strong>get_name</strong></a> (IMFActivate * device, std::wstring &amp; name) noexcept<br></td>
+<td align="left"><a href="./#function-get-hardware-url"><strong>get_hardware_url</strong></a> (gsl::not_null&lt; IMFTransform *&gt; transform, winrt::hstring &amp; name) noexcept<br></td>
 </tr>
 <tr>
-<td align="right">gsl::czstring</td>
-<td align="left"><a href="./#function-get-name"><strong>get_name</strong></a> (const GUID &amp; guid) noexcept<br></td>
+<td align="right">auto</td>
+<td align="left"><a href="./#function-get-input-available-types"><strong>get_input_available_types</strong></a> (com_ptr&lt; IMFTransform &gt; transform, DWORD num_input, HRESULT &amp; ec) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-get-name"><strong>get_name</strong></a> (gsl::not_null&lt; IMFActivate *&gt; device, winrt::hstring &amp; name) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-get-name"><strong>get_name</strong></a> (gsl::not_null&lt; IMFActivate *&gt; device, std::wstring &amp; name) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-get-name"><strong>get_name</strong></a> (gsl::not_null&lt; IMFActivate *&gt; device, std::string &amp; name) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">auto</td>
+<td align="left"><a href="./#function-get-output-available-types"><strong>get_output_available_types</strong></a> (com_ptr&lt; IMFTransform &gt; transform, DWORD num_output, HRESULT &amp; ec) noexcept<br></td>
 </tr>
 <tr>
 <td align="right">HRESULT</td>
@@ -162,24 +195,140 @@
 </tr>
 <tr>
 <td align="right">HRESULT</td>
+<td align="left"><a href="./#function-get-string"><strong>get_string</strong></a> (gsl::not_null&lt; IMFAttributes *&gt; attribute, const GUID &amp; uuid, winrt::hstring &amp; name) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
 <td align="left"><a href="./#function-get-transform-output"><strong>get_transform_output</strong></a> (IMFTransform * transform, IMFSample ** sample, BOOL &amp; flushed) <br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-make-transform-h264"><strong>make_transform_H264</strong></a> (IMFTransform ** transform) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-make-transform-video"><strong>make_transform_video</strong></a> (IMFTransform ** transform, const IID &amp; iid) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-make-transform-video"><strong>make_transform_video</strong></a> (IMFTransform ** transform) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-make-video-output-rgb32"><strong>make_video_output_RGB32</strong></a> (IMFMediaType ** ptr) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-make-video-output-rgb565"><strong>make_video_output_RGB565</strong></a> (IMFMediaType ** ptr) noexcept<br></td>
 </tr>
 <tr>
 <td align="right">auto</td>
 <td align="left"><a href="./#function-media-startup"><strong>media_startup</strong></a> () noexcept<br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="./#function-print"><strong>print</strong></a> (gsl::not_null&lt; IMFActivate *&gt; device) noexcept<br><em>print description for the</em> <code>media_type</code> <em>with logging</em></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="./#function-print"><strong>print</strong></a> (gsl::not_null&lt; IMFMediaType *&gt; media_type) noexcept<br><em>print description for the</em> <code>media_type</code> <em>with logging</em></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="./#function-print"><strong>print</strong></a> (gsl::not_null&lt; IMFTransform *&gt; transform, const GUID &amp; iid) noexcept<br><em>print description for the</em> <code>media_type</code> <em>with logging</em></td>
+</tr>
+<tr>
+<td align="right">auto</td>
+<td align="left"><a href="./#function-process"><strong>process</strong></a> (com_ptr&lt; IMFTransform &gt; transform, DWORD istream, DWORD ostream, com_ptr&lt; IMFSample &gt; input_sample, com_ptr&lt; IMFMediaType &gt; output_type, HRESULT &amp; ec) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">auto</td>
+<td align="left"><a href="./#function-process"><strong>process</strong></a> (com_ptr&lt; IMFTransform &gt; transform, DWORD istream, DWORD ostream, com_ptr&lt; IMFSourceReader &gt; source_reader, HRESULT &amp; ec) <br></td>
+</tr>
+<tr>
+<td align="right">auto</td>
+<td align="left"><a href="./#function-read-samples"><strong>read_samples</strong></a> (com_ptr&lt; IMFSourceReader &gt; source_reader, DWORD &amp; index, DWORD &amp; flags, LONGLONG &amp; timestamp, LONGLONG &amp; duration) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-resolve"><strong>resolve</strong></a> (const fs::path &amp; fpath, IMFMediaSourceEx ** source, MF_OBJECT_TYPE &amp; media_object_type) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">winrt::hstring</td>
+<td align="left"><a href="./#function-to-hstring"><strong>to_hstring</strong></a> (const GUID &amp; guid) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">std::string</td>
+<td align="left"><a href="./#function-to-readable"><strong>to_readable</strong></a> (const GUID &amp; guid) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">std::string</td>
+<td align="left"><a href="./#function-to-string"><strong>to_string</strong></a> (const GUID &amp; guid) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">auto</td>
+<td align="left"><a href="./#function-try-input-available-types"><strong>try_input_available_types</strong></a> (com_ptr&lt; IMFTransform &gt; transform, DWORD stream_id, DWORD &amp; type_index) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">auto</td>
+<td align="left"><a href="./#function-try-output-available-types"><strong>try_output_available_types</strong></a> (com_ptr&lt; IMFTransform &gt; transform, DWORD stream_id, DWORD &amp; type_index) noexcept<br></td>
+</tr>
+<tr>
+<td align="right">HRESULT</td>
+<td align="left"><a href="./#function-try-output-type"><strong>try_output_type</strong></a> (com_ptr&lt; IMFTransform &gt; transform, DWORD ostream, const GUID &amp; desired, IMFMediaType ** output_type) noexcept<br></td>
 </tr>
 </tbody>
 </table>
 <h2 id="public-functions-documentation">Public Functions Documentation</h2>
 <h3 id="function-configure">function configure</h3>
 <pre><code class="cpp">HRESULT configure (
-    ComPtr&lt; IMFStreamDescriptor &gt; stream
+    com_ptr&lt; IMFStreamDescriptor &gt; stream
 ) noexcept
 </code></pre>
 
 <p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft">https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft</a> </p>
 <p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types">https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types</a> </p>
 <p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video">https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video</a> </p>
+<h3 id="function-configure_d3d11_dxgi">function configure_D3D11_DXGI</h3>
+<pre><code class="cpp">HRESULT configure_D3D11_DXGI (
+    gsl::not_null&lt; IMFTransform *&gt; transform,
+    IMFDXGIDeviceManager * device_manager
+) noexcept
+</code></pre>
+
+<p><strong>Returns:</strong></p>
+<p>E_NOTIMPL, E_FAIL ... </p>
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/hardware-mfts">https://docs.microsoft.com/en-us/windows/win32/medfound/hardware-mfts</a> </p>
+<h3 id="function-configure_acceleration_h264">function configure_acceleration_H264</h3>
+<pre><code class="cpp">HRESULT configure_acceleration_H264 (
+    gsl::not_null&lt; IMFTransform *&gt; transform
+) noexcept
+</code></pre>
+
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder#transform-attributes">https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder#transform-attributes</a> </p>
+<h3 id="function-configure_destination_rectangle">function configure_destination_rectangle</h3>
+<pre><code class="cpp">HRESULT configure_destination_rectangle (
+    gsl::not_null&lt; IPropertyStore *&gt; props,
+    const RECT &amp; rect
+) noexcept
+</code></pre>
+
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer">https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer</a> </p>
+<h3 id="function-configure_rectangle">function configure_rectangle</h3>
+<pre><code class="cpp">HRESULT configure_rectangle (
+    gsl::not_null&lt; IMFVideoProcessorControl *&gt; control,
+    gsl::not_null&lt; IMFMediaType *&gt; media_type
+) noexcept
+</code></pre>
+
+<h3 id="function-configure_source_rectangle">function configure_source_rectangle</h3>
+<pre><code class="cpp">HRESULT configure_source_rectangle (
+    gsl::not_null&lt; IPropertyStore *&gt; props,
+    const RECT &amp; rect
+) noexcept
+</code></pre>
+
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer">https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer</a> </p>
 <h3 id="function-create_and_copy_single_buffer_sample">function create_and_copy_single_buffer_sample</h3>
 <pre><code class="cpp">HRESULT create_and_copy_single_buffer_sample (
     IMFSample * src,
@@ -196,33 +345,66 @@
 
 <h3 id="function-decode">function decode</h3>
 <pre><code class="cpp">auto decode (
-    ComPtr&lt; IMFSourceReader &gt; source_reader,
-    ComPtr&lt; IMFTransform &gt; decoding_transform
+    com_ptr&lt; IMFTransform &gt; transform,
+    DWORD ostream,
+    com_ptr&lt; IMFMediaType &gt; output_type,
+    HRESULT &amp; ec
 ) noexcept
 </code></pre>
 
 <h3 id="function-get_devices">function get_devices</h3>
 <pre><code class="cpp">HRESULT get_devices (
-    IMFAttributes * attrs,
-    std::vector&lt; ComPtr&lt; IMFActivate &gt;&gt; &amp; devices
+    std::vector&lt; com_ptr&lt; IMFActivate &gt;&gt; &amp; devices,
+    IMFAttributes * attributes
 ) noexcept
 </code></pre>
 
 <p><strong>See also:</strong> MFEnumDeviceSources </p>
+<h3 id="function-get_hardware_url">function get_hardware_url</h3>
+<pre><code class="cpp">HRESULT get_hardware_url (
+    gsl::not_null&lt; IMFTransform *&gt; transform,
+    winrt::hstring &amp; name
+) noexcept
+</code></pre>
+
+<h3 id="function-get_input_available_types">function get_input_available_types</h3>
+<pre><code class="cpp">auto get_input_available_types (
+    com_ptr&lt; IMFTransform &gt; transform,
+    DWORD num_input,
+    HRESULT &amp; ec
+) noexcept
+</code></pre>
+
 <h3 id="function-get_name">function get_name</h3>
 <pre><code class="cpp">HRESULT get_name (
-    IMFActivate * device,
+    gsl::not_null&lt; IMFActivate *&gt; device,
+    winrt::hstring &amp; name
+) noexcept
+</code></pre>
+
+<p><strong>See also:</strong> MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME </p>
+<h3 id="function-get_name_1">function get_name</h3>
+<pre><code class="cpp">HRESULT get_name (
+    gsl::not_null&lt; IMFActivate *&gt; device,
     std::wstring &amp; name
 ) noexcept
 </code></pre>
 
-<h3 id="function-get_name_1">function get_name</h3>
-<pre><code class="cpp">gsl::czstring get_name (
-    const GUID &amp; guid
+<h3 id="function-get_name_2">function get_name</h3>
+<pre><code class="cpp">HRESULT get_name (
+    gsl::not_null&lt; IMFActivate *&gt; device,
+    std::string &amp; name
 ) noexcept
 </code></pre>
 
-<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/media-type-debugging-code">https://docs.microsoft.com/en-us/windows/win32/medfound/media-type-debugging-code</a> </p>
+<h3 id="function-get_output_available_types">function get_output_available_types</h3>
+<pre><code class="cpp">auto get_output_available_types (
+    com_ptr&lt; IMFTransform &gt; transform,
+    DWORD num_output,
+    HRESULT &amp; ec
+) noexcept
+</code></pre>
+
 <h3 id="function-get_stream_descriptor">function get_stream_descriptor</h3>
 <pre><code class="cpp">HRESULT get_stream_descriptor (
     IMFPresentationDescriptor * presentation,
@@ -230,12 +412,69 @@
 ) 
 </code></pre>
 
+<h3 id="function-get_string">function get_string</h3>
+<pre><code class="cpp">HRESULT get_string (
+    gsl::not_null&lt; IMFAttributes *&gt; attribute,
+    const GUID &amp; uuid,
+    winrt::hstring &amp; name
+) noexcept
+</code></pre>
+
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/api/mfobjects/nf-mfobjects-imfattributes-getstring">https://docs.microsoft.com/en-us/windows/win32/api/mfobjects/nf-mfobjects-imfattributes-getstring</a> </p>
 <h3 id="function-get_transform_output">function get_transform_output</h3>
 <pre><code class="cpp">HRESULT get_transform_output (
     IMFTransform * transform,
     IMFSample ** sample,
     BOOL &amp; flushed
 ) 
+</code></pre>
+
+<h3 id="function-make_transform_h264">function make_transform_H264</h3>
+<pre><code class="cpp">HRESULT make_transform_H264 (
+    IMFTransform ** transform
+) noexcept
+</code></pre>
+
+<p><strong>See also:</strong> CoCreateInstance </p>
+<p><strong>See also:</strong> CLSID_CMSH264DecoderMFT </p>
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder">https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder</a> </p>
+<h3 id="function-make_transform_video">function make_transform_video</h3>
+<pre><code class="cpp">HRESULT make_transform_video (
+    IMFTransform ** transform,
+    const IID &amp; iid
+) noexcept
+</code></pre>
+
+<p><strong>See also:</strong> CoCreateInstance </p>
+<p><strong>See also:</strong> Color Converter DSP <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/colorconverter">https://docs.microsoft.com/en-us/windows/win32/medfound/colorconverter</a> </p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>iid</code> CLSID_CColorConvertDMO </li>
+</ul>
+<p><strong>Todo</strong></p>
+<p>test CLSID_OpenCLMFTDx11 </p>
+<h3 id="function-make_transform_video_1">function make_transform_video</h3>
+<pre><code class="cpp">HRESULT make_transform_video (
+    IMFTransform ** transform
+) noexcept
+</code></pre>
+
+<p><strong>See also:</strong> CoCreateInstance </p>
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft">https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft</a> </p>
+<p><strong>See also:</strong> CLSID_VideoProcessorMFT </p>
+<h3 id="function-make_video_output_rgb32">function make_video_output_RGB32</h3>
+<pre><code class="cpp">HRESULT make_video_output_RGB32 (
+    IMFMediaType ** ptr
+) noexcept
+</code></pre>
+
+<p><strong>Todo</strong></p>
+<p>: configure MF_MT_FRAME_SIZE, MF_MT_FRAME_RATE </p>
+<p>: configure MF_MT_PIXEL_ASPECT_RATIO </p>
+<h3 id="function-make_video_output_rgb565">function make_video_output_RGB565</h3>
+<pre><code class="cpp">HRESULT make_video_output_RGB565 (
+    IMFMediaType ** ptr
+) noexcept
 </code></pre>
 
 <h3 id="function-media_startup">function media_startup</h3>
@@ -248,6 +487,121 @@
 <ul>
 <li><code>winrt::hresult_error</code> </li>
 </ul>
+<h3 id="function-print">function print</h3>
+<pre><code class="cpp">void print (
+    gsl::not_null&lt; IMFActivate *&gt; device
+) noexcept
+</code></pre>
+
+<p><strong>Note:</strong></p>
+<p>the argument is considered immutable</p>
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/capture-device-attributes">https://docs.microsoft.com/en-us/windows/win32/medfound/capture-device-attributes</a> </p>
+<h3 id="function-print_1">function print</h3>
+<pre><code class="cpp">void print (
+    gsl::not_null&lt; IMFMediaType *&gt; media_type
+) noexcept
+</code></pre>
+
+<p><strong>Note:</strong></p>
+<p>the argument is considered immutable</p>
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids">https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids</a> </p>
+<p><strong>See also:</strong> <a href="https://stackoverflow.com/a/9681384">https://stackoverflow.com/a/9681384</a> </p>
+<h3 id="function-print_2">function print</h3>
+<pre><code class="cpp">void print (
+    gsl::not_null&lt; IMFTransform *&gt; transform,
+    const GUID &amp; iid
+) noexcept
+</code></pre>
+
+<p><strong>Note:</strong></p>
+<p>the function may change modify input/output configuration </p>
+<h3 id="function-process">function process</h3>
+<pre><code class="cpp">auto process (
+    com_ptr&lt; IMFTransform &gt; transform,
+    DWORD istream,
+    DWORD ostream,
+    com_ptr&lt; IMFSample &gt; input_sample,
+    com_ptr&lt; IMFMediaType &gt; output_type,
+    HRESULT &amp; ec
+) noexcept
+</code></pre>
+
+<h3 id="function-process_1">function process</h3>
+<pre><code class="cpp">auto process (
+    com_ptr&lt; IMFTransform &gt; transform,
+    DWORD istream,
+    DWORD ostream,
+    com_ptr&lt; IMFSourceReader &gt; source_reader,
+    HRESULT &amp; ec
+) 
+</code></pre>
+
+<h3 id="function-read_samples">function read_samples</h3>
+<pre><code class="cpp">auto read_samples (
+    com_ptr&lt; IMFSourceReader &gt; source_reader,
+    DWORD &amp; index,
+    DWORD &amp; flags,
+    LONGLONG &amp; timestamp,
+    LONGLONG &amp; duration
+) noexcept
+</code></pre>
+
+<p><strong>Todo</strong></p>
+<p><a href="https://docs.microsoft.com/en-us/windows/win32/medfound/mf-source-reader-enable-advanced-video-processing#remarks">https://docs.microsoft.com/en-us/windows/win32/medfound/mf-source-reader-enable-advanced-video-processing#remarks</a> </p>
+<h3 id="function-resolve">function resolve</h3>
+<pre><code class="cpp">HRESULT resolve (
+    const fs::path &amp; fpath,
+    IMFMediaSourceEx ** source,
+    MF_OBJECT_TYPE &amp; media_object_type
+) noexcept
+</code></pre>
+
+<p><strong>See also:</strong> MFCreateSourceResolver </p>
+<h3 id="function-to_hstring">function to_hstring</h3>
+<pre><code class="cpp">winrt::hstring to_hstring (
+    const GUID &amp; guid
+) noexcept
+</code></pre>
+
+<h3 id="function-to_readable">function to_readable</h3>
+<pre><code class="cpp">std::string to_readable (
+    const GUID &amp; guid
+) noexcept
+</code></pre>
+
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/wmformat/media-type-identifiers">https://docs.microsoft.com/en-us/windows/win32/wmformat/media-type-identifiers</a> </p>
+<p><strong>See also:</strong> <a href="https://docs.microsoft.com/en-us/windows/win32/medfound/media-type-debugging-code">https://docs.microsoft.com/en-us/windows/win32/medfound/media-type-debugging-code</a> </p>
+<h3 id="function-to_string">function to_string</h3>
+<pre><code class="cpp">std::string to_string (
+    const GUID &amp; guid
+) noexcept
+</code></pre>
+
+<h3 id="function-try_input_available_types">function try_input_available_types</h3>
+<pre><code class="cpp">auto try_input_available_types (
+    com_ptr&lt; IMFTransform &gt; transform,
+    DWORD stream_id,
+    DWORD &amp; type_index
+) noexcept
+</code></pre>
+
+<h3 id="function-try_output_available_types">function try_output_available_types</h3>
+<pre><code class="cpp">auto try_output_available_types (
+    com_ptr&lt; IMFTransform &gt; transform,
+    DWORD stream_id,
+    DWORD &amp; type_index
+) noexcept
+</code></pre>
+
+<h3 id="function-try_output_type">function try_output_type</h3>
+<pre><code class="cpp">HRESULT try_output_type (
+    com_ptr&lt; IMFTransform &gt; transform,
+    DWORD ostream,
+    const GUID &amp; desired,
+    IMFMediaType ** output_type
+) noexcept
+</code></pre>
+
 <hr />
 <p>The documentation for this class was generated from the following file <code>src/media.hpp</code></p>
               

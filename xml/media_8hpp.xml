@@ -2,44 +2,41 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
   <compounddef id="media_8hpp" kind="file" language="C++">
     <compoundname>media.hpp</compoundname>
-    <includes local="no">winrt/Windows.Foundation.h</includes>
-    <includes local="no">winrt/Windows.System.Threading.h</includes>
+    <includes local="no">winrt/base.h</includes>
     <includes local="no">experimental/generator</includes>
+    <includes local="no">filesystem</includes>
     <includes local="no">gsl/gsl</includes>
-    <includes local="no">comdef.h</includes>
     <includes local="no">mfapi.h</includes>
     <includes local="no">mferror.h</includes>
     <includes local="no">mfidl.h</includes>
     <includes local="no">mfreadwrite.h</includes>
-    <includes local="no">shlwapi.h</includes>
     <includes local="no">wmcodecdsp.h</includes>
-    <includes local="no">wrl/client.h</includes>
-    <includedby refid="media_8cpp" local="yes">src/media.cpp</includedby>
+    <includedby refid="media_8cpp" local="no">src/media.cpp</includedby>
+    <includedby refid="media__print_8cpp" local="yes">src/media_print.cpp</includedby>
     <incdepgraph>
-      <node id="27">
-        <label>mfidl.h</label>
-      </node>
-      <node id="29">
-        <label>shlwapi.h</label>
-      </node>
-      <node id="30">
-        <label>wmcodecdsp.h</label>
-      </node>
-      <node id="24">
-        <label>comdef.h</label>
-      </node>
-      <node id="22">
-        <label>experimental/generator</label>
-      </node>
-      <node id="23">
-        <label>gsl/gsl</label>
+      <node id="21">
+        <label>filesystem</label>
       </node>
       <node id="25">
+        <label>mfidl.h</label>
+      </node>
+      <node id="27">
+        <label>wmcodecdsp.h</label>
+      </node>
+      <node id="20">
+        <label>experimental/generator</label>
+      </node>
+      <node id="22">
+        <label>gsl/gsl</label>
+      </node>
+      <node id="23">
         <label>mfapi.h</label>
       </node>
-      <node id="19">
+      <node id="18">
         <label>src/media.hpp</label>
         <link refid="media_8hpp"/>
+        <childnode refid="19" relation="include">
+        </childnode>
         <childnode refid="20" relation="include">
         </childnode>
         <childnode refid="21" relation="include">
@@ -56,28 +53,14 @@
         </childnode>
         <childnode refid="27" relation="include">
         </childnode>
-        <childnode refid="28" relation="include">
-        </childnode>
-        <childnode refid="29" relation="include">
-        </childnode>
-        <childnode refid="30" relation="include">
-        </childnode>
-        <childnode refid="31" relation="include">
-        </childnode>
       </node>
-      <node id="20">
-        <label>winrt/Windows.Foundation.h</label>
-      </node>
-      <node id="21">
-        <label>winrt/Windows.System.Threading.h</label>
-      </node>
-      <node id="26">
+      <node id="24">
         <label>mferror.h</label>
       </node>
-      <node id="31">
-        <label>wrl/client.h</label>
+      <node id="19">
+        <label>winrt/base.h</label>
       </node>
-      <node id="28">
+      <node id="26">
         <label>mfreadwrite.h</label>
       </node>
     </incdepgraph>
@@ -104,20 +87,20 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="22" column="1" bodyfile="src/media.cpp" bodystart="30" bodyend="34"/>
+        <location file="src/media.hpp" line="24" column="1" bodyfile="src/media.cpp" bodystart="32" bodyend="38"/>
       </memberdef>
-      <memberdef kind="function" id="media_8hpp_1ae47c84bf57ff97e71578eecee2b9f8ae" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="media_8hpp_1a633bf2383709d1b8eabe2a7e96a932dc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>HRESULT</type>
         <definition>HRESULT get_devices</definition>
-        <argsstring>(IMFAttributes *attrs, std::vector&lt; ComPtr&lt; IMFActivate &gt;&gt; &amp;devices) noexcept</argsstring>
+        <argsstring>(std::vector&lt; com_ptr&lt; IMFActivate &gt;&gt; &amp;devices, IMFAttributes *attributes) noexcept</argsstring>
         <name>get_devices</name>
         <param>
-          <type>IMFAttributes *</type>
-          <declname>attrs</declname>
+          <type>std::vector&lt; com_ptr&lt; IMFActivate &gt;&gt; &amp;</type>
+          <declname>devices</declname>
         </param>
         <param>
-          <type>std::vector&lt; ComPtr&lt; IMFActivate &gt;&gt; &amp;</type>
-          <declname>devices</declname>
+          <type>IMFAttributes *</type>
+          <declname>attributes</declname>
         </param>
         <briefdescription>
         </briefdescription>
@@ -126,15 +109,63 @@
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="25" column="1"/>
+        <location file="src/media.hpp" line="27" column="1" bodyfile="src/media.cpp" bodystart="40" bodyend="54"/>
       </memberdef>
-      <memberdef kind="function" id="media_8hpp_1a0f188ed056176ce6098ccae92d943dde" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="media_8hpp_1a9d541b064c18c82cbaada480f277393d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT get_string</definition>
+        <argsstring>(gsl::not_null&lt; IMFAttributes *&gt; attribute, const GUID &amp;uuid, winrt::hstring &amp;name) noexcept</argsstring>
+        <name>get_string</name>
+        <param>
+          <type>gsl::not_null&lt; IMFAttributes *&gt;</type>
+          <declname>attribute</declname>
+        </param>
+        <param>
+          <type>const GUID &amp;</type>
+          <declname>uuid</declname>
+        </param>
+        <param>
+          <type>winrt::hstring &amp;</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/api/mfobjects/nf-mfobjects-imfattributes-getstring">https://docs.microsoft.com/en-us/windows/win32/api/mfobjects/nf-mfobjects-imfattributes-getstring</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="30" column="1" bodyfile="src/media.cpp" bodystart="56" bodyend="64"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a10e31b22b2ec6d7d014f39756c74f1a4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>HRESULT</type>
         <definition>HRESULT get_name</definition>
-        <argsstring>(IMFActivate *device, std::wstring &amp;name) noexcept</argsstring>
+        <argsstring>(gsl::not_null&lt; IMFActivate *&gt; device, winrt::hstring &amp;name) noexcept</argsstring>
         <name>get_name</name>
         <param>
-          <type>IMFActivate *</type>
+          <type>gsl::not_null&lt; IMFActivate *&gt;</type>
+          <declname>device</declname>
+        </param>
+        <param>
+          <type>winrt::hstring &amp;</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para>MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="33" column="1" bodyfile="src/media.cpp" bodystart="66" bodyend="68"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a5931a5836c0ac8ab8e6c7bea510cb2d9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT get_name</definition>
+        <argsstring>(gsl::not_null&lt; IMFActivate *&gt; device, std::wstring &amp;name) noexcept</argsstring>
+        <name>get_name</name>
+        <param>
+          <type>gsl::not_null&lt; IMFActivate *&gt;</type>
           <declname>device</declname>
         </param>
         <param>
@@ -147,37 +178,277 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="26" column="1"/>
+        <location file="src/media.hpp" line="34" column="1" bodyfile="src/media.cpp" bodystart="78" bodyend="84"/>
       </memberdef>
-      <memberdef kind="function" id="media_8hpp_1aeaf07f415f19a4e961dff817c1d3e098" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
-        <type>gsl::czstring</type>
-        <definition>gsl::czstring get_name</definition>
-        <argsstring>(const GUID &amp;guid) noexcept</argsstring>
+      <memberdef kind="function" id="media_8hpp_1ac5115f0de8c43ab63a669c45bf3ae969" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT get_name</definition>
+        <argsstring>(gsl::not_null&lt; IMFActivate *&gt; device, std::string &amp;name) noexcept</argsstring>
         <name>get_name</name>
         <param>
-          <type>const GUID &amp;</type>
-          <declname>guid</declname>
+          <type>gsl::not_null&lt; IMFActivate *&gt;</type>
+          <declname>device</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>name</declname>
         </param>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
-<para><simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/media-type-debugging-code">https://docs.microsoft.com/en-us/windows/win32/medfound/media-type-debugging-code</ulink> </para></simplesect>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="35" column="1" bodyfile="src/media.cpp" bodystart="70" bodyend="76"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a682f9ad46192477fea2bf4363cd9c38c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT get_hardware_url</definition>
+        <argsstring>(gsl::not_null&lt; IMFTransform *&gt; transform, winrt::hstring &amp;name) noexcept</argsstring>
+        <name>get_hardware_url</name>
+        <param>
+          <type>gsl::not_null&lt; IMFTransform *&gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>winrt::hstring &amp;</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="37" column="1" bodyfile="src/media.cpp" bodystart="86" bodyend="97"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1acc0d1067310ca2e55353c2f9c784b4d8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT resolve</definition>
+        <argsstring>(const fs::path &amp;fpath, IMFMediaSourceEx **source, MF_OBJECT_TYPE &amp;media_object_type) noexcept</argsstring>
+        <name>resolve</name>
+        <param>
+          <type>const fs::path &amp;</type>
+          <declname>fpath</declname>
+        </param>
+        <param>
+          <type>IMFMediaSourceEx **</type>
+          <declname>source</declname>
+        </param>
+        <param>
+          <type>MF_OBJECT_TYPE &amp;</type>
+          <declname>media_object_type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para>MFCreateSourceResolver </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="28" column="1" bodyfile="src/media.cpp" bodystart="324" bodyend="477"/>
+        <location file="src/media.hpp" line="40" column="1" bodyfile="src/media.cpp" bodystart="99" bodyend="108"/>
       </memberdef>
-      <memberdef kind="function" id="media_8hpp_1a6791b11ab050c4addac5b15ea7d36beb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="media_8hpp_1a25c7807dc1100186cde05dd6171695d1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>HRESULT</type>
-        <definition>HRESULT get_stream_descriptor</definition>
-        <argsstring>(IMFPresentationDescriptor *presentation, IMFStreamDescriptor **ptr)</argsstring>
-        <name>get_stream_descriptor</name>
+        <definition>HRESULT make_transform_video</definition>
+        <argsstring>(IMFTransform **transform, const IID &amp;iid) noexcept</argsstring>
+        <name>make_transform_video</name>
         <param>
-          <type>IMFPresentationDescriptor *</type>
-          <declname>presentation</declname>
+          <type>IMFTransform **</type>
+          <declname>transform</declname>
         </param>
         <param>
-          <type>IMFStreamDescriptor **</type>
+          <type>const IID &amp;</type>
+          <declname>iid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para>CoCreateInstance </para></simplesect>
+<simplesect kind="see"><para>Color Converter DSP <ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/colorconverter">https://docs.microsoft.com/en-us/windows/win32/medfound/colorconverter</ulink> </para></simplesect>
+<parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>iid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>CLSID_CColorConvertDMO </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<xrefsect id="todo_1_todo000001"><xreftitle>Todo</xreftitle><xrefdescription><para>test CLSID_OpenCLMFTDx11 </para></xrefdescription></xrefsect></para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="46" column="1" bodyfile="src/media.cpp" bodystart="118" bodyend="124"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1ac7901976148561b26cb92d72984915e8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT make_transform_H264</definition>
+        <argsstring>(IMFTransform **transform) noexcept</argsstring>
+        <name>make_transform_H264</name>
+        <param>
+          <type>IMFTransform **</type>
+          <declname>transform</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para>CoCreateInstance </para></simplesect>
+<simplesect kind="see"><para>CLSID_CMSH264DecoderMFT </para></simplesect>
+<simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder">https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="51" column="1" bodyfile="src/media.cpp" bodystart="110" bodyend="116"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a68c4181022273358e97082ce3d58f730" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT configure_acceleration_H264</definition>
+        <argsstring>(gsl::not_null&lt; IMFTransform *&gt; transform) noexcept</argsstring>
+        <name>configure_acceleration_H264</name>
+        <param>
+          <type>gsl::not_null&lt; IMFTransform *&gt;</type>
+          <declname>transform</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder#transform-attributes">https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder#transform-attributes</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="54" column="1" bodyfile="src/media.cpp" bodystart="144" bodyend="155"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1ac86d0b906cf9430128eedf3eb73c6b7b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT make_transform_video</definition>
+        <argsstring>(IMFTransform **transform) noexcept</argsstring>
+        <name>make_transform_video</name>
+        <param>
+          <type>IMFTransform **</type>
+          <declname>transform</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para>CoCreateInstance </para></simplesect>
+<simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft">https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft</ulink> </para></simplesect>
+<simplesect kind="see"><para>CLSID_VideoProcessorMFT </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="59" column="1" bodyfile="src/media.cpp" bodystart="126" bodyend="128"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1ab4bbdfe8aaaec4d1ac0f33775a51c88d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT configure_D3D11_DXGI</definition>
+        <argsstring>(gsl::not_null&lt; IMFTransform *&gt; transform, IMFDXGIDeviceManager *device_manager) noexcept</argsstring>
+        <name>configure_D3D11_DXGI</name>
+        <param>
+          <type>gsl::not_null&lt; IMFTransform *&gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>IMFDXGIDeviceManager *</type>
+          <declname>device_manager</declname>
+        </param>
+        <briefdescription>
+<para>configure D3D11 if the transform supports it </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>E_NOTIMPL, E_FAIL ... </para></simplesect>
+<simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/hardware-mfts">https://docs.microsoft.com/en-us/windows/win32/medfound/hardware-mfts</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="64" column="1" bodyfile="src/media.cpp" bodystart="130" bodyend="141"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1abe3699526fda14d599f458e06d2e266a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT configure_rectangle</definition>
+        <argsstring>(gsl::not_null&lt; IMFVideoProcessorControl *&gt; control, gsl::not_null&lt; IMFMediaType *&gt; media_type) noexcept</argsstring>
+        <name>configure_rectangle</name>
+        <param>
+          <type>gsl::not_null&lt; IMFVideoProcessorControl *&gt;</type>
+          <declname>control</declname>
+        </param>
+        <param>
+          <type>gsl::not_null&lt; IMFMediaType *&gt;</type>
+          <declname>media_type</declname>
+        </param>
+        <briefdescription>
+<para>exactly same sized src/dst rectangle; </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="67" column="1" bodyfile="src/media.cpp" bodystart="273" bodyend="284"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a8c673f14372ad65a367dc09f9447a31e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT configure_source_rectangle</definition>
+        <argsstring>(gsl::not_null&lt; IPropertyStore *&gt; props, const RECT &amp;rect) noexcept</argsstring>
+        <name>configure_source_rectangle</name>
+        <param>
+          <type>gsl::not_null&lt; IPropertyStore *&gt;</type>
+          <declname>props</declname>
+        </param>
+        <param>
+          <type>const RECT &amp;</type>
+          <declname>rect</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer">https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="71" column="1" bodyfile="src/media.cpp" bodystart="287" bodyend="300"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a6800e4d4e0fecf470492de755687e1a5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT configure_destination_rectangle</definition>
+        <argsstring>(gsl::not_null&lt; IPropertyStore *&gt; props, const RECT &amp;rect) noexcept</argsstring>
+        <name>configure_destination_rectangle</name>
+        <param>
+          <type>gsl::not_null&lt; IPropertyStore *&gt;</type>
+          <declname>props</declname>
+        </param>
+        <param>
+          <type>const RECT &amp;</type>
+          <declname>rect</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer">https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="74" column="1" bodyfile="src/media.cpp" bodystart="303" bodyend="316"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a6e10c0ed200d4653f02d186894b994d9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT make_video_output_RGB32</definition>
+        <argsstring>(IMFMediaType **ptr) noexcept</argsstring>
+        <name>make_video_output_RGB32</name>
+        <param>
+          <type>IMFMediaType **</type>
+          <declname>ptr</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><xrefsect id="todo_1_todo000002"><xreftitle>Todo</xreftitle><xrefdescription><para>: configure MF_MT_FRAME_SIZE, MF_MT_FRAME_RATE </para><para>: configure MF_MT_PIXEL_ASPECT_RATIO </para></xrefdescription></xrefsect></para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="80" column="1" bodyfile="src/media.cpp" bodystart="195" bodyend="207"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a06487a2e6a718dda1f5ba4d6682a3b64" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT make_video_output_RGB565</definition>
+        <argsstring>(IMFMediaType **ptr) noexcept</argsstring>
+        <name>make_video_output_RGB565</name>
+        <param>
+          <type>IMFMediaType **</type>
           <declname>ptr</declname>
         </param>
         <briefdescription>
@@ -186,40 +457,28 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="30" column="1" bodyfile="src/media.cpp" bodystart="58" bodyend="70"/>
+        <location file="src/media.hpp" line="82" column="1" bodyfile="src/media.cpp" bodystart="167" bodyend="179"/>
       </memberdef>
-      <memberdef kind="function" id="media_8hpp_1a4d439ee9ee5b9f516c805c8bb8507b9b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="media_8hpp_1ae7ff03cbc188286434f1272e711ded32" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>HRESULT</type>
-        <definition>HRESULT configure</definition>
-        <argsstring>(ComPtr&lt; IMFStreamDescriptor &gt; stream) noexcept</argsstring>
-        <name>configure</name>
+        <definition>HRESULT try_output_type</definition>
+        <argsstring>(com_ptr&lt; IMFTransform &gt; transform, DWORD ostream, const GUID &amp;desired, IMFMediaType **output_type) noexcept</argsstring>
+        <name>try_output_type</name>
         <param>
-          <type>ComPtr&lt; IMFStreamDescriptor &gt;</type>
-          <declname>stream</declname>
-        </param>
-        <briefdescription>
-        </briefdescription>
-        <detaileddescription>
-<para><simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft">https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft</ulink> </para></simplesect>
-<simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types">https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types</ulink> </para></simplesect>
-<simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video">https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video</ulink> </para></simplesect>
-</para>        </detaileddescription>
-        <inbodydescription>
-        </inbodydescription>
-        <location file="src/media.hpp" line="35" column="1" bodyfile="src/media.cpp" bodystart="101" bodyend="119"/>
-      </memberdef>
-      <memberdef kind="function" id="media_8hpp_1ad98185e93e7337a7041fedd0d84140e4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
-        <type>auto</type>
-        <definition>auto decode</definition>
-        <argsstring>(ComPtr&lt; IMFSourceReader &gt; source_reader, ComPtr&lt; IMFTransform &gt; decoding_transform) noexcept(false) -&gt; std::experimental::generator&lt; ComPtr&lt; IMFSample &gt;&gt;</argsstring>
-        <name>decode</name>
-        <param>
-          <type>ComPtr&lt; IMFSourceReader &gt;</type>
-          <declname>source_reader</declname>
+          <type>com_ptr&lt; IMFTransform &gt;</type>
+          <declname>transform</declname>
         </param>
         <param>
-          <type>ComPtr&lt; IMFTransform &gt;</type>
-          <declname>decoding_transform</declname>
+          <type>DWORD</type>
+          <declname>ostream</declname>
+        </param>
+        <param>
+          <type>const GUID &amp;</type>
+          <declname>desired</declname>
+        </param>
+        <param>
+          <type>IMFMediaType **</type>
+          <declname>output_type</declname>
         </param>
         <briefdescription>
         </briefdescription>
@@ -227,7 +486,239 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="62" column="1" bodyfile="src/media.cpp" bodystart="180" bodyend="248"/>
+        <location file="src/media.hpp" line="84" column="1" bodyfile="src/media.cpp" bodystart="209" bodyend="225"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1abf085e7b249d348d8ad52e59dfef2279" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>auto</type>
+        <definition>auto get_input_available_types</definition>
+        <argsstring>(com_ptr&lt; IMFTransform &gt; transform, DWORD num_input, HRESULT &amp;ec) noexcept(false) -&gt; generator&lt; com_ptr&lt; IMFMediaType &gt;&gt;</argsstring>
+        <name>get_input_available_types</name>
+        <param>
+          <type>com_ptr&lt; IMFTransform &gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>DWORD</type>
+          <declname>num_input</declname>
+        </param>
+        <param>
+          <type>HRESULT &amp;</type>
+          <declname>ec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="87" column="1" bodyfile="src/media.cpp" bodystart="227" bodyend="238"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a8bd05923b2a283b162dbf7ec4481dd71" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>auto</type>
+        <definition>auto try_output_available_types</definition>
+        <argsstring>(com_ptr&lt; IMFTransform &gt; transform, DWORD stream_id, DWORD &amp;type_index) noexcept(false) -&gt; generator&lt; com_ptr&lt; IMFMediaType &gt;&gt;</argsstring>
+        <name>try_output_available_types</name>
+        <param>
+          <type>com_ptr&lt; IMFTransform &gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>DWORD</type>
+          <declname>stream_id</declname>
+        </param>
+        <param>
+          <type>DWORD &amp;</type>
+          <declname>type_index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="90" column="1" bodyfile="src/media.cpp" bodystart="239" bodyend="248"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1ad125531e1be88ca277b5a0385a65dd6d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>auto</type>
+        <definition>auto get_output_available_types</definition>
+        <argsstring>(com_ptr&lt; IMFTransform &gt; transform, DWORD num_output, HRESULT &amp;ec) noexcept(false) -&gt; generator&lt; com_ptr&lt; IMFMediaType &gt;&gt;</argsstring>
+        <name>get_output_available_types</name>
+        <param>
+          <type>com_ptr&lt; IMFTransform &gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>DWORD</type>
+          <declname>num_output</declname>
+        </param>
+        <param>
+          <type>HRESULT &amp;</type>
+          <declname>ec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="93" column="1" bodyfile="src/media.cpp" bodystart="250" bodyend="261"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a242188e99d08d076a919a57a23f68eac" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>auto</type>
+        <definition>auto try_input_available_types</definition>
+        <argsstring>(com_ptr&lt; IMFTransform &gt; transform, DWORD stream_id, DWORD &amp;type_index) noexcept(false) -&gt; generator&lt; com_ptr&lt; IMFMediaType &gt;&gt;</argsstring>
+        <name>try_input_available_types</name>
+        <param>
+          <type>com_ptr&lt; IMFTransform &gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>DWORD</type>
+          <declname>stream_id</declname>
+        </param>
+        <param>
+          <type>DWORD &amp;</type>
+          <declname>type_index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="95" column="1" bodyfile="src/media.cpp" bodystart="262" bodyend="271"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a47c552d3ea8e9b62dba8f974a1f42b47" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>auto</type>
+        <definition>auto read_samples</definition>
+        <argsstring>(com_ptr&lt; IMFSourceReader &gt; source_reader, DWORD &amp;index, DWORD &amp;flags, LONGLONG &amp;timestamp, LONGLONG &amp;duration) noexcept(false) -&gt; generator&lt; com_ptr&lt; IMFSample &gt;&gt;</argsstring>
+        <name>read_samples</name>
+        <param>
+          <type>com_ptr&lt; IMFSourceReader &gt;</type>
+          <declname>source_reader</declname>
+        </param>
+        <param>
+          <type>DWORD &amp;</type>
+          <declname>index</declname>
+        </param>
+        <param>
+          <type>DWORD &amp;</type>
+          <declname>flags</declname>
+        </param>
+        <param>
+          <type>LONGLONG &amp;</type>
+          <declname>timestamp</declname>
+        </param>
+        <param>
+          <type>LONGLONG &amp;</type>
+          <declname>duration</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><xrefsect id="todo_1_todo000003"><xreftitle>Todo</xreftitle><xrefdescription><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/mf-source-reader-enable-advanced-video-processing#remarks">https://docs.microsoft.com/en-us/windows/win32/medfound/mf-source-reader-enable-advanced-video-processing#remarks</ulink> </para></xrefdescription></xrefsect></para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="99" column="1" bodyfile="src/media.cpp" bodystart="379" bodyend="396"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1ad525b785a539ea78171460f58808666a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>auto</type>
+        <definition>auto decode</definition>
+        <argsstring>(com_ptr&lt; IMFTransform &gt; transform, DWORD ostream, com_ptr&lt; IMFMediaType &gt; output_type, HRESULT &amp;ec) noexcept -&gt; generator&lt; com_ptr&lt; IMFSample &gt;&gt;</argsstring>
+        <name>decode</name>
+        <param>
+          <type>com_ptr&lt; IMFTransform &gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>DWORD</type>
+          <declname>ostream</declname>
+        </param>
+        <param>
+          <type>com_ptr&lt; IMFMediaType &gt;</type>
+          <declname>output_type</declname>
+        </param>
+        <param>
+          <type>HRESULT &amp;</type>
+          <declname>ec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="103" column="1" bodyfile="src/media.cpp" bodystart="398" bodyend="443"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a87ec07cf3bb07d930ccd7a740ae41a7c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>auto</type>
+        <definition>auto process</definition>
+        <argsstring>(com_ptr&lt; IMFTransform &gt; transform, DWORD istream, DWORD ostream, com_ptr&lt; IMFSample &gt; input_sample, com_ptr&lt; IMFMediaType &gt; output_type, HRESULT &amp;ec) noexcept -&gt; generator&lt; com_ptr&lt; IMFSample &gt;&gt;</argsstring>
+        <name>process</name>
+        <param>
+          <type>com_ptr&lt; IMFTransform &gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>DWORD</type>
+          <declname>istream</declname>
+        </param>
+        <param>
+          <type>DWORD</type>
+          <declname>ostream</declname>
+        </param>
+        <param>
+          <type>com_ptr&lt; IMFSample &gt;</type>
+          <declname>input_sample</declname>
+        </param>
+        <param>
+          <type>com_ptr&lt; IMFMediaType &gt;</type>
+          <declname>output_type</declname>
+        </param>
+        <param>
+          <type>HRESULT &amp;</type>
+          <declname>ec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="106" column="1" bodyfile="src/media.cpp" bodystart="445" bodyend="467"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1ad7a020b7463bcd21b3cfc47b9406a1e3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>auto</type>
+        <definition>auto process</definition>
+        <argsstring>(com_ptr&lt; IMFTransform &gt; transform, DWORD istream, DWORD ostream, com_ptr&lt; IMFSourceReader &gt; source_reader, HRESULT &amp;ec) -&gt; generator&lt; com_ptr&lt; IMFSample &gt;&gt;</argsstring>
+        <name>process</name>
+        <param>
+          <type>com_ptr&lt; IMFTransform &gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>DWORD</type>
+          <declname>istream</declname>
+        </param>
+        <param>
+          <type>DWORD</type>
+          <declname>ostream</declname>
+        </param>
+        <param>
+          <type>com_ptr&lt; IMFSourceReader &gt;</type>
+          <declname>source_reader</declname>
+        </param>
+        <param>
+          <type>HRESULT &amp;</type>
+          <declname>ec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="109" column="1" bodyfile="src/media.cpp" bodystart="469" bodyend="498"/>
       </memberdef>
       <memberdef kind="function" id="media_8hpp_1af9961cf281c89416cd111cdad5d8d573" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>HRESULT</type>
@@ -248,7 +739,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="65" column="1" bodyfile="src/media.cpp" bodystart="250" bodyend="257"/>
+        <location file="src/media.hpp" line="113" column="1" bodyfile="src/media.cpp" bodystart="500" bodyend="507"/>
       </memberdef>
       <memberdef kind="function" id="media_8hpp_1ae466bb2d4d55e39c2489624ab86633ce" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>HRESULT</type>
@@ -269,7 +760,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="66" column="1" bodyfile="src/media.cpp" bodystart="259" bodyend="271"/>
+        <location file="src/media.hpp" line="114" column="1" bodyfile="src/media.cpp" bodystart="509" bodyend="521"/>
       </memberdef>
       <memberdef kind="function" id="media_8hpp_1abd1996125215540a7ae3bf9537f7841f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>HRESULT</type>
@@ -294,7 +785,162 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="src/media.hpp" line="67" column="1" bodyfile="src/media.cpp" bodystart="273" bodyend="321"/>
+        <location file="src/media.hpp" line="115" column="1" bodyfile="src/media.cpp" bodystart="523" bodyend="571"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a6791b11ab050c4addac5b15ea7d36beb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT get_stream_descriptor</definition>
+        <argsstring>(IMFPresentationDescriptor *presentation, IMFStreamDescriptor **ptr)</argsstring>
+        <name>get_stream_descriptor</name>
+        <param>
+          <type>IMFPresentationDescriptor *</type>
+          <declname>presentation</declname>
+        </param>
+        <param>
+          <type>IMFStreamDescriptor **</type>
+          <declname>ptr</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="117" column="1" bodyfile="src/media.cpp" bodystart="318" bodyend="330"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a025536ca76dd2c69a4882b3562ea141d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>HRESULT</type>
+        <definition>HRESULT configure</definition>
+        <argsstring>(com_ptr&lt; IMFStreamDescriptor &gt; stream) noexcept</argsstring>
+        <name>configure</name>
+        <param>
+          <type>com_ptr&lt; IMFStreamDescriptor &gt;</type>
+          <declname>stream</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft">https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft</ulink> </para></simplesect>
+<simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types">https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types</ulink> </para></simplesect>
+<simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video">https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="122" column="1" bodyfile="src/media.cpp" bodystart="359" bodyend="377"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1acabd627e6cdaf9021a3df6a73bdc1142" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string to_string</definition>
+        <argsstring>(const GUID &amp;guid) noexcept</argsstring>
+        <name>to_string</name>
+        <param>
+          <type>const GUID &amp;</type>
+          <declname>guid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="150" column="1" bodyfile="src/media_print.cpp" bodystart="43" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1ad84dd7d8c4e22a9b4bb7f886a02e8bf3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string to_readable</definition>
+        <argsstring>(const GUID &amp;guid) noexcept</argsstring>
+        <name>to_readable</name>
+        <param>
+          <type>const GUID &amp;</type>
+          <declname>guid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/wmformat/media-type-identifiers">https://docs.microsoft.com/en-us/windows/win32/wmformat/media-type-identifiers</ulink> </para></simplesect>
+<simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/media-type-debugging-code">https://docs.microsoft.com/en-us/windows/win32/medfound/media-type-debugging-code</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="151" column="1" bodyfile="src/media_print.cpp" bodystart="59" bodyend="234"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a50e075478b124dc4ce5ded4896888aa0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>winrt::hstring</type>
+        <definition>winrt::hstring to_hstring</definition>
+        <argsstring>(const GUID &amp;guid) noexcept</argsstring>
+        <name>to_hstring</name>
+        <param>
+          <type>const GUID &amp;</type>
+          <declname>guid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="153" column="1" bodyfile="src/media_print.cpp" bodystart="50" bodyend="55"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1a7f6dedbd34d0ae258f045e3ab84b36fa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void print</definition>
+        <argsstring>(gsl::not_null&lt; IMFActivate *&gt; device) noexcept</argsstring>
+        <name>print</name>
+        <param>
+          <type>gsl::not_null&lt; IMFActivate *&gt;</type>
+          <declname>device</declname>
+        </param>
+        <briefdescription>
+<para>print description for the <computeroutput>media_type</computeroutput> with logging </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="note"><para>the argument is considered immutable</para></simplesect>
+<simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/capture-device-attributes">https://docs.microsoft.com/en-us/windows/win32/medfound/capture-device-attributes</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="159" column="1" bodyfile="src/media_print.cpp" bodystart="237" bodyend="263"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1aba157eeb91007ec196cf64eb94dbf0dc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void print</definition>
+        <argsstring>(gsl::not_null&lt; IMFMediaType *&gt; media_type) noexcept</argsstring>
+        <name>print</name>
+        <param>
+          <type>gsl::not_null&lt; IMFMediaType *&gt;</type>
+          <declname>media_type</declname>
+        </param>
+        <briefdescription>
+<para>print description for the <computeroutput>media_type</computeroutput> with logging </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="note"><para>the argument is considered immutable</para></simplesect>
+<simplesect kind="see"><para><ulink url="https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids">https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids</ulink> </para></simplesect>
+<simplesect kind="see"><para><ulink url="https://stackoverflow.com/a/9681384">https://stackoverflow.com/a/9681384</ulink> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="165" column="1" bodyfile="src/media_print.cpp" bodystart="267" bodyend="289"/>
+      </memberdef>
+      <memberdef kind="function" id="media_8hpp_1ab3ea16ebb42e242cc309a69055780b8c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void print</definition>
+        <argsstring>(gsl::not_null&lt; IMFTransform *&gt; transform, const GUID &amp;iid) noexcept</argsstring>
+        <name>print</name>
+        <param>
+          <type>gsl::not_null&lt; IMFTransform *&gt;</type>
+          <declname>transform</declname>
+        </param>
+        <param>
+          <type>const GUID &amp;</type>
+          <declname>iid</declname>
+        </param>
+        <briefdescription>
+<para>print description for the <computeroutput>media_type</computeroutput> with logging </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="note"><para>the function may change modify input/output configuration </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/media.hpp" line="171" column="1" bodyfile="src/media_print.cpp" bodystart="396" bodyend="405"/>
       </memberdef>
       </sectiondef>
     <briefdescription>
@@ -303,63 +949,130 @@
     </detaileddescription>
     <programlisting>
 <codeline lineno="1"><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="2"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;winrt/Windows.Foundation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="3"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;winrt/Windows.System.Threading.h&gt;</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="4"><highlight class="normal"></highlight></codeline>
-<codeline lineno="5"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;experimental/generator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;winrt/base.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;experimental/generator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;filesystem&gt;</highlight><highlight class="normal"></highlight></codeline>
 <codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;gsl/gsl&gt;</highlight><highlight class="normal"></highlight></codeline>
 <codeline lineno="7"><highlight class="normal"></highlight></codeline>
-<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;comdef.h&gt;</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="9"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;mfapi.h&gt;</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;mferror.h&gt;</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;mfidl.h&gt;</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;mfreadwrite.h&gt;</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="13"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;shlwapi.h&gt;</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;wmcodecdsp.h&gt;</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="15"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;wrl/client.h&gt;</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="16"><highlight class="normal"></highlight></codeline>
-<codeline lineno="17"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>Microsoft::WRL::ComPtr;</highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;mfapi.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;mferror.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;mfidl.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;mfreadwrite.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;wmcodecdsp.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="comment">//<sp/>C++<sp/>17<sp/>Coroutines<sp/>TS</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>std::experimental::generator;</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="comment">//<sp/>replaces<sp/>Microsoft::WRL::ComPtr.<sp/>see<sp/>https://docs.microsoft.com/en-us/windows/uwp/cpp-and-winrt-apis/move-to-winrt-from-wrl</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>winrt::com_ptr;</highlight></codeline>
 <codeline lineno="18"><highlight class="normal"></highlight></codeline>
-<codeline lineno="22"><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>media_startup()<sp/>noexcept(false)<sp/>-&gt;<sp/>gsl::final_action&lt;HRESULT(WINAPI*)()&gt;;</highlight></codeline>
-<codeline lineno="23"><highlight class="normal"></highlight></codeline>
-<codeline lineno="25"><highlight class="normal">HRESULT<sp/>get_devices(IMFAttributes*<sp/>attrs,<sp/><ref refid="namespacestd" kindref="compound">std</ref>::vector&lt;ComPtr&lt;IMFActivate&gt;&gt;&amp;<sp/>devices)<sp/>noexcept;</highlight></codeline>
-<codeline lineno="26"><highlight class="normal">HRESULT<sp/>get_name(IMFActivate*<sp/>device,<sp/><ref refid="namespacestd" kindref="compound">std</ref>::wstring&amp;<sp/>name)<sp/>noexcept;</highlight></codeline>
-<codeline lineno="27"><highlight class="normal"></highlight></codeline>
-<codeline lineno="28"><highlight class="normal">gsl::czstring&lt;&gt;<sp/>get_name(const<sp/>GUID&amp;<sp/>guid)<sp/>noexcept;</highlight></codeline>
-<codeline lineno="29"><highlight class="normal"></highlight></codeline>
-<codeline lineno="30"><highlight class="normal">HRESULT<sp/>get_stream_descriptor(IMFPresentationDescriptor*<sp/>presentation,<sp/>IMFStreamDescriptor**<sp/>ptr);</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">fs<sp/>=<sp/>std::filesystem;</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>media_startup()<sp/>noexcept(false)<sp/>-&gt;<sp/>gsl::final_action&lt;HRESULT(WINAPI*)()&gt;;</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal">HRESULT<sp/>get_devices(<ref refid="namespacestd" kindref="compound">std</ref>::vector&lt;com_ptr&lt;IMFActivate&gt;&gt;&amp;<sp/>devices,<sp/>IMFAttributes*<sp/>attributes)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal">HRESULT<sp/>get_string(gsl::not_null&lt;IMFAttributes*&gt;<sp/>attribute,<sp/>const<sp/>GUID&amp;<sp/>uuid,<sp/>winrt::hstring&amp;<sp/>name)<sp/>noexcept;</highlight></codeline>
 <codeline lineno="31"><highlight class="normal"></highlight></codeline>
-<codeline lineno="35"><highlight class="normal">HRESULT<sp/>configure(ComPtr&lt;IMFStreamDescriptor&gt;<sp/>stream)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="33"><highlight class="normal">HRESULT<sp/>get_name(gsl::not_null&lt;IMFActivate*&gt;<sp/>device,<sp/>winrt::hstring&amp;<sp/>name)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="34"><highlight class="normal">[[deprecated]]<sp/>HRESULT<sp/>get_name(gsl::not_null&lt;IMFActivate*&gt;<sp/>device,<sp/><ref refid="namespacestd" kindref="compound">std</ref>::wstring&amp;<sp/>name)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="35"><highlight class="normal">[[deprecated]]<sp/>HRESULT<sp/>get_name(gsl::not_null&lt;IMFActivate*&gt;<sp/>device,<sp/><ref refid="namespacestd" kindref="compound">std</ref>::</highlight><highlight class="keywordtype">string</highlight><highlight class="normal">&amp;<sp/>name)<sp/>noexcept;</highlight></codeline>
 <codeline lineno="36"><highlight class="normal"></highlight></codeline>
-<codeline lineno="38" refid="classqpc__timer__t" refkind="compound"><highlight class="normal">class<sp/><ref refid="classqpc__timer__t" kindref="compound">qpc_timer_t</ref><sp/>final<sp/>{</highlight></codeline>
-<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/>LARGE_INTEGER<sp/>start{},<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>frequency{};</highlight></codeline>
-<codeline lineno="40"><highlight class="normal"></highlight></codeline>
-<codeline lineno="41"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
-<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classqpc__timer__t" kindref="compound">qpc_timer_t</ref>()<sp/>noexcept<sp/>{</highlight></codeline>
-<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>QueryPerformanceFrequency(&amp;frequency);</highlight></codeline>
-<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>QueryPerformanceCounter(&amp;start);</highlight></codeline>
-<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
-<codeline lineno="46"><highlight class="normal"></highlight></codeline>
-<codeline lineno="48" refid="classqpc__timer__t_1a650f3913ec796ecdfcdd5650af3fc10d" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/><ref refid="classqpc__timer__t_1a650f3913ec796ecdfcdd5650af3fc10d" kindref="member">pick</ref>()<sp/>const<sp/>noexcept<sp/>{</highlight></codeline>
-<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>LARGE_INTEGER<sp/>end{};</highlight></codeline>
-<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>QueryPerformanceCounter(&amp;end);</highlight></codeline>
-<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>elapsed<sp/>=<sp/>end.QuadPart<sp/>-<sp/>start.QuadPart;</highlight></codeline>
-<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(elapsed<sp/>*<sp/>1</highlight><highlight class="stringliteral">&apos;000)<sp/>/<sp/>frequency.QuadPart;</highlight></codeline>
-<codeline lineno="53"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>}</highlight></codeline>
-<codeline lineno="54"><highlight class="stringliteral"></highlight></codeline>
-<codeline lineno="55"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>auto<sp/>reset()<sp/>noexcept<sp/>{</highlight></codeline>
-<codeline lineno="56"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>d<sp/>=<sp/>pick();</highlight></codeline>
-<codeline lineno="57"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>QueryPerformanceCounter(&amp;start);</highlight></codeline>
-<codeline lineno="58"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>return<sp/>d;</highlight></codeline>
-<codeline lineno="59"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>}</highlight></codeline>
-<codeline lineno="60"><highlight class="stringliteral">};</highlight></codeline>
-<codeline lineno="61"><highlight class="stringliteral"></highlight></codeline>
-<codeline lineno="62"><highlight class="stringliteral">auto<sp/>decode(ComPtr&lt;IMFSourceReader&gt;<sp/>source_reader,<sp/>ComPtr&lt;IMFTransform&gt;<sp/>decoding_transform)<sp/>noexcept(false)</highlight></codeline>
-<codeline lineno="63"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>-&gt;<sp/>std::experimental::generator&lt;ComPtr&lt;IMFSample&gt;&gt;;</highlight></codeline>
-<codeline lineno="64"><highlight class="stringliteral"></highlight></codeline>
-<codeline lineno="65"><highlight class="stringliteral">HRESULT<sp/>create_single_buffer_sample(DWORD<sp/>bufsz,<sp/>IMFSample**<sp/>sample);</highlight></codeline>
-<codeline lineno="66"><highlight class="stringliteral">HRESULT<sp/>create_and_copy_single_buffer_sample(IMFSample*<sp/>src,<sp/>IMFSample**<sp/>dst);</highlight></codeline>
-<codeline lineno="67"><highlight class="stringliteral">HRESULT<sp/>get_transform_output(IMFTransform*<sp/>transform,<sp/>IMFSample**<sp/>sample,<sp/>BOOL&amp;<sp/>flushed);</highlight></codeline>
+<codeline lineno="37"><highlight class="normal">HRESULT<sp/>get_hardware_url(gsl::not_null&lt;IMFTransform*&gt;<sp/>transform,<sp/>winrt::hstring&amp;<sp/>name)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"></highlight></codeline>
+<codeline lineno="40"><highlight class="normal">HRESULT<sp/>resolve(const<sp/>fs::path&amp;<sp/>fpath,<sp/>IMFMediaSourceEx**<sp/>source,<sp/>MF_OBJECT_TYPE&amp;<sp/>media_object_type)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"></highlight></codeline>
+<codeline lineno="46"><highlight class="normal">HRESULT<sp/>make_transform_video(IMFTransform**<sp/>transform,<sp/>const<sp/>IID&amp;<sp/>iid)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"></highlight></codeline>
+<codeline lineno="51"><highlight class="normal">[[deprecated]]<sp/>HRESULT<sp/>make_transform_H264(IMFTransform**<sp/>transform)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight></codeline>
+<codeline lineno="54"><highlight class="normal">HRESULT<sp/>configure_acceleration_H264(gsl::not_null&lt;IMFTransform*&gt;<sp/>transform)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"></highlight></codeline>
+<codeline lineno="59"><highlight class="normal">[[deprecated]]<sp/>HRESULT<sp/>make_transform_video(IMFTransform**<sp/>transform)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"></highlight></codeline>
+<codeline lineno="64"><highlight class="normal">HRESULT<sp/>configure_D3D11_DXGI(gsl::not_null&lt;IMFTransform*&gt;<sp/>transform,<sp/>IMFDXGIDeviceManager*<sp/>device_manager)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"></highlight></codeline>
+<codeline lineno="67"><highlight class="normal">HRESULT<sp/>configure_rectangle(gsl::not_null&lt;IMFVideoProcessorControl*&gt;<sp/>control,</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>gsl::not_null&lt;IMFMediaType*&gt;<sp/>media_type)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"></highlight></codeline>
+<codeline lineno="71"><highlight class="normal">HRESULT<sp/>configure_source_rectangle(gsl::not_null&lt;IPropertyStore*&gt;<sp/>props,<sp/>const<sp/>RECT&amp;<sp/>rect)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"></highlight></codeline>
+<codeline lineno="74"><highlight class="normal">HRESULT<sp/>configure_destination_rectangle(gsl::not_null&lt;IPropertyStore*&gt;<sp/>props,<sp/>const<sp/>RECT&amp;<sp/>rect)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"></highlight></codeline>
+<codeline lineno="80"><highlight class="normal">HRESULT<sp/>make_video_output_RGB32(IMFMediaType**<sp/>ptr)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="81"><highlight class="normal"></highlight></codeline>
+<codeline lineno="82"><highlight class="normal">HRESULT<sp/>make_video_output_RGB565(IMFMediaType**<sp/>ptr)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="83"><highlight class="normal"></highlight></codeline>
+<codeline lineno="84"><highlight class="normal">HRESULT<sp/>try_output_type(com_ptr&lt;IMFTransform&gt;<sp/>transform,<sp/>DWORD<sp/>ostream,<sp/>const<sp/>GUID&amp;<sp/>desired,</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>IMFMediaType**<sp/>output_type)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"></highlight></codeline>
+<codeline lineno="87"><highlight class="normal">auto<sp/>get_input_available_types(com_ptr&lt;IMFTransform&gt;<sp/>transform,<sp/>DWORD<sp/>num_input,<sp/>HRESULT&amp;<sp/>ec)<sp/>noexcept(false)</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/>-&gt;<sp/>generator&lt;com_ptr&lt;IMFMediaType&gt;&gt;;</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"></highlight></codeline>
+<codeline lineno="90"><highlight class="normal">auto<sp/>try_output_available_types(com_ptr&lt;IMFTransform&gt;<sp/>transform,<sp/>DWORD<sp/>stream_id,<sp/>DWORD&amp;<sp/>type_index)<sp/>noexcept(false)</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/><sp/><sp/><sp/>-&gt;<sp/>generator&lt;com_ptr&lt;IMFMediaType&gt;&gt;;</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"></highlight></codeline>
+<codeline lineno="93"><highlight class="normal">auto<sp/>get_output_available_types(com_ptr&lt;IMFTransform&gt;<sp/>transform,<sp/>DWORD<sp/>num_output,<sp/>HRESULT&amp;<sp/>ec)<sp/>noexcept(false)</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/>-&gt;<sp/>generator&lt;com_ptr&lt;IMFMediaType&gt;&gt;;</highlight></codeline>
+<codeline lineno="95"><highlight class="normal">auto<sp/>try_input_available_types(com_ptr&lt;IMFTransform&gt;<sp/>transform,<sp/>DWORD<sp/>stream_id,<sp/>DWORD&amp;<sp/>type_index)<sp/>noexcept(false)</highlight></codeline>
+<codeline lineno="96"><highlight class="normal"><sp/><sp/><sp/><sp/>-&gt;<sp/>generator&lt;com_ptr&lt;IMFMediaType&gt;&gt;;</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"></highlight></codeline>
+<codeline lineno="99"><highlight class="normal">auto<sp/>read_samples(com_ptr&lt;IMFSourceReader&gt;<sp/>source_reader,<sp/></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>DWORD&amp;<sp/>index,<sp/>DWORD&amp;<sp/>flags,<sp/>LONGLONG&amp;<sp/>timestamp,<sp/>LONGLONG&amp;<sp/>duration)<sp/>noexcept(false)</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/>-&gt;<sp/>generator&lt;com_ptr&lt;IMFSample&gt;&gt;;</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"></highlight></codeline>
+<codeline lineno="103"><highlight class="normal">auto<sp/>decode(com_ptr&lt;IMFTransform&gt;<sp/>transform,<sp/>DWORD<sp/>ostream,<sp/>com_ptr&lt;IMFMediaType&gt;<sp/>output_type,<sp/></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>HRESULT&amp;<sp/>ec)<sp/>noexcept<sp/>-&gt;<sp/>generator&lt;com_ptr&lt;IMFSample&gt;&gt;;</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"></highlight></codeline>
+<codeline lineno="106"><highlight class="normal">auto<sp/>process(com_ptr&lt;IMFTransform&gt;<sp/>transform,<sp/>DWORD<sp/>istream,<sp/>DWORD<sp/>ostream,<sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>com_ptr&lt;IMFSample&gt;<sp/>input_sample,<sp/>com_ptr&lt;IMFMediaType&gt;<sp/>output_type,<sp/></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>HRESULT&amp;<sp/>ec)<sp/>noexcept<sp/>-&gt;<sp/>generator&lt;com_ptr&lt;IMFSample&gt;&gt;;</highlight></codeline>
+<codeline lineno="109"><highlight class="normal">auto<sp/>process(com_ptr&lt;IMFTransform&gt;<sp/>transform,<sp/>DWORD<sp/>istream,<sp/>DWORD<sp/>ostream,<sp/></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>com_ptr&lt;IMFSourceReader&gt;<sp/>source_reader,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>HRESULT&amp;<sp/>ec)<sp/>-&gt;<sp/>generator&lt;com_ptr&lt;IMFSample&gt;&gt;;</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"></highlight></codeline>
+<codeline lineno="113"><highlight class="normal">HRESULT<sp/>create_single_buffer_sample(DWORD<sp/>bufsz,<sp/>IMFSample**<sp/>sample);</highlight></codeline>
+<codeline lineno="114"><highlight class="normal">HRESULT<sp/>create_and_copy_single_buffer_sample(IMFSample*<sp/>src,<sp/>IMFSample**<sp/>dst);</highlight></codeline>
+<codeline lineno="115"><highlight class="normal">HRESULT<sp/>get_transform_output(IMFTransform*<sp/>transform,<sp/>IMFSample**<sp/>sample,<sp/>BOOL&amp;<sp/>flushed);</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"></highlight></codeline>
+<codeline lineno="117"><highlight class="normal">HRESULT<sp/>get_stream_descriptor(IMFPresentationDescriptor*<sp/>presentation,<sp/>IMFStreamDescriptor**<sp/>ptr);</highlight></codeline>
+<codeline lineno="118"><highlight class="normal"></highlight></codeline>
+<codeline lineno="122"><highlight class="normal">HRESULT<sp/>configure(com_ptr&lt;IMFStreamDescriptor&gt;<sp/>stream)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"></highlight></codeline>
+<codeline lineno="125" refid="classqpc__timer__t" refkind="compound"><highlight class="normal">class<sp/><ref refid="classqpc__timer__t" kindref="compound">qpc_timer_t</ref><sp/>final<sp/>{</highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/><sp/><sp/>LARGE_INTEGER<sp/>start{};</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"><sp/><sp/><sp/><sp/>LARGE_INTEGER<sp/>frequency{};</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"></highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classqpc__timer__t" kindref="compound">qpc_timer_t</ref>()<sp/>noexcept<sp/>{</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>QueryPerformanceFrequency(&amp;frequency);</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>QueryPerformanceCounter(&amp;start);</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="134"><highlight class="normal"></highlight></codeline>
+<codeline lineno="136" refid="classqpc__timer__t_1a650f3913ec796ecdfcdd5650af3fc10d" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/><ref refid="classqpc__timer__t_1a650f3913ec796ecdfcdd5650af3fc10d" kindref="member">pick</ref>()<sp/>const<sp/>noexcept<sp/>{</highlight></codeline>
+<codeline lineno="137"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>LARGE_INTEGER<sp/>end{};</highlight></codeline>
+<codeline lineno="138"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>QueryPerformanceCounter(&amp;end);</highlight></codeline>
+<codeline lineno="139"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>elapsed<sp/>=<sp/>end.QuadPart<sp/>-<sp/>start.QuadPart;</highlight></codeline>
+<codeline lineno="140"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(elapsed<sp/>*<sp/>1</highlight><highlight class="stringliteral">&apos;000)<sp/>/<sp/>frequency.QuadPart;</highlight></codeline>
+<codeline lineno="141"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="142"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="143"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>auto<sp/>reset()<sp/>noexcept<sp/>{</highlight></codeline>
+<codeline lineno="144"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>d<sp/>=<sp/>pick();</highlight></codeline>
+<codeline lineno="145"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>QueryPerformanceCounter(&amp;start);</highlight></codeline>
+<codeline lineno="146"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>return<sp/>d;</highlight></codeline>
+<codeline lineno="147"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="148"><highlight class="stringliteral">};</highlight></codeline>
+<codeline lineno="149"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="150"><highlight class="stringliteral">std::string<sp/>to_string(const<sp/>GUID&amp;<sp/>guid)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="151"><highlight class="stringliteral">std::string<sp/>to_readable(const<sp/>GUID&amp;<sp/>guid)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="152"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="153"><highlight class="stringliteral">winrt::hstring<sp/>to_hstring(const<sp/>GUID&amp;<sp/>guid)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="154"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="159"><highlight class="stringliteral">void<sp/>print(gsl::not_null&lt;IMFActivate*&gt;<sp/>device)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="160"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="165"><highlight class="stringliteral">void<sp/>print(gsl::not_null&lt;IMFMediaType*&gt;<sp/>media_type)<sp/>noexcept;</highlight></codeline>
+<codeline lineno="166"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="171"><highlight class="stringliteral">void<sp/>print(gsl::not_null&lt;IMFTransform*&gt;<sp/>transform,<sp/>const<sp/>GUID&amp;<sp/>iid)<sp/>noexcept;</highlight></codeline>
     </programlisting>
     <location file="src/media.hpp"/>
   </compounddef>
