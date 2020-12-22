@@ -6,6 +6,7 @@
  */
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
+#include <future>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.System.Threading.h>
 
@@ -18,7 +19,6 @@
 
 #include <Dxva2api.h>
 #include <evr.h>
-
 #include <mfplay.h>
 #include <mfreadwrite.h>
 
@@ -49,7 +49,7 @@ TEST_CASE("IMFMediaSink(MPEG4)", "[window][!mayfail]") {
 
     SECTION("MF_SINK_WRITER_STATISTICS") {
         MF_SINK_WRITER_STATISTICS stats{};
-        REQUIRE(sink_writer->GetStatistics(0, &stats) == S_OK);
+        REQUIRE(sink_writer->GetStatistics(0, &stats) == E_INVALIDARG);
     }
     SECTION("IMFMediaSink") {
         com_ptr<IMFMediaType> video_type{};
@@ -73,10 +73,95 @@ TEST_CASE("IMFMediaSink(MPEG4)", "[window][!mayfail]") {
     }
 }
 
+DWORD create_test_window(std::promise<HWND>* p) {
+    try {
+        WNDCLASSW wc{};
+        wc.lpfnWndProc = DefWindowProcW;
+        wc.hInstance = GetModuleHandle(NULL);
+        wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+        wc.lpszClassName = L"Window(IMFMediaSink)";
+
+        auto const atom = RegisterClassW(&wc);
+        if (atom == NULL) // probably ERROR_CLASS_ALREADY_EXISTS
+            return GetLastError();
+        auto on_return1 = gsl::finally([&wc]() {
+            if (UnregisterClassW(wc.lpszClassName, wc.hInstance) == false)
+                winrt::throw_last_error();
+        });
+
+        auto hwnd = CreateWindowExW(0, wc.lpszClassName, wc.lpszClassName, WS_OVERLAPPEDWINDOW, //
+                                    CW_USEDEFAULT, CW_USEDEFAULT, 640, 360,                     //
+                                    NULL, NULL, wc.hInstance, NULL);
+        if (hwnd == NULL)
+            return GetLastError();
+        auto on_return2 = gsl::finally([hwnd]() { DestroyWindow(hwnd); });
+
+        ShowWindow(hwnd, SW_SHOWDEFAULT);
+        if (SetForegroundWindow(hwnd) == false) // --> GetForegroundWindow
+            return GetLastError();
+        SetFocus(hwnd);
+        p->set_value(hwnd);
+
+        MSG msg{};
+        while (msg.message != WM_QUIT) {
+            if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE) == false) {
+                SleepEx(10, true);
+                continue;
+            }
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
+        }
+        return GetLastError();
+    } catch (...) {
+        p->set_exception(std::current_exception());
+    }
+}
+
+TEST_CASE("Window with Win32 API", "[window]") {
+    std::promise<HWND> hwnd_promise{};
+    std::future<DWORD> background = std::async(std::launch::async, create_test_window, &hwnd_promise);
+
+    HWND hwnd = hwnd_promise.get_future().get();
+    REQUIRE(hwnd != NULL);
+
+    SECTION("Immediate close") {
+        REQUIRE(PostMessageW(hwnd, WM_QUIT, NULL, NULL));
+        REQUIRE(background.get() == S_OK);
+    }
+    SECTION("close via gsl::finally") {
+        auto on_return = gsl::finally([hwnd, &background]() {
+            REQUIRE(PostMessageW(hwnd, WM_QUIT, NULL, NULL));
+            REQUIRE(background.get() == S_OK);
+        });
+    }
+}
+
+/// @see https://docs.microsoft.com/en-us/windows/win32/api/mfidl/nn-mfidl-imfmediatypehandler
+com_ptr<IMFMediaType> create_test_sink_type(const RECT& region) {
+    com_ptr<IMFMediaType> media_type{};
+    REQUIRE(MFCreateMediaType(media_type.put()) == S_OK);
+    REQUIRE(media_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video) == S_OK);
+    REQUIRE(media_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32) == S_OK);
+    REQUIRE(media_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) == S_OK);
+    REQUIRE(media_type->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE) == S_OK);
+    REQUIRE(MFSetAttributeRatio(media_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 16, 9) == S_OK);              // 16, 9
+    REQUIRE(MFSetAttributeSize(media_type.get(), MF_MT_FRAME_SIZE, region.right, region.bottom) == S_OK); // 640, 360
+    REQUIRE(MFSetAttributeRatio(media_type.get(), MF_MT_FRAME_RATE, 30, 1) == S_OK);
+    return media_type;
+}
+
 // @see https://github.com/sipsorcery/mediafoundationsamples - MFVideoEVR/MFVideoEVR.cpp
-TEST_CASE("IMFMediaSink(MFVideoEVR)", "[window][!mayfail]") {
-    HWND window = NULL;
-    auto on_return = media_startup();
+TEST_CASE("IMFMediaSink(MFVideoEVR) - IMFVideoSampleAllocator", "[window]") {
+    std::promise<HWND> hwnd_promise{};
+    std::future<DWORD> background = std::async(std::launch::async, create_test_window, &hwnd_promise);
+    HWND window = hwnd_promise.get_future().get();
+    REQUIRE(window != NULL);
+    auto on_return1 = gsl::finally([window, &background]() {
+        PostMessageW(window, WM_QUIT, NULL, NULL);
+        background.get();
+    });
+
+    auto on_return2 = media_startup();
 
     com_ptr<IMFActivate> activate{};
     REQUIRE(MFCreateVideoRendererActivate(window, activate.put()) == S_OK);
@@ -85,189 +170,159 @@ TEST_CASE("IMFMediaSink(MFVideoEVR)", "[window][!mayfail]") {
 
     com_ptr<IMFVideoRenderer> renderer{};
     REQUIRE(sink->QueryInterface(renderer.put()) == S_OK);
-    {
-        IMFTransform* mixer = nullptr;
-        IMFVideoPresenter* presenter = nullptr;
-        REQUIRE(renderer->InitializeRenderer(mixer, presenter) == S_OK);
-    }
+    com_ptr<IMFTransform> mixer{};
+    com_ptr<IMFVideoPresenter> presenter{};
+    REQUIRE(renderer->InitializeRenderer(mixer.get(), presenter.get()) == S_OK);
     com_ptr<IMFGetService> service{};
     REQUIRE(sink->QueryInterface(service.put()) == S_OK);
 
     com_ptr<IMFVideoDisplayControl> control{};
     REQUIRE(service->GetService(MR_VIDEO_RENDER_SERVICE, __uuidof(IMFVideoDisplayControl), (void**)control.put()) ==
             S_OK);
-    {
-        REQUIRE(control->SetVideoWindow(window) == S_OK);
-        RECT region{0, 0, 640, 480};
-        REQUIRE(control->SetVideoPosition(nullptr, &region) == S_OK);
-    }
+    REQUIRE(control->SetVideoWindow(window) == S_OK);
+    RECT region{0, 0, 640, 360};
+    REQUIRE(control->SetVideoPosition(nullptr, &region) == S_OK);
 
-    SECTION("IMFStreamSink") {
-        com_ptr<IMFStreamSink> stream_sink{};
-        REQUIRE(sink->GetStreamSinkByIndex(0, stream_sink.put()) == S_OK);
-        com_ptr<IMFMediaTypeHandler> handler{};
-        REQUIRE(stream_sink->GetMediaTypeHandler(handler.put()) == S_OK);
+    DWORD num_stream_sink = 0;
+    REQUIRE(sink->GetStreamSinkCount(&num_stream_sink) == S_OK);
+    REQUIRE(num_stream_sink > 0);
 
-        // see https://docs.microsoft.com/en-us/windows/win32/api/mfidl/nn-mfidl-imfmediatypehandler
-        SECTION("IMFMediaTypeHandler") {
-            GUID major{};
-            REQUIRE(handler->GetMajorType(&major) == S_OK);
-            REQUIRE(major == MFMediaType_Video);
+    com_ptr<IMFStreamSink> stream_sink{};
+    REQUIRE(sink->GetStreamSinkByIndex(num_stream_sink - 1, stream_sink.put()) == S_OK);
+    com_ptr<IMFMediaTypeHandler> handler{};
+    REQUIRE(stream_sink->GetMediaTypeHandler(handler.put()) == S_OK);
 
-            DWORD num_types = 0;
-            REQUIRE(handler->GetMediaTypeCount(&num_types) == S_OK);
-            REQUIRE(num_types > 0);
-            for (auto i = 0u; i < num_types; ++i) {
-                com_ptr<IMFMediaType> media_type{};
-                if (auto hr = handler->GetMediaTypeByIndex(i, media_type.put()))
-                    FAIL(hr);
-                print(media_type.get());
-            }
-        }
+    com_ptr<IMFMediaType> sink_media_type = create_test_sink_type(region);
+    REQUIRE(handler->SetCurrentMediaType(sink_media_type.get()) == S_OK);
 
-        // see https://docs.microsoft.com/en-us/windows/win32/medfound/direct3d-device-manager
-        SECTION("Direct3D Device Manager") {
-            com_ptr<IMFVideoSampleAllocator> allocator{};
-            REQUIRE(MFGetService(stream_sink.get(), MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(allocator.put())) ==
-                    S_OK);
-            com_ptr<IDirect3DDeviceManager9> device_manager{};
-            REQUIRE(MFGetService(sink.get(), MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(device_manager.put())) ==
-                    S_OK);
-            REQUIRE(allocator->SetDirectXManager(device_manager.get()) == S_OK);
+    SECTION("without Direct3D") {
+        com_ptr<IMFVideoSampleAllocator> allocator{};
+        REQUIRE(MFGetService(stream_sink.get(), MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(allocator.put())) == S_OK);
 
+        DWORD requested_frame_count = 5;
+        REQUIRE(allocator->InitializeSampleAllocator(requested_frame_count, sink_media_type.get()) == S_OK);
+        SECTION("allocate sample once") {
             com_ptr<IMFSample> sample{};
             REQUIRE(allocator->AllocateSample(sample.put()) == S_OK);
             com_ptr<IMFMediaBuffer> buffer{};
             REQUIRE(sample->GetBufferByIndex(0, buffer.put()) == S_OK);
+            DWORD num_buffer = 0;
+            REQUIRE(sample->GetBufferCount(&num_buffer) == S_OK);
+            REQUIRE(num_buffer == 1);
         }
-    }
-}
-
-DWORD test_thread_procedure(std::atomic<HWND>& window) {
-    WNDCLASSW wc{};
-    wc.lpfnWndProc = DefWindowProc;
-    wc.hInstance = GetModuleHandle(NULL);
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.lpszClassName = L"Test Window(IMFMediaSink)";
-
-    auto const atom = RegisterClassW(&wc);
-    if (atom == NULL) // probably ERROR_CLASS_ALREADY_EXISTS
-        return GetLastError();
-    auto on_return1 = gsl::finally([&wc]() {
-        if (UnregisterClassW(wc.lpszClassName, wc.hInstance) == false)
-            winrt::throw_last_error();
-    });
-
-    window = CreateWindowExW(0, wc.lpszClassName, wc.lpszClassName, WS_OVERLAPPEDWINDOW, //
-                             CW_USEDEFAULT, CW_USEDEFAULT, 640, 480,                     //
-                             NULL, NULL, wc.hInstance, NULL);
-    if (window == NULL)
-        return GetLastError();
-    auto on_return2 = gsl::finally([hwnd = window.load()]() { DestroyWindow(hwnd); });
-
-    ShowWindow(window, SW_SHOWDEFAULT);
-    MSG msg{};
-    while (msg.message != WM_QUIT) {
-        if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE) == false) {
-            SleepEx(10, true);
-            continue;
-        }
-        TranslateMessage(&msg);
-        DispatchMessageW(&msg);
-    }
-    return GetLastError();
-}
-
-class app_context_t final {
-    HINSTANCE instance;
-    HWND window;
-    WNDCLASSEXW winclass;
-    ATOM atom;
-
-  public:
-    static LRESULT CALLBACK on_key_msg(HWND hwnd, UINT umsg, //
-                                       WPARAM wparam, LPARAM lparam) {
-        switch (umsg) {
-        case WM_KEYDOWN:
-        case WM_KEYUP:
-            return 0;
-        default:
-            return DefWindowProc(hwnd, umsg, wparam, lparam);
-        }
-    }
-
-    static LRESULT CALLBACK on_wnd_msg(HWND hwnd, UINT umsg, //
-                                       WPARAM wparam, LPARAM lparam) {
-        switch (umsg) {
-        case WM_DESTROY:
-        case WM_CLOSE:
-            PostQuitMessage(EXIT_SUCCESS); // == 0
-            return 0;
-        case WM_CREATE:
-            lparam;
-        default:
-            return on_key_msg(hwnd, umsg, wparam, lparam);
-        }
-    }
-
-  public:
-    explicit app_context_t(LPWSTR name, LPVOID param) : instance{GetModuleHandle(NULL)}, window{}, winclass{}, atom{} {
-        // Setup the windows class with default settings.
-        winclass.cbSize = sizeof(WNDCLASSEXW);
-        winclass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-        winclass.lpfnWndProc = on_wnd_msg;
-        winclass.hInstance = instance;
-        winclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-        winclass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-        winclass.lpszMenuName = NULL;
-        winclass.lpszClassName = name;
-        atom = RegisterClassExW(&winclass);
-        if (atom == NULL)
-            winrt::throw_last_error();
-
-        int x = CW_USEDEFAULT, y = CW_USEDEFAULT;
-        auto screenWidth = 100 * 16, screenHeight = 100 * 9;
-        // fullscreen: maximum size of the users desktop and 32bit
-        if (true) {
-            DEVMODE mode{};
-            mode.dmSize = sizeof(mode);
-            mode.dmPelsWidth = GetSystemMetrics(SM_CXSCREEN);
-            mode.dmPelsHeight = GetSystemMetrics(SM_CYSCREEN);
-            mode.dmBitsPerPel = 32;
-            mode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-            // Change the display settings to full screen.
-            ChangeDisplaySettings(&mode, CDS_FULLSCREEN);
-        }
-
-        // Create the window with the screen settings and get the handle to it.
-        window = CreateWindowExW(0, winclass.lpszClassName, winclass.lpszClassName, WS_OVERLAPPEDWINDOW, //
-                                 x, y, 640, 480,                                                         //
-                                 NULL, NULL, winclass.hInstance, param);
-
-        // Bring the window up on the screen and set it as main focus.
-        ShowWindow(window, SW_SHOW);
-        SetForegroundWindow(window);
-        SetFocus(window);
-        ShowCursor(true);
-    }
-    ~app_context_t() {
-        DestroyWindow(window);
-        UnregisterClassW(winclass.lpszClassName, nullptr);
-    }
-
-    DWORD run() noexcept(false) {
-        auto consume_messages = [](MSG& msg) {
-            if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
-                TranslateMessage(&msg);
-                DispatchMessageW(&msg);
+        SECTION("MF_E_SAMPLEALLOCATOR_EMPTY") {
+            std::vector<com_ptr<IMFSample>> samples{};
+            auto repeat = requested_frame_count;
+            while (repeat--) {
+                com_ptr<IMFSample> sample{};
+                REQUIRE(allocator->AllocateSample(sample.put()) == S_OK);
+                samples.emplace_back(std::move(sample));
             }
-            return msg.message == WM_QUIT;
-        };
-
-        MSG msg{};
-        while (consume_messages(msg) == false) {
-            // ...
+            REQUIRE(samples.size() == requested_frame_count);
+            com_ptr<IMFSample> sample{};
+            REQUIRE(allocator->AllocateSample(sample.put()) == MF_E_SAMPLEALLOCATOR_EMPTY);
         }
-        return static_cast<DWORD>(msg.wParam);
     }
-};
+    // see https://docs.microsoft.com/en-us/windows/win32/medfound/direct3d-device-manager
+    SECTION("Direct3D Device Manager") {
+        com_ptr<IDirect3DDeviceManager9> device_manager{};
+        REQUIRE(MFGetService(sink.get(), MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(device_manager.put())) == S_OK);
+        com_ptr<IMFVideoSampleAllocator> allocator{};
+        REQUIRE(MFGetService(stream_sink.get(), MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(allocator.put())) == S_OK);
+        REQUIRE(allocator->SetDirectXManager(device_manager.get()) == S_OK);
+
+        DWORD requested_frame_count = 5;
+        REQUIRE(allocator->InitializeSampleAllocator(requested_frame_count, sink_media_type.get()) == S_OK);
+        SECTION("allocate sample once") {
+            com_ptr<IMFSample> sample{};
+            REQUIRE(allocator->AllocateSample(sample.put()) == S_OK);
+            com_ptr<IMFMediaBuffer> buffer{};
+            REQUIRE(sample->GetBufferByIndex(0, buffer.put()) == S_OK);
+            DWORD num_buffer = 0;
+            REQUIRE(sample->GetBufferCount(&num_buffer) == S_OK);
+            REQUIRE(num_buffer == 1);
+        }
+        SECTION("MF_E_SAMPLEALLOCATOR_EMPTY") {
+            std::vector<com_ptr<IMFSample>> samples{};
+            auto repeat = requested_frame_count;
+            while (repeat--) {
+                com_ptr<IMFSample> sample{};
+                REQUIRE(allocator->AllocateSample(sample.put()) == S_OK);
+                samples.emplace_back(std::move(sample));
+            }
+            REQUIRE(samples.size() == requested_frame_count);
+            com_ptr<IMFSample> sample{};
+            REQUIRE(allocator->AllocateSample(sample.put()) == MF_E_SAMPLEALLOCATOR_EMPTY);
+        }
+    }
+}
+
+TEST_CASE("IMFMediaSink(MFVideoEVR) - Clock", "[window]") {
+    std::promise<HWND> hwnd_promise{};
+    std::future<DWORD> background = std::async(std::launch::async, create_test_window, &hwnd_promise);
+    HWND window = hwnd_promise.get_future().get();
+    REQUIRE(window != NULL);
+    auto on_return1 = gsl::finally([window, &background]() {
+        PostMessageW(window, WM_QUIT, NULL, NULL);
+        background.get();
+    });
+    auto on_return2 = media_startup();
+
+    com_ptr<IMFActivate> activate{};
+    REQUIRE(MFCreateVideoRendererActivate(window, activate.put()) == S_OK);
+    com_ptr<IMFMediaSink> sink{};
+    REQUIRE(activate->ActivateObject(IID_IMFMediaSink, (void**)sink.put()) == S_OK);
+    com_ptr<IMFVideoRenderer> renderer{};
+    REQUIRE(sink->QueryInterface(renderer.put()) == S_OK);
+    REQUIRE(renderer->InitializeRenderer(nullptr, nullptr) == S_OK);
+    com_ptr<IMFGetService> service{};
+    REQUIRE(sink->QueryInterface(service.put()) == S_OK);
+
+    com_ptr<IMFVideoDisplayControl> control{};
+    REQUIRE(service->GetService(MR_VIDEO_RENDER_SERVICE, __uuidof(IMFVideoDisplayControl), (void**)control.put()) ==
+            S_OK);
+    REQUIRE(control->SetVideoWindow(window) == S_OK);
+    RECT region{0, 0, 640, 360};
+    REQUIRE(control->SetVideoPosition(nullptr, &region) == S_OK);
+
+    com_ptr<IMFStreamSink> stream_sink{};
+    REQUIRE(sink->GetStreamSinkByIndex(0, stream_sink.put()) == S_OK);
+    com_ptr<IMFMediaTypeHandler> handler{};
+    REQUIRE(stream_sink->GetMediaTypeHandler(handler.put()) == S_OK);
+    com_ptr<IMFMediaType> sink_media_type = create_test_sink_type(region);
+    REQUIRE(handler->SetCurrentMediaType(sink_media_type.get()) == S_OK);
+
+    com_ptr<IDirect3DDeviceManager9> device_manager{};
+    REQUIRE(MFGetService(sink.get(), MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(device_manager.put())) == S_OK);
+    com_ptr<IMFVideoSampleAllocator> allocator{};
+    REQUIRE(MFGetService(stream_sink.get(), MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(allocator.put())) == S_OK);
+    REQUIRE(allocator->SetDirectXManager(device_manager.get()) == S_OK);
+
+    com_ptr<IMFPresentationClock> clock{};
+    REQUIRE(MFCreatePresentationClock(clock.put()) == S_OK);
+    com_ptr<IMFPresentationTimeSource> time_source{};
+    REQUIRE(MFCreateSystemTimeSource(time_source.put()) == S_OK);
+    REQUIRE(clock->SetTimeSource(time_source.get()) == S_OK);
+    REQUIRE(sink->SetPresentationClock(clock.get()) == S_OK);
+
+    DWORD requested_frame_count = 5;
+    REQUIRE(allocator->InitializeSampleAllocator(requested_frame_count, sink_media_type.get()) == S_OK);
+
+    LONGLONG time_stamp = 0;
+    REQUIRE(clock->Start(time_stamp) == S_OK);
+    DWORD repeat = 300;
+    while (repeat--) {
+        com_ptr<IMFSample> sample{};
+        if (auto ec = allocator->AllocateSample(sample.put()))
+            break;
+
+        constexpr auto duration = 1000u;
+        time_stamp += duration;
+        sample->SetSampleTime(time_stamp);
+        sample->SetSampleDuration(duration);
+
+        if (auto ec = stream_sink->ProcessSample(sample.get()))
+            FAIL(ec);
+    }
+    REQUIRE(clock->Stop() == S_OK);
+}

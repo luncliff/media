@@ -31,7 +31,7 @@ add_library(media STATIC
 
 set_target_properties(media
 PROPERTIES
-    PUBLIC_HEADER src/media.hpp
+    PUBLIC_HEADER   "src/media.hpp"
     WINDOWS_EXPORT_ALL_SYMBOLS false
 )
 
@@ -71,11 +71,12 @@ elseif(MSVC)
     PRIVATE
         /W4 /bigobj /errorReport:send
     )
+    target_link_options(media
+    PRIVATE
+        /ERRORREPORT:SEND
+    )
 endif()
 
-# install(FILES           src/media.hpp
-#         DESTINATION     ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}
-# )
 install(TARGETS         media
         EXPORT          ${PROJECT_NAME}-config
         RUNTIME  DESTINATION ${CMAKE_INSTALL_PREFIX}/bin

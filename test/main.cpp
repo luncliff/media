@@ -42,6 +42,9 @@ int main(int argc, char* argv[]) {
     spdlog::set_pattern("[%^%l%$] %v");
     spdlog::set_level(spdlog::level::level_enum::debug);
 
+    spdlog::info("media_foundation:");
+    spdlog::info("- version: {:x}", MF_VERSION);
+
     Catch::Session session{};
     return session.run(argc, argv);
 }

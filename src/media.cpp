@@ -32,8 +32,6 @@ struct critical_section_t final : public CRITICAL_SECTION {
 auto media_startup() noexcept(false) -> gsl::final_action<HRESULT(WINAPI*)()> {
     if (auto hr = MFStartup(MF_VERSION))
         throw winrt::hresult_error{hr};
-    spdlog::info("media_foundation:");
-    spdlog::info("- version: {:x}", MF_VERSION);
     return gsl::finally(&MFShutdown);
 }
 
