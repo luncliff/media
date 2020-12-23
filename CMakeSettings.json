@@ -29,7 +29,7 @@
           "type": "BOOL"
         },
         {
-          "name": "BUILD_SHARED_LIBS",
+          "name": "BUILD_DRIVER",
           "value": "true",
           "type": "BOOL"
         }

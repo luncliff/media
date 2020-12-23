@@ -77,7 +77,7 @@ jobs:
         inputs:
           sourceFolder: "C:/vcpkg/installed/$(vcpkg_target_triplet)/debug/bin"
           contents: "*.dll"
-          targetFolder: "$(install_dir)/tools"
+          targetFolder: "$(install_dir)/bin"
           overWrite: true
         condition: in(variables['BuildConfiguration'], 'Debug')
 
@@ -86,7 +86,7 @@ jobs:
         inputs:
           sourceFolder: "C:/vcpkg/installed/$(vcpkg_target_triplet)/bin"
           contents: "*.dll"
-          targetFolder: "$(install_dir)/tools"
+          targetFolder: "$(install_dir)/bin"
           overWrite: true
         condition: in(variables['BuildConfiguration'], 'Release')
 
@@ -94,7 +94,7 @@ jobs:
         inputs:
           targetType: "inline"
           script: ./media_test_suite.exe --success
-          workingDirectory: "$(install_dir)/tools"
+          workingDirectory: "$(install_dir)/bin"
         condition: succeeded()
 
   - job: Analysis

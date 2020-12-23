@@ -105,13 +105,7 @@ TEST_CASE("IMFSinkWriterEx(MPEG4)") {
     auto on_return = media_startup();
 
     com_ptr<IMFSinkWriterEx> writer{};
-    REQUIRE(create_test_sink_writer(writer.put(), fs::current_path() / L"output2.mp4") == S_OK);
-
-    com_ptr<IMFByteStream> byte_stream{};
-    auto fpath = fs::current_path() / "output3.mp4";
-    if (auto ec = MFCreateFile(MF_ACCESSMODE_WRITE, MF_OPENMODE_DELETE_IF_EXIST, MF_FILEFLAGS_NOBUFFERING,
-                               fpath.c_str(), byte_stream.put()))
-        FAIL(ec);
+    REQUIRE(create_test_sink_writer(writer.put(), fs::current_path() / L"output4.mp4") == S_OK);
 
     constexpr auto total_duration = 10'000'000;
     constexpr auto fps = 30;
@@ -154,15 +148,18 @@ TEST_CASE("IMFSinkWriterEx(MPEG4)") {
         auto bufsz = 4 * width * height;
         CAPTURE(bufsz);
 
+        auto count = 0u;
         for (LONGLONG time_point = 0; time_point < total_duration; time_point += frame_duration) {
             com_ptr<IMFSample> sample{};
             if (auto hr = create_single_buffer_sample(sample.put(), bufsz))
                 FAIL(hr);
 
+            // The buffer is not touched, so it's current length must be 0.
+            // change the value to its capacity so the IMFSinkWriter won't report E_INAVALIDARG
             com_ptr<IMFMediaBuffer> buffer{};
             if (auto hr = sample->GetBufferByIndex(0, buffer.put()))
                 FAIL(hr);
-            if (auto hr = buffer->SetCurrentLength(bufsz)) // 0 -> bufsz
+            if (auto hr = buffer->SetCurrentLength(bufsz))
                 FAIL(hr);
 
             if (auto hr = sample->SetSampleTime(time_point))
@@ -171,7 +168,9 @@ TEST_CASE("IMFSinkWriterEx(MPEG4)") {
                 FAIL(hr);
             if (auto hr = writer->WriteSample(stream_index, sample.get()))
                 FAIL(hr);
+            ++count;
         }
+        CAPTURE(count == 31); // == fps + 1
         REQUIRE(writer->Finalize() == S_OK);
     }
 }
@@ -214,9 +213,10 @@ DWORD create_test_window(gsl::not_null<std::promise<HWND>*> p) {
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         }
-        return msg.wParam;
+        return static_cast<DWORD>(msg.wParam);
     } catch (...) {
         p->set_exception(std::current_exception());
+        return EXIT_FAILURE;
     }
 }
 

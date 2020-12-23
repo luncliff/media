@@ -15,8 +15,10 @@ string w2mb(wstring_view in) noexcept(false) {
     out.reserve(MB_CUR_MAX * in.length());
     mbstate_t state{};
     for (wchar_t wc : in) {
+        size_t len = 0;
         char mb[8]{}; // ensure null-terminated for UTF-8 (maximum 4 byte)
-        const auto len = wcrtomb(mb, wc, &state);
+        if (auto ec = wcrtomb_s(&len, mb, wc, &state))
+            throw system_error{ec, system_category(), "wcrtomb_s"};
         out += string_view{mb, len};
     }
     return out;

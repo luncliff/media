@@ -1,6 +1,7 @@
 /**
  * @file dxva_test.cpp
  * @author github.com/luncliff (luncliff@gmail.com)
+ * @see https://docs.microsoft.com/en-us/windows/win32/medfound/supporting-direct3d-11-video-decoding-in-media-foundation
  */
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
@@ -32,44 +33,60 @@ namespace fs = std::filesystem;
 
 fs::path get_asset_dir() noexcept;
 
-TEST_CASE("ID3D11Texture2D as DXGISurface", "[!mayfail]") {
+HRESULT configure_type_bypass(com_ptr<IMFTransform> transform, com_ptr<IMFMediaType> input_type, //
+                              DWORD& istream, DWORD& ostream);
+HRESULT consume(com_ptr<IMFSourceReader> source_reader, com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream);
+
+SCENARIO("ID3D11Texture2D as IDXGISurface", "[!mayfail]") {
     auto on_return = media_startup();
 
-    com_ptr<ID3D11Device> graphics_device{};
-    com_ptr<ID3D11DeviceContext> graphics_device_context{};
+    com_ptr<ID3D11Device> device{};
+    com_ptr<ID3D11DeviceContext> context{};
     {
+        // todo: add D3D11_CREATE_DEVICE_BGRA_SUPPORT?
         D3D_FEATURE_LEVEL level{};
-        D3D_FEATURE_LEVEL levels[]{D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1};
-        REQUIRE(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_VIDEO_SUPPORT, levels, 3,
-                                  D3D11_SDK_VERSION, graphics_device.put(), &level,
-                                  graphics_device_context.put()) == S_OK);
+        D3D_FEATURE_LEVEL levels[]{D3D_FEATURE_LEVEL_11_1};
+        REQUIRE(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL,
+                                  D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_VIDEO_SUPPORT, levels, 1,
+                                  D3D11_SDK_VERSION, device.put(), &level, context.put()) == S_OK);
     }
+    D3D11_FEATURE_DATA_D3D11_OPTIONS features{};
+    REQUIRE(device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &features,
+                                        sizeof(D3D11_FEATURE_DATA_D3D11_OPTIONS)) == S_OK);
 
+    // see https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ne-d3d11-d3d11_usage
+    // see https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ne-d3d11-d3d11_bind_flag
     com_ptr<ID3D11Texture2D> texture2d{};
-    {
-        D3D11_TEXTURE2D_DESC desc{};
-        REQUIRE(graphics_device->CreateTexture2D(&desc, nullptr, texture2d.put()) == S_OK);
-    }
+    D3D11_TEXTURE2D_DESC desc{};
+    desc.Width = desc.Height = 600;
+    desc.MipLevels = desc.ArraySize = 1;
+    desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.Usage = D3D11_USAGE_DYNAMIC;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    //desc.BindFlags |= D3D11_BIND_DECODER; // requires D3D_FEATURE_LEVEL_11_1
+    //desc.BindFlags |= D3D11_BIND_VIDEO_ENCODER;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    desc.SampleDesc.Quality = 0;
+    desc.SampleDesc.Count = 1;
+    REQUIRE(device->CreateTexture2D(&desc, nullptr, texture2d.put()) == S_OK);
+
     com_ptr<IDXGISurface> surface{};
     REQUIRE(texture2d->QueryInterface(surface.put()) == S_OK);
+
     com_ptr<IMFMediaBuffer> media_buffer{};
-    REQUIRE(MFCreateDXGISurfaceBuffer(IID_ID3D11Texture2D, surface.get(), 0, TRUE, media_buffer.put()) == S_OK);
+    UINT index = 0;
+    REQUIRE(MFCreateDXGISurfaceBuffer(IID_ID3D11Texture2D, surface.get(), index, TRUE, media_buffer.put()) == S_OK);
+
     com_ptr<IMFDXGIBuffer> dxgi_buffer{};
     REQUIRE(media_buffer->QueryInterface(dxgi_buffer.put()) == S_OK);
-    {
 
-        UINT index = 0;
+    SECTION("SubresourceIndex") {
         REQUIRE(dxgi_buffer->GetSubresourceIndex(&index) == S_OK);
-        com_ptr<ID3D11Texture2D> tex{};
-        REQUIRE(dxgi_buffer->GetResource(IID_PPV_ARGS(tex.put())) == S_OK);
-        REQUIRE(texture2d == tex);
+        com_ptr<ID3D11Texture2D> resource{};
+        REQUIRE(dxgi_buffer->GetResource(IID_PPV_ARGS(resource.put())) == S_OK);
+        REQUIRE(texture2d == resource);
     }
 }
-
-void make_test_source(com_ptr<IMFMediaSourceEx>& source, com_ptr<IMFSourceReader>& source_reader,
-                      com_ptr<IMFMediaType>& source_type, //
-                      const GUID& output_subtype, const fs::path& fpath);
-HRESULT check_sample(com_ptr<IMFSample> sample);
 
 void check_device(IMFDXGIDeviceManager* manager, ID3D11Device* expected) {
     HANDLE handle{};
@@ -141,25 +158,43 @@ TEST_CASE("IMFDXGIDeviceManager, ID3D11Device", "[dxva][!mayfail]") {
         REQUIRE(graphics_device_context->QueryInterface(video_context.put()) == S_OK);
 
         DWORD num_profile = video_device->GetVideoDecoderProfileCount();
-        if (num_profile) {
-            spdlog::info("- video_decoder_profile:");
-            for (auto i = 0u; i < num_profile; ++i) {
-                GUID profile{};
-                video_device->GetVideoDecoderProfile(i, &profile);
-                spdlog::info("  - guid: {}", to_readable(profile));
-                BOOL supported = FALSE;
-                if (auto hr = video_device->CheckVideoDecoderFormat(&profile, DXGI_FORMAT_R8G8B8A8_UNORM, &supported))
+        REQUIRE(num_profile > 0);
+        for (auto i = 0u; i < num_profile; ++i) {
+            D3D11_VIDEO_DECODER_DESC desc{};
+            if (auto hr = video_device->GetVideoDecoderProfile(i, &desc.Guid))
+                FAIL(hr);
+
+            desc.SampleWidth = desc.SampleHeight = 600;
+            desc.OutputFormat = DXGI_FORMAT_NV12;
+            BOOL supported = FALSE;
+            if (auto hr = video_device->CheckVideoDecoderFormat(&desc.Guid, desc.OutputFormat, &supported))
+                FAIL(hr);
+            if (supported == false) {
+                spdlog::error("Video decoder doesn't support: {}", desc.OutputFormat);
+                spdlog::debug(" - D3D11_VIDEO_DECODER_DESC");
+                spdlog::debug("   guid: {}", to_readable(desc.Guid));
+                continue;
+            }
+
+            UINT num_config = 0;
+            if (auto hr = video_device->GetVideoDecoderConfigCount(&desc, &num_config))
+                FAIL(hr);
+
+            while (num_config--) {
+                D3D11_VIDEO_DECODER_CONFIG config{};
+                if (auto hr = video_device->GetVideoDecoderConfig(&desc, num_config, &config))
                     FAIL(hr);
-                if (supported)
-                    spdlog::debug("    - DXGI_FORMAT_R8G8B8A8_UNORM");
+                com_ptr<ID3D11VideoDecoder> video_decoder{};
+                if (auto hr = video_device->CreateVideoDecoder(&desc, &config, video_decoder.put())) {
+                    spdlog::error("video_device->CreateVideoDecoder: {:#08x}", hr);
+                    spdlog::debug(" - D3D11_VIDEO_DECODER_DESC");
+                    spdlog::debug("   guid: {}", to_readable(desc.Guid));
+                    spdlog::debug("   format: {}", desc.OutputFormat);
+                }
             }
         }
-        D3D11_VIDEO_DECODER_DESC config{};
-        // video_device->GetVideoDecoderConfigCount()
-        //com_ptr<ID3D11VideoDecoder> video_decoder{};
-        //REQUIRE(video_device->CreateVideoDecoder(nullptr, nullptr, video_decoder.put()) == S_OK);
-        //com_ptr<ID3D11VideoProcessor> video_processor{};
-        //REQUIRE(video_device->CreateVideoProcessor(nullptr, 0, video_processor.put()) == S_OK);
+        com_ptr<ID3D11VideoProcessor> video_processor{};
+        REQUIRE(video_device->CreateVideoProcessor(nullptr, 0, video_processor.put()) == S_OK);
     }
 }
 
@@ -184,31 +219,39 @@ SCENARIO("MFTransform with ID3D11Device", "[dxva][!mayfail]") {
     REQUIRE(MFCreateDXGIDeviceManager(&device_manager_token, device_manager.put()) == S_OK);
     REQUIRE(device_manager->ResetDevice(graphics_device.get(), device_manager_token) == S_OK);
 
-    com_ptr<IMFMediaSourceEx> source{};
-    com_ptr<IMFSourceReader> source_reader{};
-    com_ptr<IMFMediaType> source_type{};
-    make_test_source(source, source_reader, source_type, MFVideoFormat_H264, get_asset_dir() / "fm5p7flyCSY.mp4");
+    com_ptr<IMFMediaType> input_type{};
+    REQUIRE(make_video_output_RGB32(input_type.put()) == S_OK);
+    REQUIRE(MFSetAttributeSize(input_type.get(), MF_MT_FRAME_SIZE, 1280, 720) == S_OK);
 
-    GIVEN("CLSID_CMSH264DecoderMFT") {
-        com_ptr<IMFTransform> transform{};
-        REQUIRE(make_transform_video(transform.put(), CLSID_CMSH264DecoderMFT) == S_OK);
-        REQUIRE(configure_acceleration_H264(transform.get()) == S_OK);
-        CAPTURE(configure_D3D11_DXGI(transform.get(), device_manager.get()));
-
-        print(transform.get(), CLSID_CMSH264DecoderMFT);
-    }
     GIVEN("CLSID_VideoProcessorMFT") {
         com_ptr<IMFTransform> transform{};
         REQUIRE(make_transform_video(transform.put(), CLSID_VideoProcessorMFT) == S_OK);
         CAPTURE(configure_D3D11_DXGI(transform.get(), device_manager.get()));
-        {
-            com_ptr<IMFVideoProcessorControl> control{};
-            REQUIRE(transform->QueryInterface(control.put()) == S_OK);
-            REQUIRE(control->SetMirror(MIRROR_NONE) == S_OK);
-            REQUIRE(control->SetRotation(ROTATION_NONE) == S_OK);
-            RECT region{0, 0, 1280, 720};
-            REQUIRE(control->SetDestinationRectangle(&region) == S_OK);
+
+        com_ptr<IMFVideoProcessorControl> control{};
+        REQUIRE(transform->QueryInterface(control.put()) == S_OK);
+        REQUIRE(configure_rectangle(control.get(), input_type.get()) == S_OK);
+        //REQUIRE(control->SetMirror(MIRROR_VERTICAL) == S_OK);
+        //REQUIRE(control->SetRotation(ROTATION_NONE) == S_OK);
+
+        // with configure_D3D11_DXGI, some formats might not be available (like I420)
+        const DWORD istream = 0, ostream = 0;
+        REQUIRE(transform->SetInputType(istream, input_type.get(), 0) == S_OK);
+
+        DWORD type_index{};
+        for (auto candidate : try_output_available_types(transform, ostream, type_index)) {
+            if (auto hr = MFSetAttributeSize(candidate.get(), MF_MT_FRAME_SIZE, 1280, 720); FAILED(hr))
+                FAIL(hr);
+            REQUIRE(transform->SetOutputType(ostream, candidate.get(), 0) == S_OK);
+            return;
         }
-        print(transform.get(), CLSID_VideoProcessorMFT);
+        FAIL("there must be at least 1 type selected");
+    }
+
+    GIVEN("CLSID_CColorConvertDMO")
+    THEN("E_NOTIMPL") {
+        com_ptr<IMFTransform> transform{};
+        REQUIRE(make_transform_video(transform.put(), CLSID_CColorConvertDMO) == S_OK);
+        REQUIRE(configure_D3D11_DXGI(transform.get(), device_manager.get()) == E_NOTIMPL);
     }
 }

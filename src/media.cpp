@@ -105,24 +105,12 @@ HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE
     return unknown->QueryInterface(source);
 }
 
-HRESULT make_transform_H264(IMFTransform** transform) noexcept {
-    com_ptr<IUnknown> unknown{};
-    if (auto hr = CoCreateInstance(CLSID_CMSH264DecoderMFT, NULL, CLSCTX_INPROC_SERVER, //
-                                   IID_PPV_ARGS(unknown.put())))
-        return hr;
-    return unknown->QueryInterface(transform);
-}
-
 HRESULT make_transform_video(IMFTransform** transform, const IID& iid) noexcept {
     com_ptr<IUnknown> unknown{};
     if (auto hr = CoCreateInstance(iid, NULL, CLSCTX_INPROC_SERVER, //
                                    IID_PPV_ARGS(unknown.put())))
         return hr;
     return unknown->QueryInterface(transform);
-}
-
-HRESULT make_transform_video(IMFTransform** transform) noexcept {
-    return make_transform_video(transform, CLSID_VideoProcessorMFT);
 }
 
 HRESULT configure_D3D11_DXGI(gsl::not_null<IMFTransform*> transform, IMFDXGIDeviceManager* device_manager) noexcept {

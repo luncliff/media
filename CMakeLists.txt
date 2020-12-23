@@ -6,6 +6,7 @@ endif()
 if(NOT DEFINED BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS true)
 endif()
+set(CMAKE_SUPPRESS_REGENERATION true) # no ZERO_CHECK
 set(CMAKE_VS_WINRT_BY_DEFAULT true)
 message(STATUS "using Windows: ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
 
@@ -16,7 +17,6 @@ find_package(spdlog        CONFIG REQUIRED)
 include(CheckIncludeFileCXX)
 check_include_file_cxx("mfapi.h" found_mfapi)
 check_include_file_cxx("wincodecsdk.h" found_codecsdk)
-check_include_file_cxx("wrl/client.h" found_wrl)
 check_include_file_cxx("d3d11.h" found_direcx11)
 
 # see https://github.com/microsoft/wil
@@ -97,14 +97,10 @@ write_basic_package_version_file(${VERSION_FILE_PATH}
 install(FILES           ${VERSION_FILE_PATH} 
         DESTINATION     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}
 )
+# include(CPack)
 
 if(BUILD_DRIVER)
-    include(CPack)
-    set_target_properties(media
-    PROPERTIES
-        VS_GLOBAL_DriverTargetPlatform  Universal
-        VS_PLATFORM_TOOLSET             WindowsApplicationForDrivers10.0
-    )
+    # add_subdirectory(mft0)
 endif()
 
 if(NOT BUILD_TESTING)
@@ -116,9 +112,11 @@ include(Catch)
 
 add_executable(media_test_suite
     test/main.cpp
+    test/webcam_test.cpp
     test/sink_test.cpp
     test/dxva_test.cpp
     test/transform_test.cpp
+    test/source_test.cpp
 )
 
 set_target_properties(media_test_suite
@@ -141,5 +139,5 @@ PRIVATE
 catch_discover_tests(media_test_suite)
 
 install(TARGETS  media_test_suite
-        RUNTIME  DESTINATION ${CMAKE_INSTALL_PREFIX}/tools
+        RUNTIME  DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
 )

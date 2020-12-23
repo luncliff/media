@@ -4,7 +4,6 @@
 #   https://gitlab.com/spice/win32/usbdk/-/blob/master/UsbDkInstHelper/UsbDkInstHelper.vcxproj
 #
 cmake_minimum_required(VERSION 3.18) # for target_precompile_headers
-project(AvsCamera VERSION 0.1 LANGUAGES C CXX)
 
 set(CMAKE_SUPPRESS_REGENERATION true) # no ZERO_CHECK
 set(CMAKE_VS_WINRT_BY_DEFAULT true)
@@ -35,17 +34,22 @@ PRIVATE
 
 target_compile_options(MFT0
 PRIVATE
-    /W4 /WX- /errorReport:send
-    /Zc:__cplusplus /bigobj /await
+    /W4 /WX- /bigobj /errorReport:send
 )
 
 target_link_libraries(MFT0
 PRIVATE
-    windowsapp # C++/WinRT
+    media # windowsapp # C++/WinRT
     mfplat # mfapi.h
 )
 
 target_link_options(MFT0
 PRIVATE
     /INCREMENTAL:NO /ERRORREPORT:SEND
+)
+
+install(TARGETS MFT0
+        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 )

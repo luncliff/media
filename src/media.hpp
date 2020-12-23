@@ -3,6 +3,7 @@
 
 #include <experimental/generator>
 #include <filesystem>
+#include <future>
 #include <gsl/gsl>
 
 #include <mfapi.h>
@@ -41,22 +42,14 @@ HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE
 
 /// @see CoCreateInstance
 /// @see Color Converter DSP https://docs.microsoft.com/en-us/windows/win32/medfound/colorconverter
-/// @param iid CLSID_CColorConvertDMO
-/// @todo test CLSID_OpenCLMFTDx11
+/// @see H264 Decoder https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder
+/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
+/// @param iid CLSID_CColorConvertDMO, CLSID_CMSH264DecoderMFT, CLSID_VideoProcessorMFT
+/// @todo test enCLMFTDx11
 HRESULT make_transform_video(IMFTransform** transform, const IID& iid) noexcept;
-
-/// @see CoCreateInstance
-/// @see CLSID_CMSH264DecoderMFT
-/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder
-[[deprecated]] HRESULT make_transform_H264(IMFTransform** transform) noexcept;
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder#transform-attributes
 HRESULT configure_acceleration_H264(gsl::not_null<IMFTransform*> transform) noexcept;
-
-/// @see CoCreateInstance
-/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
-/// @see CLSID_VideoProcessorMFT
-[[deprecated]] HRESULT make_transform_video(IMFTransform** transform) noexcept;
 
 /// @brief configure D3D11 if the transform supports it
 /// @return E_NOTIMPL, E_FAIL ...

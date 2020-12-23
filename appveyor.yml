@@ -53,5 +53,5 @@ test_script:
   - ps: if($env:CONFIGURATION -eq "Debug"){   $env:PATH="$env:PATH;c:/tools/vcpkg/installed/$env:VCPKG_TARGET_TRIPLET/debug/bin" }
   - ps: if($env:CONFIGURATION -eq "Release"){ $env:PATH="$env:PATH;c:/tools/vcpkg/installed/$env:VCPKG_TARGET_TRIPLET/bin" }
   - ps: |
-      Push-Location "$env:INSTALL_PATH/tools"
+      Push-Location "$env:INSTALL_PATH/bin"
       ./media_test_suite.exe --success
