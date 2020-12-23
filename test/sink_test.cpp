@@ -24,56 +24,159 @@
 
 #pragma comment(lib, "strmiids") // for MR_VIDEO_RENDER_SERVICE
 
-// https://docs.microsoft.com/en-us/windows/win32/medfound/using-the-sink-writer
-// https://docs.microsoft.com/en-us/windows/win32/medfound/tutorial--using-the-sink-writer-to-encode-video#define-the-video-format
-TEST_CASE("IMFMediaSink(MPEG4)", "[window][!mayfail]") {
+TEST_CASE("MFCreateMPEG4MediaSink") {
     auto on_return = media_startup();
 
-    // todo: MFCreateSinkWriterFromURL(L"output.mp4", NULL, NULL, sink_writer.put());
+    com_ptr<IMFByteStream> byte_stream{};
+    auto fpath = fs::current_path() / "output1.mp4";
+    if (auto ec = MFCreateFile(MF_ACCESSMODE_WRITE, MF_OPENMODE_DELETE_IF_EXIST, MF_FILEFLAGS_NOBUFFERING,
+                               fpath.c_str(), byte_stream.put()))
+        FAIL(ec);
+
+    // todo: add MF_MT_FRAME_SIZE, MF_MT_PIXEL_ASPECT_RATIO?
+    com_ptr<IMFMediaType> video_type{};
+    REQUIRE(MFCreateMediaType(video_type.put()) == S_OK);
+    REQUIRE(video_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video) == S_OK);
+    REQUIRE(video_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264) == S_OK); // --> .mp4
+    REQUIRE(video_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) == S_OK);
+    REQUIRE(video_type->SetUINT32(MF_MT_AVG_BITRATE, 800'000) == S_OK);
+    REQUIRE(MFSetAttributeRatio(video_type.get(), MF_MT_FRAME_RATE, 30, 1) == S_OK); // 30 fps
+
+    com_ptr<IMFMediaSink> sink{};
+    REQUIRE(MFCreateMPEG4MediaSink(byte_stream.get(), video_type.get(), nullptr, // == NO audio
+                                   sink.put()) == S_OK);
+
+    DWORD num_stream_sink = 0;
+    REQUIRE(sink->GetStreamSinkCount(&num_stream_sink) == S_OK);
+    REQUIRE(num_stream_sink > 0);
+}
+
+TEST_CASE("IMFReadWriteClassFactory::CreateInstanceFromURL") {
+    auto on_return = media_startup();
+
     com_ptr<IMFReadWriteClassFactory> factory{};
     REQUIRE(CoCreateInstance(CLSID_MFReadWriteClassFactory, NULL, CLSCTX_INPROC_SERVER, //
                              IID_PPV_ARGS(factory.put())) == S_OK);
 
-    com_ptr<IMFSinkWriterEx> sink_writer{};
+    com_ptr<IMFAttributes> attrs{};
+    REQUIRE(MFCreateAttributes(attrs.put(), 2) == S_OK);
+    REQUIRE(attrs->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE) == S_OK);
+    REQUIRE(attrs->SetUINT32(MF_SINK_WRITER_DISABLE_THROTTLING, FALSE) == S_OK);
+
+    const auto fpath = fs::current_path() / L"output2.mp4";
+    com_ptr<IMFSinkWriter> writer{};
+    REQUIRE(factory->CreateInstanceFromURL(CLSID_MFSinkWriter, fpath.c_str(), attrs.get(), //
+                                           IID_PPV_ARGS(writer.put())) == S_OK);
+    com_ptr<IMFSinkWriterEx> writer_ex{};
+    REQUIRE(writer->QueryInterface(writer_ex.put()) == S_OK);
+}
+
+// https://docs.microsoft.com/en-us/windows/win32/medfound/mf-readwrite-enable-hardware-transforms
+// https://docs.microsoft.com/en-us/windows/win32/medfound/tutorial--using-the-sink-writer-to-encode-video#send-video-frames-to-the-sink-writer
+TEST_CASE("MFCreateSinkWriterFromURL(MPEG4)") {
+    auto on_return = media_startup();
+
+    com_ptr<IMFAttributes> attrs{};
+    REQUIRE(MFCreateAttributes(attrs.put(), 2) == S_OK);
+    REQUIRE(attrs->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE) == S_OK);
+    REQUIRE(attrs->SetUINT32(MF_SINK_WRITER_DISABLE_THROTTLING, FALSE) == S_OK);
+
+    const auto fpath = fs::current_path() / L"output3.mp4";
+    com_ptr<IMFSinkWriter> writer{};
+    REQUIRE(MFCreateSinkWriterFromURL(fpath.c_str(), NULL, attrs.get(), writer.put()) == S_OK);
+    com_ptr<IMFSinkWriterEx> writer_ex{};
+    REQUIRE(writer->QueryInterface(writer_ex.put()) == S_OK);
+}
+
+HRESULT create_test_sink_writer(IMFSinkWriterEx** writer, const fs::path& fpath) {
+    com_ptr<IMFAttributes> attrs{};
+    REQUIRE(MFCreateAttributes(attrs.put(), 1) == S_OK);
+    REQUIRE(attrs->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE) == S_OK);
+
+    com_ptr<IMFSinkWriter> sink_writer{};
+    REQUIRE(MFCreateSinkWriterFromURL(fpath.c_str(), NULL, attrs.get(), sink_writer.put()) == S_OK);
+    return sink_writer->QueryInterface(writer);
+}
+
+// https://docs.microsoft.com/en-us/windows/win32/medfound/using-the-sink-writer
+// https://docs.microsoft.com/en-us/windows/win32/medfound/tutorial--using-the-sink-writer-to-encode-video#define-the-video-format
+// https://stackoverflow.com/a/24891959
+TEST_CASE("IMFSinkWriterEx(MPEG4)") {
+    auto on_return = media_startup();
+
+    com_ptr<IMFSinkWriterEx> writer{};
+    REQUIRE(create_test_sink_writer(writer.put(), fs::current_path() / L"output2.mp4") == S_OK);
+
+    com_ptr<IMFByteStream> byte_stream{};
+    auto fpath = fs::current_path() / "output3.mp4";
+    if (auto ec = MFCreateFile(MF_ACCESSMODE_WRITE, MF_OPENMODE_DELETE_IF_EXIST, MF_FILEFLAGS_NOBUFFERING,
+                               fpath.c_str(), byte_stream.put()))
+        FAIL(ec);
+
+    constexpr auto total_duration = 10'000'000;
+    constexpr auto fps = 30;
+    constexpr auto frame_duration = total_duration / fps;
+    constexpr auto width = 640, height = 480;
+
+    DWORD stream_index = 0;
+    com_ptr<IMFMediaType> output_type{};
     {
-        com_ptr<IMFAttributes> attrs{};
-        REQUIRE(MFCreateAttributes(attrs.put(), 1) == S_OK);
-        REQUIRE(attrs->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE) == S_OK);
-
-        com_ptr<IMFSinkWriter> writer{};
-        const auto fpath = fs::current_path() / L"output.mp4";
-        REQUIRE(factory->CreateInstanceFromURL(CLSID_MFSinkWriter, fpath.c_str(), attrs.get(), //
-                                               IID_PPV_ARGS(writer.put())) == S_OK);
-        REQUIRE(writer->QueryInterface(sink_writer.put()) == S_OK);
+        REQUIRE(MFCreateMediaType(output_type.put()) == S_OK);
+        REQUIRE(output_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video) == S_OK);
+        REQUIRE(output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264) == S_OK);
+        REQUIRE(output_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) == S_OK);
+        REQUIRE(output_type->SetUINT32(MF_MT_AVG_BITRATE, 800'000) == S_OK);
+        REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_FRAME_RATE, fps, 1) == S_OK); // 30 fps
+        REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, width, height) == S_OK);
+        REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1) == S_OK);
+        REQUIRE(writer->AddStream(output_type.get(), &stream_index) == S_OK);
     }
 
-    SECTION("MF_SINK_WRITER_STATISTICS") {
-        MF_SINK_WRITER_STATISTICS stats{};
-        REQUIRE(sink_writer->GetStatistics(0, &stats) == E_INVALIDARG);
+    com_ptr<IMFMediaType> input_type{};
+    {
+        REQUIRE(MFCreateMediaType(input_type.put()) == S_OK);
+        REQUIRE(input_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video) == S_OK);
+        REQUIRE(input_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32) == S_OK);
+        REQUIRE(input_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) == S_OK);
+        REQUIRE(MFSetAttributeSize(input_type.get(), MF_MT_FRAME_SIZE, width, height) == S_OK);
+        REQUIRE(MFSetAttributeRatio(input_type.get(), MF_MT_FRAME_RATE, fps, 1) == S_OK);
+        REQUIRE(MFSetAttributeRatio(input_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1) == S_OK);
+        REQUIRE(writer->SetInputMediaType(stream_index, input_type.get(), NULL) == S_OK);
     }
-    SECTION("IMFMediaSink") {
-        com_ptr<IMFMediaType> video_type{};
-        REQUIRE(video_type);
-        REQUIRE(video_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video) == S_OK);
-        REQUIRE(video_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264) == S_OK);
-        REQUIRE(video_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) == S_OK);
-        REQUIRE(video_type->SetUINT32(MF_MT_AVG_BITRATE, 800'000) == S_OK);
-        REQUIRE(MFSetAttributeRatio(video_type.get(), MF_MT_FRAME_RATE, 30, 1) == S_OK); // 30 fps
 
-        // ... The sink writer supports the following combinations: Uncompressed input with compressed output ...
-        // ... Uncompressed input with identical output ...
-        com_ptr<IMFByteStream> byte_stream{};
-        com_ptr<IMFMediaType> audio_type{};
-        com_ptr<IMFMediaSink> sink{};
-        REQUIRE(MFCreateMPEG4MediaSink(byte_stream.get(), video_type.get(), audio_type.get(), sink.put()) == S_OK);
+    SECTION("Begin / Flush without WriteSample") {
+        REQUIRE(writer->BeginWriting() == S_OK);
+        REQUIRE(writer->Flush(stream_index) == S_OK);
+    }
+    // todo: SendStreamTick
+    SECTION("WriteSample / Finalize") {
+        REQUIRE(writer->BeginWriting() == S_OK);
+        auto bufsz = 4 * width * height;
+        CAPTURE(bufsz);
 
-        // https://docs.microsoft.com/en-us/windows/win32/medfound/tutorial--using-the-sink-writer-to-encode-video#send-video-frames-to-the-sink-writer
-        com_ptr<IMFSample> sample{};
-        REQUIRE(sink_writer->WriteSample(0, sample.get()) == S_OK);
+        for (LONGLONG time_point = 0; time_point < total_duration; time_point += frame_duration) {
+            com_ptr<IMFSample> sample{};
+            if (auto hr = create_single_buffer_sample(sample.put(), bufsz))
+                FAIL(hr);
+
+            com_ptr<IMFMediaBuffer> buffer{};
+            if (auto hr = sample->GetBufferByIndex(0, buffer.put()))
+                FAIL(hr);
+            if (auto hr = buffer->SetCurrentLength(bufsz)) // 0 -> bufsz
+                FAIL(hr);
+
+            if (auto hr = sample->SetSampleTime(time_point))
+                FAIL(hr);
+            if (auto hr = sample->SetSampleDuration(frame_duration))
+                FAIL(hr);
+            if (auto hr = writer->WriteSample(stream_index, sample.get()))
+                FAIL(hr);
+        }
+        REQUIRE(writer->Finalize() == S_OK);
     }
 }
 
-DWORD create_test_window(std::promise<HWND>* p) {
+DWORD create_test_window(gsl::not_null<std::promise<HWND>*> p) {
     try {
         WNDCLASSW wc{};
         wc.lpfnWndProc = DefWindowProcW;
@@ -83,27 +186,27 @@ DWORD create_test_window(std::promise<HWND>* p) {
 
         auto const atom = RegisterClassW(&wc);
         if (atom == NULL) // probably ERROR_CLASS_ALREADY_EXISTS
-            return GetLastError();
-        auto on_return1 = gsl::finally([&wc]() {
-            if (UnregisterClassW(wc.lpszClassName, wc.hInstance) == false)
-                winrt::throw_last_error();
-        });
+            winrt::throw_last_error();
+        auto on_return1 = gsl::finally([&wc]() { UnregisterClassW(wc.lpszClassName, wc.hInstance); });
 
         auto hwnd = CreateWindowExW(0, wc.lpszClassName, wc.lpszClassName, WS_OVERLAPPEDWINDOW, //
                                     CW_USEDEFAULT, CW_USEDEFAULT, 640, 360,                     //
                                     NULL, NULL, wc.hInstance, NULL);
         if (hwnd == NULL)
-            return GetLastError();
+            winrt::throw_last_error();
         auto on_return2 = gsl::finally([hwnd]() { DestroyWindow(hwnd); });
 
+        // note: `GetForegroundWindow` may not return this handle if you are debugging with Visual Studio
+        if (SetForegroundWindow(hwnd) == false)
+            winrt::throw_last_error();
         ShowWindow(hwnd, SW_SHOWDEFAULT);
-        if (SetForegroundWindow(hwnd) == false) // --> GetForegroundWindow
-            return GetLastError();
         SetFocus(hwnd);
         p->set_value(hwnd);
 
+        // serve messages in the background
         MSG msg{};
         while (msg.message != WM_QUIT) {
+            msg = MSG{};
             if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE) == false) {
                 SleepEx(10, true);
                 continue;
@@ -111,7 +214,7 @@ DWORD create_test_window(std::promise<HWND>* p) {
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         }
-        return GetLastError();
+        return msg.wParam;
     } catch (...) {
         p->set_exception(std::current_exception());
     }

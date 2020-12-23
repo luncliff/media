@@ -110,7 +110,7 @@ auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, //
              com_ptr<IMFSourceReader> source_reader,                        //
              HRESULT& ec) -> generator<com_ptr<IMFSample>>;
 
-HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample);
+HRESULT create_single_buffer_sample(IMFSample** sample, DWORD bufsz);
 HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst);
 HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& flushed);
 

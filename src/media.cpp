@@ -405,7 +405,7 @@ auto decode(com_ptr<IMFTransform> transform, DWORD ostream, com_ptr<IMFMediaType
         if (output_stream_info.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES) {
             // ...
         } else {
-            if (ec = create_single_buffer_sample(output_stream_info.cbSize, output_sample.put()); FAILED(ec))
+            if (ec = create_single_buffer_sample(output_sample.put(), output_stream_info.cbSize); FAILED(ec))
                 co_return;
             output_buffer.pSample = output_sample.get();
         }
@@ -495,12 +495,19 @@ auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, com_
         co_yield output_sample;
 }
 
-HRESULT create_single_buffer_sample(DWORD bufsz, IMFSample** sample) {
+HRESULT create_single_buffer_sample(IMFSample** sample, DWORD bufsz) {
     if (auto hr = MFCreateSample(sample))
         return hr;
     com_ptr<IMFMediaBuffer> buffer{};
     if (auto hr = MFCreateMemoryBuffer(bufsz, buffer.put()))
         return hr;
+
+    //DWORD cap = 0;
+    //if (auto hr = buffer->GetMaxLength(&cap))
+    //    return hr;
+    //DWORD len = 0;
+    //if (auto hr = buffer->GetCurrentLength(&len))
+    //    return hr;
     return (*sample)->AddBuffer(buffer.get());
 }
 
@@ -508,7 +515,7 @@ HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst) {
     DWORD total{};
     if (auto hr = src->GetTotalLength(&total))
         return hr;
-    if (auto hr = create_single_buffer_sample(total, dst))
+    if (auto hr = create_single_buffer_sample(dst, total))
         return hr;
     if (auto hr = src->CopyAllItems(*dst))
         return hr;
@@ -528,7 +535,7 @@ HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& 
 
     MFT_OUTPUT_DATA_BUFFER output{};
     if ((stream_info.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES) == 0) {
-        if (auto hr = create_single_buffer_sample(stream_info.cbSize, sample))
+        if (auto hr = create_single_buffer_sample(sample, stream_info.cbSize))
             return hr;
         output.pSample = *sample;
     }

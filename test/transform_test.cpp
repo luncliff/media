@@ -103,7 +103,13 @@ TEST_CASE("MFCreateSourceReader", "[!mayfail]") {
         REQUIRE(MFCreateSourceReaderFromMediaSource(source.get(), nullptr, reader.put()) == S_OK);
     }
     SECTION("IMFByteStream") {
-        FAIL("test not implemented");
+        com_ptr<IMFByteStream> byte_stream{};
+        if (auto ec = MFCreateFile(MF_ACCESSMODE_READ, MF_OPENMODE_FAIL_IF_NOT_EXIST, MF_FILEFLAGS_NONE, fpath.c_str(),
+                                   byte_stream.put()))
+            FAIL(ec);
+
+        com_ptr<IMFSourceReader> reader{};
+        REQUIRE(MFCreateSourceReaderFromByteStream(byte_stream.get(), nullptr, reader.put()) == S_OK);
     }
 }
 
@@ -349,7 +355,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
                 if (stream.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES) {
                     // ...
                 } else {
-                    if (auto hr = create_single_buffer_sample(stream.cbSize, output_sample.put()))
+                    if (auto hr = create_single_buffer_sample(output_sample.put(), stream.cbSize))
                         FAIL(hr);
                     output.pSample = output_sample.get();
                 }
@@ -375,6 +381,8 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
                         FAIL(hr);
                     continue;
                 }
+                if (hr == E_FAIL)
+                    spdlog::error("transform->ProcessOutput");
                 FAIL(hr);
             }
         }
@@ -487,7 +495,7 @@ TEST_CASE("MFTransform - Color Converter DSP", "[dsp]") {
     REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
     REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
     {
-        WARN("testing synchronous read/transform with simplified code");
+        spdlog::warn("testing synchronous read/transform with simplified code");
         DWORD istream = 0, ostream = 0;
         com_ptr<IMFMediaType> output_type{};
         if (auto hr = transform->GetOutputCurrentType(ostream, output_type.put()))
@@ -617,7 +625,7 @@ TEST_CASE("MFTransform - Video Resizer DSP", "[dsp]") {
     REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
     REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
     {
-        WARN("testing synchronous read/transform with simplified code");
+        spdlog::warn("testing synchronous read/transform with simplified code");
         com_ptr<IMFMediaType> output_type{};
         if (auto hr = transform->GetOutputCurrentType(ostream, output_type.put()))
             FAIL(hr);
@@ -707,7 +715,7 @@ TEST_CASE("MFTransform - Video Processor MFT", "[dsp]") {
     REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
     REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
     {
-        WARN("testing synchronous read/transform with simplified code");
+        spdlog::warn("testing synchronous read/transform with simplified code");
         com_ptr<IMFMediaType> output_type{};
         if (auto hr = transform->GetOutputCurrentType(ostream, output_type.put()))
             FAIL(hr);
