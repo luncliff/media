@@ -18,6 +18,7 @@
 
 #include <d3d11.h>
 #include <d3d11_1.h>
+#include <d3d11_2.h>
 #include <dxgi1_2.h>
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxguid.lib")
@@ -36,6 +37,68 @@ fs::path get_asset_dir() noexcept;
 HRESULT configure_type_bypass(com_ptr<IMFTransform> transform, com_ptr<IMFMediaType> input_type, //
                               DWORD& istream, DWORD& ostream);
 HRESULT consume(com_ptr<IMFSourceReader> source_reader, com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream);
+
+HRESULT print_formats(gsl::not_null<ID3D11Device*> device, DXGI_FORMAT format) {
+    UINT flags = 0;
+    if (auto hr = device->CheckFormatSupport(format, &flags)) {
+        spdlog::error("{} not supported", format);
+        return hr;
+    }
+    spdlog::info("  - DXGI_FORMAT: {:#08x}", format);
+    auto supports = [flags](D3D11_FORMAT_SUPPORT mask) -> bool { return flags & mask; };
+    spdlog::info("    D3D11_FORMAT_SUPPORT_TEXTURE2D: {}", supports(D3D11_FORMAT_SUPPORT_TEXTURE2D));
+    spdlog::info("    D3D11_FORMAT_SUPPORT_DECODER_OUTPUT: {}", supports(D3D11_FORMAT_SUPPORT_DECODER_OUTPUT));
+    spdlog::info("    D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT: {}",
+                 supports(D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT));
+    spdlog::info("    D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_INPUT: {}",
+                 supports(D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_INPUT));
+    spdlog::info("    D3D11_FORMAT_SUPPORT_VIDEO_ENCODER: {}", supports(D3D11_FORMAT_SUPPORT_VIDEO_ENCODER));
+    return S_OK;
+}
+
+TEST_CASE("ID3D11Device", "[!mayfail]") {
+    com_ptr<ID3D11Device> device{};
+    com_ptr<ID3D11DeviceContext> context{};
+
+    SECTION("11 without level") {
+        D3D_FEATURE_LEVEL level{};
+        REQUIRE(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_VIDEO_SUPPORT, NULL, 0,
+                                  D3D11_SDK_VERSION, device.put(), &level, context.put()) == S_OK);
+        REQUIRE(device->GetFeatureLevel() >= D3D_FEATURE_LEVEL_10_1);
+
+        // https://docs.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-legacy-formats
+        // todo: https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids#uncompressed-rgb-formats
+        spdlog::info("ID3D11Device:");
+        print_formats(device.get(), DXGI_FORMAT_B8G8R8X8_UNORM); // == D3DFMT_X8R8G8B8
+        print_formats(device.get(), DXGI_FORMAT_B8G8R8A8_UNORM); // == D3DFMT_A8R8G8B8
+    }
+
+    // https://docs.microsoft.com/en-us/windows/win32/api/d3d11/nf-d3d11-d3d11createdevice
+    SECTION("11.1") {
+        D3D_FEATURE_LEVEL level{};
+        D3D_FEATURE_LEVEL levels[]{D3D_FEATURE_LEVEL_11_1};
+        REQUIRE(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL,
+                                  D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_VIDEO_SUPPORT, levels, 1,
+                                  D3D11_SDK_VERSION, device.put(), &level, context.put()) == S_OK);
+        REQUIRE(device->GetFeatureLevel() >= D3D_FEATURE_LEVEL_11_1);
+
+        com_ptr<ID3D11Device1> device1{};
+        REQUIRE(device->QueryInterface(device1.put()) == S_OK);
+    }
+
+    // https://docs.microsoft.com/en-us/windows/win32/api/d3d11_2/nn-d3d11_2-id3d11device2
+    SECTION("11.2") {
+        D3D_FEATURE_LEVEL level{};
+        D3D_FEATURE_LEVEL levels[]{D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_1};
+        REQUIRE(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL,
+                                  D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_VIDEO_SUPPORT, levels, 1,
+                                  D3D11_SDK_VERSION, device.put(), &level, context.put()) == S_OK);
+        REQUIRE(device->GetFeatureLevel() >= D3D_FEATURE_LEVEL_11_1);
+
+        com_ptr<ID3D11Device2> device2{};
+        REQUIRE(device->QueryInterface(device2.put()) == S_OK);
+    }
+}
 
 SCENARIO("ID3D11Texture2D as IDXGISurface", "[!mayfail]") {
     auto on_return = media_startup();
@@ -120,9 +183,28 @@ void configure_multithread_protection(ID3D11Device* device) {
     CAPTURE(protection->SetMultithreadProtected(TRUE));
 }
 
+TEST_CASE("IMFDXGIDeviceManager - ResetDevice", "[!mayfail]") {
+    auto on_return = media_startup();
+
+    com_ptr<ID3D11Device> device{};
+    com_ptr<ID3D11DeviceContext> context{};
+    D3D_FEATURE_LEVEL level{};
+    REQUIRE(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_VIDEO_SUPPORT, NULL, 0,
+                              D3D11_SDK_VERSION, device.put(), &level, context.put()) == S_OK);
+
+    // The DXGI Device Manager is used to share the Direct3D 11 between components.
+    UINT cookie{};
+    com_ptr<IMFDXGIDeviceManager> device_manager{};
+    REQUIRE(MFCreateDXGIDeviceManager(&cookie, device_manager.put()) == S_OK);
+
+    REQUIRE(device_manager->ResetDevice(device.get(), cookie) == S_OK);
+    check_device(device_manager.get(), device.get());
+    check_device_context(device.get(), context.get());
+}
+
 /// @see source reader scenario in https://docs.microsoft.com/en-us/windows/win32/medfound/supporting-direct3d-11-video-decoding-in-media-foundation
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/dxva-video-processing
-TEST_CASE("IMFDXGIDeviceManager, ID3D11Device", "[dxva][!mayfail]") {
+TEST_CASE("ID3D11VideoDevice", "[dxva][!mayfail]") {
     auto on_return = media_startup();
 
     // To perform decoding using Direct3D 11, the software decoder must have a pointer to a Direct3D 11 device.
@@ -142,20 +224,16 @@ TEST_CASE("IMFDXGIDeviceManager, ID3D11Device", "[dxva][!mayfail]") {
     com_ptr<IMFDXGIDeviceManager> device_manager{};
     REQUIRE(MFCreateDXGIDeviceManager(&device_manager_token, device_manager.put()) == S_OK);
 
-    SECTION("ResetDevice") {
-        REQUIRE(device_manager->ResetDevice(graphics_device.get(), device_manager_token) == S_OK);
-        check_device(device_manager.get(), graphics_device.get());
-        check_device_context(graphics_device.get(), graphics_device_context.get());
-    }
+    REQUIRE(device_manager->ResetDevice(graphics_device.get(), device_manager_token) == S_OK);
+    com_ptr<ID3D11VideoDevice> video_device{};
+    REQUIRE(graphics_device->QueryInterface(video_device.put()) == S_OK);
+    com_ptr<ID3D11VideoContext> video_context{};
+    REQUIRE(graphics_device_context->QueryInterface(video_context.put()) == S_OK);
+
     // get video accelerator to ensure D3D11_CREATE_DEVICE_VIDEO_SUPPORT
     // see https://docs.microsoft.com/en-us/windows/win32/medfound/supporting-direct3d-11-video-decoding-in-media-foundation
     // see https://docs.microsoft.com/en-us/windows/uwp/gaming/feature-mapping
-    SECTION("Direct3D 11 Video Decoding") {
-        REQUIRE(device_manager->ResetDevice(graphics_device.get(), device_manager_token) == S_OK);
-        com_ptr<ID3D11VideoDevice> video_device{};
-        REQUIRE(graphics_device->QueryInterface(video_device.put()) == S_OK);
-        com_ptr<ID3D11VideoContext> video_context{};
-        REQUIRE(graphics_device_context->QueryInterface(video_context.put()) == S_OK);
+    SECTION("Video Decoder") {
 
         DWORD num_profile = video_device->GetVideoDecoderProfileCount();
         REQUIRE(num_profile > 0);
@@ -193,8 +271,18 @@ TEST_CASE("IMFDXGIDeviceManager, ID3D11Device", "[dxva][!mayfail]") {
                 }
             }
         }
+    }
+    // https://docs.microsoft.com/en-us/windows/win32/medfound/direct3d-11-video-apis
+    SECTION("ID3D11VideoProcessor") {
+        D3D11_VIDEO_PROCESSOR_CONTENT_DESC desc{};
+
+        com_ptr<ID3D11VideoProcessorEnumerator> video_processor_enumerator{};
+        if (auto hr = video_device->CreateVideoProcessorEnumerator(&desc, video_processor_enumerator.put()))
+            FAIL(hr);
+        // REQUIRE(video_device->CreateVideoProcessorEnumerator(nullptr, video_processor_enumerator.put()) == S_OK);
+
         com_ptr<ID3D11VideoProcessor> video_processor{};
-        REQUIRE(video_device->CreateVideoProcessor(nullptr, 0, video_processor.put()) == S_OK);
+        REQUIRE(video_device->CreateVideoProcessor(video_processor_enumerator.get(), 0, video_processor.put()) == S_OK);
     }
 }
 
