@@ -47,12 +47,12 @@ HRESULT print_formats(gsl::not_null<ID3D11Device*> device, DXGI_FORMAT format) {
     spdlog::info("  - DXGI_FORMAT: {:#08x}", format);
     auto supports = [flags](D3D11_FORMAT_SUPPORT mask) -> bool { return flags & mask; };
     spdlog::info("    D3D11_FORMAT_SUPPORT_TEXTURE2D: {}", supports(D3D11_FORMAT_SUPPORT_TEXTURE2D));
-    spdlog::info("    D3D11_FORMAT_SUPPORT_DECODER_OUTPUT: {}", supports(D3D11_FORMAT_SUPPORT_DECODER_OUTPUT));
-    spdlog::info("    D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT: {}",
-                 supports(D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT));
     spdlog::info("    D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_INPUT: {}",
                  supports(D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_INPUT));
+    spdlog::info("    D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT: {}",
+                 supports(D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT));
     spdlog::info("    D3D11_FORMAT_SUPPORT_VIDEO_ENCODER: {}", supports(D3D11_FORMAT_SUPPORT_VIDEO_ENCODER));
+    spdlog::info("    D3D11_FORMAT_SUPPORT_DECODER_OUTPUT: {}", supports(D3D11_FORMAT_SUPPORT_DECODER_OUTPUT));
     return S_OK;
 }
 
@@ -62,15 +62,24 @@ TEST_CASE("ID3D11Device", "[!mayfail]") {
 
     SECTION("11 without level") {
         D3D_FEATURE_LEVEL level{};
-        REQUIRE(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_VIDEO_SUPPORT, NULL, 0,
+        REQUIRE(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL,
+                                  D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_VIDEO_SUPPORT, NULL, 0,
                                   D3D11_SDK_VERSION, device.put(), &level, context.put()) == S_OK);
         REQUIRE(device->GetFeatureLevel() >= D3D_FEATURE_LEVEL_10_1);
 
         // https://docs.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-legacy-formats
+        // https://docs.microsoft.com/en-us/windows/win32/direct2d/supported-pixel-formats-and-alpha-modes
         // todo: https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids#uncompressed-rgb-formats
         spdlog::info("ID3D11Device:");
         print_formats(device.get(), DXGI_FORMAT_B8G8R8X8_UNORM); // == D3DFMT_X8R8G8B8
         print_formats(device.get(), DXGI_FORMAT_B8G8R8A8_UNORM); // == D3DFMT_A8R8G8B8
+        print_formats(device.get(), DXGI_FORMAT_R8G8B8A8_UNORM);
+
+        {
+            D3D11_FEATURE_DATA_THREADING features{};
+            REQUIRE(device->CheckFeatureSupport(D3D11_FEATURE_THREADING, &features,
+                                                sizeof(D3D11_FEATURE_DATA_THREADING)) == S_OK);
+        }
     }
 
     // https://docs.microsoft.com/en-us/windows/win32/api/d3d11/nf-d3d11-d3d11createdevice
@@ -84,6 +93,16 @@ TEST_CASE("ID3D11Device", "[!mayfail]") {
 
         com_ptr<ID3D11Device1> device1{};
         REQUIRE(device->QueryInterface(device1.put()) == S_OK);
+        {
+            D3D11_FEATURE_DATA_D3D9_OPTIONS features{};
+            REQUIRE(device->CheckFeatureSupport(D3D11_FEATURE_D3D9_OPTIONS, &features,
+                                                sizeof(D3D11_FEATURE_DATA_D3D9_OPTIONS)) == S_OK);
+        }
+        {
+            D3D11_FEATURE_DATA_D3D11_OPTIONS features{};
+            REQUIRE(device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &features,
+                                                sizeof(D3D11_FEATURE_DATA_D3D11_OPTIONS)) == S_OK);
+        }
     }
 
     // https://docs.microsoft.com/en-us/windows/win32/api/d3d11_2/nn-d3d11_2-id3d11device2
@@ -97,6 +116,21 @@ TEST_CASE("ID3D11Device", "[!mayfail]") {
 
         com_ptr<ID3D11Device2> device2{};
         REQUIRE(device->QueryInterface(device2.put()) == S_OK);
+        {
+            D3D11_FEATURE_DATA_D3D9_OPTIONS1 features{};
+            REQUIRE(device->CheckFeatureSupport(D3D11_FEATURE_D3D9_OPTIONS1, &features,
+                                                sizeof(D3D11_FEATURE_DATA_D3D9_OPTIONS1)) == S_OK);
+        }
+        {
+            D3D11_FEATURE_DATA_D3D11_OPTIONS1 features{};
+            REQUIRE(device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS1, &features,
+                                                sizeof(D3D11_FEATURE_DATA_D3D11_OPTIONS1)) == S_OK);
+        }
+        {
+            D3D11_FEATURE_DATA_D3D9_SIMPLE_INSTANCING_SUPPORT features{};
+            REQUIRE(device->CheckFeatureSupport(D3D11_FEATURE_D3D9_SIMPLE_INSTANCING_SUPPORT, &features,
+                                                sizeof(D3D11_FEATURE_DATA_D3D9_SIMPLE_INSTANCING_SUPPORT)) == S_OK);
+        }
     }
 }
 

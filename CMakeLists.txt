@@ -8,7 +8,7 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
 endif()
 set(CMAKE_SUPPRESS_REGENERATION true) # no ZERO_CHECK
 set(CMAKE_VS_WINRT_BY_DEFAULT true)
-message(STATUS "using Windows: ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
+message(STATUS "using Windows: ${CMAKE_SYSTEM_VERSION}")
 
 find_package(Microsoft.GSL CONFIG)
 find_package(spdlog        CONFIG REQUIRED)
@@ -21,7 +21,7 @@ check_include_file_cxx("d3d11.h" found_direcx11)
 
 # see https://github.com/microsoft/wil
 find_path(WIL_INCLUDE_DIRS "wil/com.h")
-message(STATUS "WIL: ${WIL_INCLUDE_DIRS}")
+message(STATUS "using WIL: ${WIL_INCLUDE_DIRS}")
 
 add_library(media STATIC
     src/media.hpp
@@ -100,7 +100,7 @@ install(FILES           ${VERSION_FILE_PATH}
 # include(CPack)
 
 if(BUILD_DRIVER)
-    # add_subdirectory(mft0)
+    add_subdirectory(mft0)
 endif()
 
 if(NOT BUILD_TESTING)

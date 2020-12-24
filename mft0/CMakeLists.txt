@@ -5,6 +5,11 @@
 #
 cmake_minimum_required(VERSION 3.18) # for target_precompile_headers
 
+if(NOT CMAKE_GENERATOR MATCHES "Visual Studio")
+    message(WARNING "CMAKE_GENERATOR must be \"Visual Studio\"")
+    return()
+endif()
+
 set(CMAKE_SUPPRESS_REGENERATION true) # no ZERO_CHECK
 set(CMAKE_VS_WINRT_BY_DEFAULT true)
 # set(CMAKE_VS_JUST_MY_CODE_DEBUGGING false)
@@ -20,7 +25,7 @@ set_target_properties(MFT0
 PROPERTIES
     C_STANDARD      17
     CXX_STANDARD    17
-    VERSION         ${PROJECT_VERSION}
+    VERSION         "0.0"
     VS_WINDOWS_TARGET_PLATFORM_MIN_VERSION  "10.0.17764.0"
     VS_PLATFORM_TOOLSET     "WindowsApplicationForDrivers10.0" # "WindowsKernelModeDriver10.0"
     # VS_CONFIGURATION_TYPE   "Driver"
@@ -29,7 +34,8 @@ PROPERTIES
 
 target_include_directories(MFT0
 PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+    ${WIL_INCLUDE_DIRS}
 )
 
 target_compile_options(MFT0
@@ -39,7 +45,7 @@ PRIVATE
 
 target_link_libraries(MFT0
 PRIVATE
-    media # windowsapp # C++/WinRT
+    windowsapp # C++/WinRT
     mfplat # mfapi.h
 )
 

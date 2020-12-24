@@ -223,8 +223,8 @@ DWORD create_test_window(gsl::not_null<std::promise<HWND>*> p) {
 TEST_CASE("Window with Win32 API", "[window]") {
     std::promise<HWND> hwnd_promise{};
     std::future<DWORD> background = std::async(std::launch::async, create_test_window, &hwnd_promise);
-
-    HWND hwnd = hwnd_promise.get_future().get();
+    std::future<HWND> hwnd_future = hwnd_promise.get_future();
+    HWND hwnd = hwnd_future.get();
     REQUIRE(hwnd != NULL);
 
     SECTION("Immediate close") {
@@ -257,32 +257,31 @@ com_ptr<IMFMediaType> create_test_sink_type(const RECT& region) {
 TEST_CASE("IMFMediaSink(MFVideoEVR) - IMFVideoSampleAllocator", "[window]") {
     std::promise<HWND> hwnd_promise{};
     std::future<DWORD> background = std::async(std::launch::async, create_test_window, &hwnd_promise);
-    HWND window = hwnd_promise.get_future().get();
-    REQUIRE(window != NULL);
-    auto on_return1 = gsl::finally([window, &background]() {
-        PostMessageW(window, WM_QUIT, NULL, NULL);
+    std::future<HWND> hwnd_future = hwnd_promise.get_future();
+    HWND hwnd = hwnd_future.get();
+    REQUIRE(hwnd != NULL);
+    auto on_return1 = gsl::finally([hwnd, &background]() {
+        PostMessageW(hwnd, WM_QUIT, NULL, NULL);
         background.get();
     });
 
     auto on_return2 = media_startup();
 
     com_ptr<IMFActivate> activate{};
-    REQUIRE(MFCreateVideoRendererActivate(window, activate.put()) == S_OK);
+    REQUIRE(MFCreateVideoRendererActivate(hwnd, activate.put()) == S_OK);
     com_ptr<IMFMediaSink> sink{};
     REQUIRE(activate->ActivateObject(IID_IMFMediaSink, (void**)sink.put()) == S_OK);
 
     com_ptr<IMFVideoRenderer> renderer{};
     REQUIRE(sink->QueryInterface(renderer.put()) == S_OK);
-    com_ptr<IMFTransform> mixer{};
-    com_ptr<IMFVideoPresenter> presenter{};
-    REQUIRE(renderer->InitializeRenderer(mixer.get(), presenter.get()) == S_OK);
+    REQUIRE(renderer->InitializeRenderer(nullptr, nullptr) == S_OK);
     com_ptr<IMFGetService> service{};
     REQUIRE(sink->QueryInterface(service.put()) == S_OK);
 
     com_ptr<IMFVideoDisplayControl> control{};
     REQUIRE(service->GetService(MR_VIDEO_RENDER_SERVICE, __uuidof(IMFVideoDisplayControl), (void**)control.put()) ==
             S_OK);
-    REQUIRE(control->SetVideoWindow(window) == S_OK);
+    REQUIRE(control->SetVideoWindow(hwnd) == S_OK);
     RECT region{0, 0, 640, 360};
     REQUIRE(control->SetVideoPosition(nullptr, &region) == S_OK);
 
@@ -312,6 +311,7 @@ TEST_CASE("IMFMediaSink(MFVideoEVR) - IMFVideoSampleAllocator", "[window]") {
             DWORD num_buffer = 0;
             REQUIRE(sample->GetBufferCount(&num_buffer) == S_OK);
             REQUIRE(num_buffer == 1);
+            REQUIRE(stream_sink->ProcessSample(sample.get()) == MF_E_NO_CLOCK);
         }
         SECTION("MF_E_SAMPLEALLOCATOR_EMPTY") {
             std::vector<com_ptr<IMFSample>> samples{};
@@ -344,6 +344,7 @@ TEST_CASE("IMFMediaSink(MFVideoEVR) - IMFVideoSampleAllocator", "[window]") {
             DWORD num_buffer = 0;
             REQUIRE(sample->GetBufferCount(&num_buffer) == S_OK);
             REQUIRE(num_buffer == 1);
+            REQUIRE(stream_sink->ProcessSample(sample.get()) == MF_E_NO_CLOCK);
         }
         SECTION("MF_E_SAMPLEALLOCATOR_EMPTY") {
             std::vector<com_ptr<IMFSample>> samples{};
