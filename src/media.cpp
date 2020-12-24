@@ -64,13 +64,13 @@ HRESULT get_name(gsl::not_null<IMFActivate*> device, std::wstring& ref) noexcept
 
 HRESULT get_hardware_url(gsl::not_null<IMFTransform*> transform, winrt::hstring& name) noexcept {
     com_ptr<IMFAttributes> attrs{};
-    if (auto hr = transform->GetAttributes(attrs.put()))
+    if (auto hr = transform->GetAttributes(attrs.put()); FAILED(hr))
         return hr;
     constexpr UINT32 max_size = 240;
     WCHAR buf[max_size]{};
     UINT32 buflen{};
     HRESULT hr = attrs->GetString(MFT_ENUM_HARDWARE_URL_Attribute, buf, max_size, &buflen);
-    if (SUCCEEDED(hr))
+    if SUCCEEDED (hr)
         name = {buf, buflen};
     return hr;
 }
@@ -81,7 +81,8 @@ HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE
         return hr;
     com_ptr<IUnknown> unknown{};
     if (auto hr = resolver->CreateObjectFromURL(fpath.c_str(), MF_RESOLUTION_MEDIASOURCE | MF_RESOLUTION_READ, NULL,
-                                                &media_object_type, unknown.put()))
+                                                &media_object_type, unknown.put());
+        FAILED(hr))
         return hr;
     return unknown->QueryInterface(source);
 }
@@ -89,14 +90,15 @@ HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE
 HRESULT make_transform_video(IMFTransform** transform, const IID& iid) noexcept {
     com_ptr<IUnknown> unknown{};
     if (auto hr = CoCreateInstance(iid, NULL, CLSCTX_INPROC_SERVER, //
-                                   IID_PPV_ARGS(unknown.put())))
+                                   IID_PPV_ARGS(unknown.put()));
+        FAILED(hr))
         return hr;
     return unknown->QueryInterface(transform);
 }
 
 HRESULT configure_D3D11_DXGI(gsl::not_null<IMFTransform*> transform, IMFDXGIDeviceManager* device_manager) noexcept {
     com_ptr<IMFAttributes> attrs{};
-    if (auto hr = transform->GetAttributes(attrs.put())) // return can be E_NOTIMPL
+    if (auto hr = transform->GetAttributes(attrs.put()); FAILED(hr)) // return can be E_NOTIMPL
         return hr;
     UINT32 supported{};
     if (auto hr = attrs->GetUINT32(MF_SA_D3D11_AWARE, &supported); FAILED(hr))
@@ -110,7 +112,7 @@ HRESULT configure_D3D11_DXGI(gsl::not_null<IMFTransform*> transform, IMFDXGIDevi
 // @see https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder#transform-attributes
 HRESULT configure_acceleration_H264(gsl::not_null<IMFTransform*> transform) noexcept {
     com_ptr<IMFAttributes> attrs{};
-    if (auto hr = transform->GetAttributes(attrs.put()))
+    if (auto hr = transform->GetAttributes(attrs.put()); FAILED(hr))
         return hr;
     if (auto hr = attrs->SetUINT32(CODECAPI_AVDecVideoAcceleration_H264, TRUE); FAILED(hr))
         spdlog::error("CODECAPI_AVDecVideoAcceleration_H264: {:#08x}", hr);
@@ -124,9 +126,9 @@ HRESULT configure_acceleration_H264(gsl::not_null<IMFTransform*> transform) noex
 HRESULT configure_video_output_RGB565(IMFMediaType* type) noexcept {
     if (type == nullptr)
         return E_INVALIDARG;
-    if (auto hr = type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video))
+    if (auto hr = type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video); FAILED(hr))
         return hr;
-    if (auto hr = type->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE))
+    if (auto hr = type->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE); FAILED(hr))
         return hr;
     return type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB565);
 }
@@ -136,9 +138,9 @@ HRESULT make_video_output_RGB565(IMFMediaType** ptr) noexcept {
         return E_INVALIDARG;
     *ptr = nullptr;
     com_ptr<IMFMediaType> output_type{};
-    if (auto hr = MFCreateMediaType(output_type.put()))
+    if (auto hr = MFCreateMediaType(output_type.put()); FAILED(hr))
         return hr;
-    if (auto hr = configure_video_output_RGB565(output_type.get()))
+    if (auto hr = configure_video_output_RGB565(output_type.get()); FAILED(hr))
         return hr;
     output_type->AddRef();
     *ptr = output_type.get();
@@ -148,11 +150,11 @@ HRESULT make_video_output_RGB565(IMFMediaType** ptr) noexcept {
 HRESULT configure_video_output_RGB32(IMFMediaType* type) noexcept {
     if (type == nullptr)
         return E_INVALIDARG;
-    if (auto hr = type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video))
+    if (auto hr = type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video); FAILED(hr))
         return hr;
-    if (auto hr = type->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE))
+    if (auto hr = type->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE); FAILED(hr))
         return hr;
-    if (auto hr = type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Unknown))
+    if (auto hr = type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Unknown); FAILED(hr))
         return hr;
     //if (auto hr = MFSetAttributeRatio(output_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 16, 9))
     //    return hr;
@@ -164,9 +166,9 @@ HRESULT make_video_output_RGB32(IMFMediaType** ptr) noexcept {
         return E_INVALIDARG;
     *ptr = nullptr;
     com_ptr<IMFMediaType> output_type{};
-    if (auto hr = MFCreateMediaType(output_type.put()))
+    if (auto hr = MFCreateMediaType(output_type.put()); FAILED(hr))
         return hr;
-    if (auto hr = configure_video_output_RGB32(output_type.get()))
+    if (auto hr = configure_video_output_RGB32(output_type.get()); FAILED(hr))
         return hr;
     output_type->AddRef();
     *ptr = output_type.get();
@@ -178,11 +180,11 @@ HRESULT try_output_type(com_ptr<IMFTransform> transform, DWORD ostream, const GU
     DWORD type_index = 0;
     for (com_ptr<IMFMediaType> candidate : try_output_available_types(transform, ostream, type_index)) {
         GUID subtype{};
-        if (auto hr = candidate->GetGUID(MF_MT_SUBTYPE, &subtype))
+        if (auto hr = candidate->GetGUID(MF_MT_SUBTYPE, &subtype); FAILED(hr))
             return hr;
         if (subtype != desired)
             continue;
-        if (auto hr = transform->SetOutputType(ostream, candidate.get(), 0))
+        if (auto hr = transform->SetOutputType(ostream, candidate.get(), 0); FAILED(hr))
             return hr;
         break;
     }
@@ -254,13 +256,13 @@ HRESULT configure_rectangle(gsl::not_null<IMFVideoProcessorControl*> control,
 HRESULT configure_source_rectangle(gsl::not_null<IPropertyStore*> props, const RECT& rect) noexcept {
     PROPVARIANT val{};
     val.intVal = rect.left;
-    if (auto hr = props->SetValue(MFPKEY_RESIZE_SRC_LEFT, val))
+    if (auto hr = props->SetValue(MFPKEY_RESIZE_SRC_LEFT, val); FAILED(hr))
         return hr;
     val.intVal = rect.top;
-    if (auto hr = props->SetValue(MFPKEY_RESIZE_SRC_TOP, val))
+    if (auto hr = props->SetValue(MFPKEY_RESIZE_SRC_TOP, val); FAILED(hr))
         return hr;
     val.intVal = rect.right - rect.left;
-    if (auto hr = props->SetValue(MFPKEY_RESIZE_SRC_WIDTH, val))
+    if (auto hr = props->SetValue(MFPKEY_RESIZE_SRC_WIDTH, val); FAILED(hr))
         return hr;
     val.intVal = rect.bottom - rect.top;
     return props->SetValue(MFPKEY_RESIZE_SRC_HEIGHT, val);
@@ -270,19 +272,44 @@ HRESULT configure_source_rectangle(gsl::not_null<IPropertyStore*> props, const R
 HRESULT configure_destination_rectangle(gsl::not_null<IPropertyStore*> props, const RECT& rect) noexcept {
     PROPVARIANT val{};
     val.intVal = rect.left;
-    if (auto hr = props->SetValue(MFPKEY_RESIZE_DST_LEFT, val))
+    if (auto hr = props->SetValue(MFPKEY_RESIZE_DST_LEFT, val); FAILED(hr))
         return hr;
     val.intVal = rect.top;
-    if (auto hr = props->SetValue(MFPKEY_RESIZE_DST_TOP, val))
+    if (auto hr = props->SetValue(MFPKEY_RESIZE_DST_TOP, val); FAILED(hr))
         return hr;
     val.intVal = rect.right - rect.left;
-    if (auto hr = props->SetValue(MFPKEY_RESIZE_DST_WIDTH, val))
+    if (auto hr = props->SetValue(MFPKEY_RESIZE_DST_WIDTH, val); FAILED(hr))
         return hr;
     val.intVal = rect.bottom - rect.top;
     return props->SetValue(MFPKEY_RESIZE_DST_HEIGHT, val);
 }
 
-HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr) {
+HRESULT create_source_reader(com_ptr<IMFMediaSource> source, com_ptr<IMFSourceReaderCallback> callback,
+                             IMFSourceReader** reader) noexcept {
+    com_ptr<IMFPresentationDescriptor> presentation{};
+    if (auto hr = source->CreatePresentationDescriptor(presentation.put()); FAILED(hr))
+        return hr;
+    com_ptr<IMFStreamDescriptor> stream{};
+    if (auto hr = get_stream_descriptor(presentation.get(), stream.put()); FAILED(hr))
+        return hr;
+    if (auto hr = configure(stream); FAILED(hr))
+        return hr;
+
+    com_ptr<IMFAttributes> attrs{};
+    if (auto hr = MFCreateAttributes(attrs.put(), 3); FAILED(hr))
+        return hr;
+    if (callback) {
+        if (auto hr = attrs->SetUnknown(MF_SOURCE_READER_ASYNC_CALLBACK, callback.get()); FAILED(hr))
+            return hr;
+    }
+    if (auto hr = attrs->SetUINT32(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING, TRUE); FAILED(hr))
+        return hr;
+    if (auto hr = attrs->SetUINT32(MF_READWRITE_DISABLE_CONVERTERS, FALSE); FAILED(hr))
+        return hr;
+    return MFCreateSourceReaderFromMediaSource(source.get(), attrs.get(), reader);
+}
+
+HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr) noexcept {
     DWORD num_stream = 0;
     if (auto hr = presentation->GetStreamDescriptorCount(&num_stream); SUCCEEDED(hr) == false)
         return hr;
@@ -337,7 +364,7 @@ HRESULT configure(com_ptr<IMFStreamDescriptor> stream) noexcept {
             return hr;
         if (type == nullptr)
             type = current;
-        print(current.get());
+        //print(current.get());
     }
     return handler->SetCurrentMediaType(type.get());
 }
@@ -348,7 +375,7 @@ auto read_samples(com_ptr<IMFSourceReader> source_reader, //
     const auto stream = static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
     while (true) {
         com_ptr<IMFSample> input_sample{};
-        if (auto hr = source_reader->ReadSample(stream, 0, &index, &flags, &timestamp, input_sample.put()))
+        if (auto hr = source_reader->ReadSample(stream, 0, &index, &flags, &timestamp, input_sample.put()); FAILED(hr))
             throw winrt::hresult_error{hr};
 
         if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
@@ -451,7 +478,7 @@ auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, com_
         input_sample->SetSampleTime(timestamp);
         for (com_ptr<IMFSample> output_sample : process(transform, istream, ostream, input_sample, output_type, ec))
             co_yield output_sample;
-        if (ec)
+        if FAILED (ec)
             co_return;
     }
     if (ec = transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL); FAILED(ec))
@@ -481,21 +508,21 @@ HRESULT create_single_buffer_sample(IMFSample** sample, DWORD bufsz) {
 
 HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst) {
     DWORD total{};
-    if (auto hr = src->GetTotalLength(&total))
+    if (auto hr = src->GetTotalLength(&total); FAILED(hr))
         return hr;
-    if (auto hr = create_single_buffer_sample(dst, total))
+    if (auto hr = create_single_buffer_sample(dst, total); FAILED(hr))
         return hr;
-    if (auto hr = src->CopyAllItems(*dst))
+    if (auto hr = src->CopyAllItems(*dst); FAILED(hr))
         return hr;
     com_ptr<IMFMediaBuffer> buffer{};
-    if (auto hr = (*dst)->GetBufferByIndex(0, buffer.put()))
+    if (auto hr = (*dst)->GetBufferByIndex(0, buffer.put()); FAILED(hr))
         return hr;
     return src->CopyToBuffer(buffer.get());
 }
 
 HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& flushed) {
     MFT_OUTPUT_STREAM_INFO stream_info{};
-    if (auto hr = transform->GetOutputStreamInfo(0, &stream_info))
+    if (auto hr = transform->GetOutputStreamInfo(0, &stream_info); FAILED(hr))
         return hr;
 
     flushed = FALSE;
@@ -503,7 +530,7 @@ HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& 
 
     MFT_OUTPUT_DATA_BUFFER output{};
     if ((stream_info.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES) == 0) {
-        if (auto hr = create_single_buffer_sample(sample, stream_info.cbSize))
+        if (auto hr = create_single_buffer_sample(sample, stream_info.cbSize); FAILED(hr))
             return hr;
         output.pSample = *sample;
     }
@@ -523,17 +550,17 @@ HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& 
             return E_NOTIMPL;
         }
 
-        if (auto hr = transform->GetOutputAvailableType(0, 0, changed_output_type.put()))
+        if (auto hr = transform->GetOutputAvailableType(0, 0, changed_output_type.put()); FAILED(hr))
             return hr;
 
         // check new output media type
 
-        if (auto hr = changed_output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_IYUV))
+        if (auto hr = changed_output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_IYUV); FAILED(hr))
             return hr;
-        if (auto hr = transform->SetOutputType(0, changed_output_type.get(), 0))
+        if (auto hr = transform->SetOutputType(0, changed_output_type.get(), 0); FAILED(hr))
             return hr;
 
-        if (auto hr = transform->ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, NULL))
+        if (auto hr = transform->ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, NULL); FAILED(hr))
             return hr;
         flushed = TRUE;
 

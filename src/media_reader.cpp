@@ -8,6 +8,33 @@
 
 using namespace std;
 
+/// @todo use `static_assert` for Windows SDK
+class qpc_timer_t final {
+    LARGE_INTEGER start{};
+    LARGE_INTEGER frequency{};
+
+  public:
+    qpc_timer_t() noexcept {
+        QueryPerformanceFrequency(&frequency);
+        QueryPerformanceCounter(&start);
+    }
+
+    /// @return elapsed time in millisecond unit
+    auto pick() const noexcept {
+        LARGE_INTEGER end{};
+        QueryPerformanceCounter(&end);
+        const auto elapsed = end.QuadPart - start.QuadPart;
+        return (elapsed * 1'000) / frequency.QuadPart;
+    }
+
+    auto reset() noexcept {
+        auto d = pick();
+        QueryPerformanceCounter(&start);
+        return d;
+    }
+};
+static_assert(sizeof(time_t) == sizeof(LONGLONG));
+
 struct critical_section_t final : public CRITICAL_SECTION {
   public:
     critical_section_t() noexcept : CRITICAL_SECTION{} {
@@ -29,51 +56,47 @@ struct critical_section_t final : public CRITICAL_SECTION {
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/processing-media-data-with-the-source-reader
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/using-the-source-reader-in-asynchronous-mode
-class callback_impl_t : public IMFSourceReaderCallback {
-    /// @see OnReadSample
-    struct read_item_t final {
-        HRESULT status;
-        DWORD index;
-        DWORD flags;
-        com_ptr<IMFSample> sample;
-    };
-    static_assert(sizeof(read_item_t) <= 32);
-
-  private:
+/// @see https://docs.microsoft.com/en-us/windows/win32/api/mfreadwrite/nf-mfreadwrite-imfsourcereadercallback-onreadsample
+/// @see https://docs.microsoft.com/en-us/windows/win32/api/mfreadwrite/ne-mfreadwrite-mf_source_reader_flag
+class verbose_callback_t : public IMFSourceReaderCallback {
     critical_section_t mtx{};
+    com_ptr<IMFSourceReader> reader{};
     qpc_timer_t timer{};
     com_ptr<IMFPresentationClock> clock{};
     com_ptr<IMFPresentationTimeSource> time_source{};
     SHORT ref_count = 0;
 
   public:
-    callback_impl_t() noexcept(false)
-        : IMFSourceReaderCallback{}, mtx{}, timer{}, clock{}, time_source{}, ref_count{0} {
+    verbose_callback_t() noexcept(false)
+        : IMFSourceReaderCallback{}, mtx{}, reader{}, timer{}, clock{}, time_source{}, ref_count{0} {
         winrt::check_hresult(MFCreatePresentationClock(clock.put()));
         winrt::check_hresult(MFCreateSystemTimeSource(time_source.put()));
         winrt::check_hresult(clock->SetTimeSource(time_source.get()));
     }
 
   private:
-    STDMETHODIMP OnEvent(DWORD, IMFMediaEvent* event) noexcept override {
+    STDMETHODIMP OnEvent(DWORD stream, IMFMediaEvent* event) noexcept override {
+        UNREFERENCED_PARAMETER(stream);
         UNREFERENCED_PARAMETER(event);
+        spdlog::debug("{}", __FUNCTION__);
+        lock_guard lck{mtx};
         return S_OK;
     }
-    STDMETHODIMP OnFlush(DWORD) noexcept override {
+    STDMETHODIMP OnFlush(DWORD stream) noexcept override {
+        UNREFERENCED_PARAMETER(stream);
+        spdlog::debug("{}", __FUNCTION__);
+        lock_guard lck{mtx};
+        reader = nullptr;
         return S_OK;
     }
-    /// @see https://docs.microsoft.com/en-us/windows/win32/api/mfreadwrite/nf-mfreadwrite-imfsourcereadercallback-onreadsample
-    /// @see https://docs.microsoft.com/en-us/windows/win32/api/mfreadwrite/ne-mfreadwrite-mf_source_reader_flag
-    STDMETHODIMP OnReadSample(HRESULT status, DWORD index, DWORD flags, LONGLONG timestamp,
-                              IMFSample* sample) noexcept override {
-        static_assert(sizeof(time_t) == sizeof(LONGLONG));
+    STDMETHODIMP OnReadSample(HRESULT status, DWORD stream, DWORD flags, //
+                              LONGLONG timestamp, IMFSample* sample) noexcept override {
+        spdlog::debug("{}: {:#x}", __FUNCTION__, flags);
+        lock_guard lck{mtx};
         if (flags & MF_SOURCE_READERF_ERROR)
+            return status;
+        if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
             return S_OK;
-        if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
-            if (auto hr = clock->Stop(); FAILED(hr))
-                return hr;
-            return S_OK;
-        }
         if (flags & MF_SOURCE_READERF_NEWSTREAM)
             return S_OK;
         if (flags & MF_SOURCE_READERF_NATIVEMEDIATYPECHANGED)
@@ -83,35 +106,24 @@ class callback_impl_t : public IMFSourceReaderCallback {
         if (flags & MF_SOURCE_READERF_ALLEFFECTSREMOVED)
             return S_OK;
 
-        if (flags & MF_SOURCE_READERF_STREAMTICK) {
-            // sample can be nullptr
-            spdlog::debug("OnReadSample: MF_SOURCE_READERF_STREAMTICK");
-        } else {
-            spdlog::debug("OnReadSample: {}", static_cast<void*>(sample));
+        if (sample != nullptr) {
             winrt::check_hresult(sample->SetSampleTime(timestamp));
+            com_ptr<IMFMediaBuffer> buffer{};
+            winrt::check_hresult(sample->GetBufferByIndex(0, buffer.put()));
+            DWORD buflen = 0;
+            winrt::check_hresult(buffer->GetCurrentLength(&buflen));
+            spdlog::debug("  buflen: {}", buflen);
         }
-        read_item_t item{};
-        item.status = status;
-        item.index = index;
-        item.sample.attach(sample);
-        item.flags = flags;
-        return S_OK;
+
+        if (reader == nullptr)
+            return status;
+        return reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL);
     }
 
   public:
     STDMETHODIMP QueryInterface(REFIID iid, void** ppv) {
-        if (*ppv != nullptr)     // if the destination is not `nullptr`,
-            return E_INVALIDARG; // it's probably logic error...
-        //if (iid == IID_IUnknown) {
-        //    *ppv = static_cast<IUnknown*>(this);
-        //    return S_OK;
-        //}
-        //if (iid == IID_IMFSourceReaderCallback) {
-        //    *ppv = static_cast<IMFSourceReaderCallback*>(this);
-        //    return S_OK;
-        //}
-        static QITAB table[] = {
-            QITABENT(callback_impl_t, IMFSourceReaderCallback),
+        const QITAB table[]{
+            QITABENT(verbose_callback_t, IMFSourceReaderCallback),
             {},
         };
         return QISearch(this, table, iid, ppv);
@@ -120,7 +132,7 @@ class callback_impl_t : public IMFSourceReaderCallback {
         return InterlockedIncrement16(&ref_count);
     }
     STDMETHODIMP_(ULONG) Release() {
-        auto const count = InterlockedDecrement16(&ref_count);
+        const auto count = InterlockedDecrement16(&ref_count);
         if (count == 0)
             delete this;
         return count;
@@ -128,15 +140,21 @@ class callback_impl_t : public IMFSourceReaderCallback {
 };
 
 HRESULT create_reader_callback(IMFSourceReaderCallback** callback) noexcept {
+    auto report_failure = [](HRESULT code, string&& message) {
+        spdlog::error("create_reader_callback: {}", message);
+        return code;
+    };
+
     if (callback == nullptr)
         return E_INVALIDARG;
     try {
-        IUnknown* unknown = *callback = new (std::nothrow) callback_impl_t{};
+        IUnknown* unknown = *callback = new (nothrow) verbose_callback_t{};
         if (unknown)
             unknown->AddRef();
         return S_OK;
     } catch (const winrt::hresult_error& ex) {
-        spdlog::error("create_reader_callback: {}", winrt::to_string(ex.message()));
-        return ex.code();
+        return report_failure(ex.code(), winrt::to_string(ex.message()));
+    } catch (...) {
+        return report_failure(E_FAIL, "unknown");
     }
 }

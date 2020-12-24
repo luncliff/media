@@ -110,38 +110,15 @@ HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& 
 /// @todo mock `CoCreateInstance`
 HRESULT create_reader_callback(IMFSourceReaderCallback** callback) noexcept;
 
-HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr);
+HRESULT create_source_reader(com_ptr<IMFMediaSource> source, com_ptr<IMFSourceReaderCallback> callback,
+                             IMFSourceReader** reader) noexcept;
+
+HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr) noexcept;
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video
 HRESULT configure(com_ptr<IMFStreamDescriptor> stream) noexcept;
-
-/// @todo use `static_assert` for Windows SDK
-class qpc_timer_t final {
-    LARGE_INTEGER start{};
-    LARGE_INTEGER frequency{};
-
-  public:
-    qpc_timer_t() noexcept {
-        QueryPerformanceFrequency(&frequency);
-        QueryPerformanceCounter(&start);
-    }
-
-    /// @return elapsed time in millisecond unit
-    auto pick() const noexcept {
-        LARGE_INTEGER end{};
-        QueryPerformanceCounter(&end);
-        const auto elapsed = end.QuadPart - start.QuadPart;
-        return (elapsed * 1'000) / frequency.QuadPart;
-    }
-
-    auto reset() noexcept {
-        auto d = pick();
-        QueryPerformanceCounter(&start);
-        return d;
-    }
-};
 
 std::string to_string(const GUID& guid) noexcept;
 std::string to_readable(const GUID& guid) noexcept;

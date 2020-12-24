@@ -178,7 +178,7 @@ TEST_CASE("IMFSinkWriterEx(MPEG4)") {
     }
 }
 
-DWORD create_test_window(gsl::not_null<std::promise<HWND>*> p) {
+DWORD create_test_window(gsl::not_null<promise<HWND>*> p) {
     try {
         WNDCLASSW wc{};
         wc.lpfnWndProc = DefWindowProcW;
@@ -218,32 +218,25 @@ DWORD create_test_window(gsl::not_null<std::promise<HWND>*> p) {
         }
         return static_cast<DWORD>(msg.wParam);
     } catch (...) {
-        p->set_exception(std::current_exception());
+        p->set_exception(current_exception());
         return EXIT_FAILURE;
     }
 }
 
-TEST_CASE("Window with Win32 API", "[window]") {
-    std::promise<HWND> hwnd_promise{};
-    std::future<DWORD> background = std::async(std::launch::async, create_test_window, &hwnd_promise);
-    std::future<HWND> hwnd_future = hwnd_promise.get_future();
-    if (hwnd_future.wait_for(5s) != std::future_status::ready) {
+TEST_CASE("Window with Win32 API", "[window][!mayfail]") {
+    promise<HWND> hwnd_promise{};
+    future<DWORD> background = async(launch::async, create_test_window, &hwnd_promise);
+    future<HWND> hwnd_future = hwnd_promise.get_future();
+    if (hwnd_future.wait_for(5s) != future_status::ready) {
         WARN("probably failed to open window");
-        return;
+        return; // --> might be fail by `future_error`
     }
     HWND hwnd = hwnd_future.get();
     REQUIRE(hwnd != NULL);
 
-    SECTION("Immediate close") {
-        REQUIRE(PostMessageW(hwnd, WM_QUIT, NULL, NULL));
-        REQUIRE(background.get() == S_OK);
-    }
-    SECTION("close via gsl::finally") {
-        auto on_return = gsl::finally([hwnd, &background]() {
-            REQUIRE(PostMessageW(hwnd, WM_QUIT, NULL, NULL));
-            REQUIRE(background.get() == S_OK);
-        });
-    }
+    REQUIRE(PostMessageW(hwnd, WM_QUIT, NULL, NULL));
+    REQUIRE(background.get() == S_OK);
+
 }
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/api/mfidl/nn-mfidl-imfmediatypehandler
@@ -261,13 +254,13 @@ com_ptr<IMFMediaType> create_test_sink_type(const RECT& region) {
 }
 
 // @see https://github.com/sipsorcery/mediafoundationsamples - MFVideoEVR/MFVideoEVR.cpp
-TEST_CASE("IMFMediaSink(MFVideoEVR) - IMFVideoSampleAllocator", "[window]") {
-    std::promise<HWND> hwnd_promise{};
-    std::future<DWORD> background = std::async(std::launch::async, create_test_window, &hwnd_promise);
-    std::future<HWND> hwnd_future = hwnd_promise.get_future();
-    if (hwnd_future.wait_for(5s) != std::future_status::ready) {
+TEST_CASE("IMFMediaSink(MFVideoEVR) - IMFVideoSampleAllocator", "[window][!mayfail]") {
+    promise<HWND> hwnd_promise{};
+    future<DWORD> background = async(launch::async, create_test_window, &hwnd_promise);
+    future<HWND> hwnd_future = hwnd_promise.get_future();
+    if (hwnd_future.wait_for(5s) != future_status::ready) {
         WARN("probably failed to open window");
-        return;
+        return; // --> might be fail by `future_error`
     }
     HWND hwnd = hwnd_future.get();
     REQUIRE(hwnd != NULL);
@@ -282,6 +275,7 @@ TEST_CASE("IMFMediaSink(MFVideoEVR) - IMFVideoSampleAllocator", "[window]") {
     REQUIRE(MFCreateVideoRendererActivate(hwnd, activate.put()) == S_OK);
     com_ptr<IMFMediaSink> sink{};
     REQUIRE(activate->ActivateObject(IID_IMFMediaSink, (void**)sink.put()) == S_OK);
+    auto on_return3 = gsl::finally([activate]() { activate->ShutdownObject(); });
 
     com_ptr<IMFVideoRenderer> renderer{};
     REQUIRE(sink->QueryInterface(renderer.put()) == S_OK);
@@ -325,12 +319,12 @@ TEST_CASE("IMFMediaSink(MFVideoEVR) - IMFVideoSampleAllocator", "[window]") {
             REQUIRE(stream_sink->ProcessSample(sample.get()) == MF_E_NO_CLOCK);
         }
         SECTION("MF_E_SAMPLEALLOCATOR_EMPTY") {
-            std::vector<com_ptr<IMFSample>> samples{};
+            vector<com_ptr<IMFSample>> samples{};
             auto repeat = requested_frame_count;
             while (repeat--) {
                 com_ptr<IMFSample> sample{};
                 REQUIRE(allocator->AllocateSample(sample.put()) == S_OK);
-                samples.emplace_back(std::move(sample));
+                samples.emplace_back(move(sample));
             }
             REQUIRE(samples.size() == requested_frame_count);
             com_ptr<IMFSample> sample{};
@@ -358,12 +352,12 @@ TEST_CASE("IMFMediaSink(MFVideoEVR) - IMFVideoSampleAllocator", "[window]") {
             REQUIRE(stream_sink->ProcessSample(sample.get()) == MF_E_NO_CLOCK);
         }
         SECTION("MF_E_SAMPLEALLOCATOR_EMPTY") {
-            std::vector<com_ptr<IMFSample>> samples{};
+            vector<com_ptr<IMFSample>> samples{};
             auto repeat = requested_frame_count;
             while (repeat--) {
                 com_ptr<IMFSample> sample{};
                 REQUIRE(allocator->AllocateSample(sample.put()) == S_OK);
-                samples.emplace_back(std::move(sample));
+                samples.emplace_back(move(sample));
             }
             REQUIRE(samples.size() == requested_frame_count);
             com_ptr<IMFSample> sample{};
@@ -372,13 +366,13 @@ TEST_CASE("IMFMediaSink(MFVideoEVR) - IMFVideoSampleAllocator", "[window]") {
     }
 }
 
-TEST_CASE("IMFMediaSink(MFVideoEVR) - Clock", "[window]") {
-    std::promise<HWND> hwnd_promise{};
-    std::future<DWORD> background = std::async(std::launch::async, create_test_window, &hwnd_promise);
-    std::future<HWND> hwnd_future = hwnd_promise.get_future();
-    if (hwnd_future.wait_for(5s) != std::future_status::ready) {
+TEST_CASE("IMFMediaSink(MFVideoEVR) - Clock", "[window][!mayfail]") {
+    promise<HWND> hwnd_promise{};
+    future<DWORD> background = async(launch::async, create_test_window, &hwnd_promise);
+    future<HWND> hwnd_future = hwnd_promise.get_future();
+    if (hwnd_future.wait_for(5s) != future_status::ready) {
         WARN("probably failed to open window");
-        return;
+        return; // --> might be fail by `future_error`
     }
     HWND window = hwnd_future.get();
     REQUIRE(window != NULL);
@@ -392,6 +386,8 @@ TEST_CASE("IMFMediaSink(MFVideoEVR) - Clock", "[window]") {
     REQUIRE(MFCreateVideoRendererActivate(window, activate.put()) == S_OK);
     com_ptr<IMFMediaSink> sink{};
     REQUIRE(activate->ActivateObject(IID_IMFMediaSink, (void**)sink.put()) == S_OK);
+    auto on_return3 = gsl::finally([activate]() { activate->ShutdownObject(); });
+
     com_ptr<IMFVideoRenderer> renderer{};
     REQUIRE(sink->QueryInterface(renderer.put()) == S_OK);
     REQUIRE(renderer->InitializeRenderer(nullptr, nullptr) == S_OK);

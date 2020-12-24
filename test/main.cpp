@@ -32,6 +32,18 @@ fs::path get_asset_dir() noexcept {
     return fs::current_path();
 }
 
+bool has_env(gsl::czstring<> key) noexcept {
+    size_t len = 0;
+    char buf[40]{};
+    if (auto ec = getenv_s(&len, buf, key)) {
+        spdlog::warn("getenv_s: {}", ec);
+        spdlog::debug("key: {}", key);
+        return false;
+    }
+    std::string_view value{buf, len};
+    return value.empty() == false;
+}
+
 /// @todo catch `winrt::hresult_error`
 int main(int argc, char* argv[]) {
     std::setlocale(LC_ALL, ".65001");
@@ -43,6 +55,9 @@ int main(int argc, char* argv[]) {
     //spdlog::set_default_logger(log);
     spdlog::set_pattern("[%^%l%$] %v");
     spdlog::set_level(spdlog::level::level_enum::debug);
+
+    if (has_env("APPVEYOR"))
+        spdlog::warn("for CI environment, some tests will be marked 'failed as expected'");
 
     spdlog::info("media_foundation:");
     spdlog::info("- version: {:x}", MF_VERSION);

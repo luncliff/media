@@ -27,7 +27,6 @@ fs::path get_asset_dir() noexcept;
 void make_test_source(com_ptr<IMFMediaSourceEx>& source, com_ptr<IMFSourceReader>& source_reader,
                       com_ptr<IMFMediaType>& source_type, //
                       const GUID& output_subtype, const fs::path& fpath);
-HRESULT consume(com_ptr<IMFSourceReader> source_reader, com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream);
 
 HRESULT check_sample(com_ptr<IMFSample> sample) {
     com_ptr<IMFMediaBuffer> buffer{};
@@ -52,6 +51,58 @@ HRESULT check_sample(com_ptr<IMFSample> sample) {
     auto on_return = gsl::finally([buffer]() { buffer->Unlock(); });
     // consume the IMFSample
     return S_OK;
+}
+
+HRESULT consume(com_ptr<IMFSourceReader> source_reader, com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream) {
+    com_ptr<IMFMediaType> output_type{};
+    if (auto hr = transform->GetOutputCurrentType(ostream, output_type.put()); FAILED(hr))
+        return hr;
+
+    DWORD index{};
+    DWORD flags{};
+    LONGLONG timestamp{}; // unit 100-nanosecond
+    LONGLONG duration{};
+    for (com_ptr<IMFSample> input_sample : read_samples(source_reader, //
+                                                        index, flags, timestamp, duration)) {
+        switch (auto hr = transform->ProcessInput(istream, input_sample.get(), 0)) {
+        case S_OK: // MF_E_TRANSFORM_TYPE_NOT_SET, MF_E_NO_SAMPLE_DURATION, MF_E_NO_SAMPLE_TIMESTAMP
+            break;
+        case MF_E_NOTACCEPTING:
+        case MF_E_UNSUPPORTED_D3D_TYPE:
+        case E_INVALIDARG:
+        default:
+            return hr;
+        }
+        HRESULT ec = S_OK;
+        for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
+            if (auto hr = check_sample(output_sample); FAILED(hr))
+                FAIL(hr);
+        }
+        switch (ec) {
+        case S_OK:
+        case MF_E_TRANSFORM_NEED_MORE_INPUT:
+            continue;
+        default:
+            return ec;
+        }
+    }
+    if (auto hr = transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL))
+        return hr;
+    if (auto hr = transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL))
+        return hr;
+    // fetch remaining output in the transform
+    HRESULT ec = S_OK;
+    for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
+        if (auto hr = check_sample(output_sample); FAILED(hr))
+            FAIL(hr);
+    }
+    switch (ec) {
+    case S_OK:
+    case MF_E_TRANSFORM_NEED_MORE_INPUT:
+        return S_OK;
+    default:
+        return ec;
+    }
 }
 
 // see https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder
@@ -234,7 +285,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
 
 // see https://docs.microsoft.com/en-us/windows/win32/medfound/colorconverter
 // see https://docs.microsoft.com/en-us/windows/win32/medfound/basic-mft-processing-model
-TEST_CASE("MFTransform - Color Converter DSP", "[dsp]") {
+SCENARIO("MFTransform - Color Converter DSP", "[dsp]") {
     auto on_return = media_startup();
 
     com_ptr<IMFMediaSourceEx> source{};
@@ -249,7 +300,7 @@ TEST_CASE("MFTransform - Color Converter DSP", "[dsp]") {
         REQUIRE(transform->QueryInterface(props.put()) == S_OK);
         PROPVARIANT var{};
         REQUIRE(SUCCEEDED(props->GetValue(MFPKEY_COLORCONV_MODE, &var)));
-        spdlog::debug("- MFPKEY_COLORCONV_MODE: {}", var.intVal == 0 ? "Progressive" : "Interlaced");
+        // spdlog::debug("- MFPKEY_COLORCONV_MODE: {}", var.intVal == 0 ? "Progressive" : "Interlaced");
         // Microsoft DirectX Media Object https://docs.microsoft.com/en-us/previous-versions/windows/desktop/api/mediaobj/nn-mediaobj-imediaobject
         com_ptr<IMediaObject> media_object{};
         REQUIRE(transform->QueryInterface(media_object.put()) == S_OK);
@@ -278,117 +329,78 @@ TEST_CASE("MFTransform - Color Converter DSP", "[dsp]") {
         return output;
     };
 
-    SECTION("MP4(NV12) - RGB32") {
-        INFO("IMFMediaSourceEx: MP4(NV12) -> RGB32");
+    DWORD istream = 0, ostream = 0;
+    WHEN("MP4(NV12) - RGB32") {
+        spdlog::warn("IMFMediaSourceEx: MP4(NV12) -> RGB32");
         REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_NV12) == S_OK);
         REQUIRE(source_reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, source_type.get()) ==
                 S_OK);
         print(source_type.get());
-        if (auto hr = transform->SetInputType(0, source_type.get(), 0))
-            FAIL(hr);
+        REQUIRE(transform->SetInputType(istream, source_type.get(), 0) == S_OK);
+
         com_ptr<IMFMediaType> output_type = make_output_RGB32(source_type);
         print(output_type.get());
-        if (auto hr = transform->SetOutputType(0, output_type.get(), 0))
-            FAIL(hr);
+        REQUIRE(transform->SetOutputType(ostream, output_type.get(), 0) == S_OK);
+
+        print(transform.get(), CLSID_CColorConvertDMO); // requires input/output configuration
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
+        // CLSID_CResizerDMO won't have leftover
+        REQUIRE(consume(source_reader, transform, istream, ostream) == S_OK);
     }
-    SECTION("MP4(I420) - RGB32") {
-        INFO("IMFMediaSourceEx: MP4(I420) -> RGB32");
+    WHEN("MP4(I420) - RGB32") {
+        spdlog::warn("IMFMediaSourceEx: MP4(I420) -> RGB32");
         REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_I420) == S_OK);
         REQUIRE(source_reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, source_type.get()) ==
                 S_OK);
         print(source_type.get());
-        if (auto hr = transform->SetInputType(0, source_type.get(), 0))
-            FAIL(hr);
+        REQUIRE(transform->SetInputType(istream, source_type.get(), 0) == S_OK);
+
         com_ptr<IMFMediaType> output_type = make_output_RGB32(source_type);
         print(output_type.get());
-        if (auto hr = transform->SetOutputType(0, output_type.get(), 0))
-            FAIL(hr);
+        REQUIRE(transform->SetOutputType(ostream, output_type.get(), 0) == S_OK);
+
+        print(transform.get(), CLSID_CColorConvertDMO); // requires input/output configuration
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
+        // CLSID_CResizerDMO won't have leftover
+        REQUIRE(consume(source_reader, transform, istream, ostream) == S_OK);
     }
-    SECTION("MP4(IYUV) - RGB32") {
-        INFO("IMFMediaSourceEx: MP4(I420) -> RGB32");
+    WHEN("MP4(IYUV) - RGB32") {
+        spdlog::warn("IMFMediaSourceEx: MP4(IYUV) -> RGB32");
         REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_IYUV) == S_OK);
         REQUIRE(source_reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, source_type.get()) ==
                 S_OK);
         print(source_type.get());
-        if (auto hr = transform->SetInputType(0, source_type.get(), 0))
-            FAIL(hr);
+        REQUIRE(transform->SetInputType(istream, source_type.get(), 0) == S_OK);
+
         com_ptr<IMFMediaType> output_type = make_output_RGB32(source_type);
         print(output_type.get());
-        if (auto hr = transform->SetOutputType(0, output_type.get(), 0))
-            FAIL(hr);
+        REQUIRE(transform->SetOutputType(ostream, output_type.get(), 0) == S_OK);
+
+        print(transform.get(), CLSID_CColorConvertDMO); // requires input/output configuration
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
+        // CLSID_CResizerDMO won't have leftover
+        REQUIRE(consume(source_reader, transform, istream, ostream) == S_OK);
     }
-    SECTION("MP4(I420) - RGB565") {
-        INFO("IMFMediaSourceEx: MP4(I420) -> RGB32");
+    WHEN("MP4(I420) - RGB565") {
+        spdlog::warn("IMFMediaSourceEx: MP4(I420) - RGB565");
         REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_I420) == S_OK);
         REQUIRE(source_reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, source_type.get()) ==
                 S_OK);
         print(source_type.get());
-        if (auto hr = transform->SetInputType(0, source_type.get(), 0))
-            FAIL(hr);
+        REQUIRE(transform->SetInputType(istream, source_type.get(), 0) == S_OK);
+
         com_ptr<IMFMediaType> output_type = make_output_RGB565(source_type);
         print(output_type.get());
-        if (auto hr = transform->SetOutputType(0, output_type.get(), 0))
-            FAIL(hr);
-    }
-    print(transform.get(), CLSID_CColorConvertDMO); // requires input/output configuration
+        REQUIRE(transform->SetOutputType(ostream, output_type.get(), 0) == S_OK);
 
-    REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
-    REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
-    {
-        spdlog::warn("testing synchronous read/transform with simplified code");
-        DWORD istream = 0, ostream = 0;
-        com_ptr<IMFMediaType> output_type{};
-        if (auto hr = transform->GetOutputCurrentType(ostream, output_type.put()))
-            FAIL(hr);
-        size_t count = 0;
-        DWORD index{};
-        DWORD flags{};
-        LONGLONG timestamp{}; // unit 100-nanosecond
-        LONGLONG duration{};
-        for (com_ptr<IMFSample> input_sample : read_samples(source_reader, //
-                                                            index, flags, timestamp, duration)) {
-            switch (auto hr = transform->ProcessInput(istream, input_sample.get(), 0)) {
-            case S_OK: // MF_E_TRANSFORM_TYPE_NOT_SET, MF_E_NO_SAMPLE_DURATION, MF_E_NO_SAMPLE_TIMESTAMP
-                break;
-            case MF_E_NOTACCEPTING:
-            case MF_E_UNSUPPORTED_D3D_TYPE:
-            case E_INVALIDARG:
-            default:
-                FAIL(hr);
-            }
-            HRESULT ec = S_OK;
-            for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
-                if (auto hr = check_sample(output_sample))
-                    FAIL(hr);
-                ++count;
-            }
-            switch (ec) {
-            case S_OK:
-            case MF_E_TRANSFORM_NEED_MORE_INPUT:
-                continue;
-            default:
-                FAIL(ec);
-            }
-        }
-        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL) == S_OK);
-        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL) == S_OK);
-        REQUIRE(count);
-        count = 0;
-        // fetch remaining output in the transform
-        HRESULT ec = S_OK;
-        for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
-            if (auto hr = check_sample(output_sample))
-                FAIL(hr);
-            ++count;
-        }
-        switch (ec) {
-        case S_OK:
-        case MF_E_TRANSFORM_NEED_MORE_INPUT:
-            break;
-        default:
-            FAIL(ec);
-        }
-        REQUIRE(count == 0); // CLSID_CColorConvertDMO won't have leftover
+        print(transform.get(), CLSID_CColorConvertDMO); // requires input/output configuration
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
+        // CLSID_CResizerDMO won't have leftover
+        REQUIRE(consume(source_reader, transform, istream, ostream) == S_OK);
     }
 }
 
@@ -431,7 +443,7 @@ HRESULT configure_type_bypass(com_ptr<IMFTransform> transform, com_ptr<IMFMediaT
 
 // see https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer
 // see https://docs.microsoft.com/en-us/windows/win32/medfound/basic-mft-processing-model
-TEST_CASE("MFTransform - Video Resizer DSP", "[dsp]") {
+SCENARIO("MFTransform - Video Resizer DSP", "[dsp]") {
     auto on_return = media_startup();
 
     com_ptr<IMFMediaSourceEx> source{};
@@ -441,89 +453,40 @@ TEST_CASE("MFTransform - Video Resizer DSP", "[dsp]") {
 
     com_ptr<IMFTransform> transform{};
     REQUIRE(make_transform_video(transform.put(), CLSID_CResizerDMO) == S_OK);
-    SECTION("IPropertyStore") {
+
+    DWORD istream = 0, ostream = 0;
+    WHEN("IPropertyStore") {
         com_ptr<IPropertyStore> props{};
         REQUIRE(transform->QueryInterface(props.put()) == S_OK);
         com_ptr<IMediaObject> media_object{};
         REQUIRE(transform->QueryInterface(media_object.put()) == S_OK);
+
+        REQUIRE(configure_type_bypass(transform, source_type, istream, ostream) == S_OK);
+        print(transform.get(), CLSID_CResizerDMO);
+
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
+        // CLSID_CResizerDMO won't have leftover
+        REQUIRE(consume(source_reader, transform, istream, ostream) == S_OK);
     }
-    com_ptr<IWMResizerProps> resizer{};
-    SECTION("SetClipRegion(Smaller)") {
+    WHEN("SetClipRegion(Smaller)") {
+        com_ptr<IWMResizerProps> resizer{};
         REQUIRE(transform->QueryInterface(resizer.put()) == S_OK);
         REQUIRE(resizer->SetClipRegion(0, 0, 640, 480) == S_OK);
-    }
-    //SECTION("SetClipRegion(Larger)") {
-    //    REQUIRE(transform->QueryInterface(resizer.put()) == S_OK);
-    //    REQUIRE(resizer->SetClipRegion(0, 0, 2000, 1000) == S_OK);
-    //    // this will return E_FAIL
-    //}
 
-    DWORD istream = 0, ostream = 0;
-    REQUIRE(configure_type_bypass(transform, source_type, istream, ostream) == S_OK);
-    print(transform.get(), CLSID_CResizerDMO);
+        REQUIRE(configure_type_bypass(transform, source_type, istream, ostream) == S_OK);
+        print(transform.get(), CLSID_CResizerDMO);
 
-    REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
-    REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
-    {
-        spdlog::warn("testing synchronous read/transform with simplified code");
-        com_ptr<IMFMediaType> output_type{};
-        if (auto hr = transform->GetOutputCurrentType(ostream, output_type.put()))
-            FAIL(hr);
-        size_t count = 0;
-        DWORD index{};
-        DWORD flags{};
-        LONGLONG timestamp{}; // unit 100-nanosecond
-        LONGLONG duration{};
-        for (com_ptr<IMFSample> input_sample : read_samples(source_reader, //
-                                                            index, flags, timestamp, duration)) {
-            switch (auto hr = transform->ProcessInput(istream, input_sample.get(), 0)) {
-            case S_OK: // MF_E_TRANSFORM_TYPE_NOT_SET, MF_E_NO_SAMPLE_DURATION, MF_E_NO_SAMPLE_TIMESTAMP
-                break;
-            case MF_E_NOTACCEPTING:
-            case MF_E_UNSUPPORTED_D3D_TYPE:
-            case E_INVALIDARG:
-            default:
-                FAIL(hr);
-            }
-            HRESULT ec = S_OK;
-            for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
-                if (auto hr = check_sample(output_sample))
-                    FAIL(hr);
-                ++count;
-            }
-            switch (ec) {
-            case S_OK:
-            case MF_E_TRANSFORM_NEED_MORE_INPUT:
-                continue;
-            default:
-                FAIL(ec);
-            }
-        }
-        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL) == S_OK);
-        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL) == S_OK);
-        REQUIRE(count);
-        count = 0;
-        // fetch remaining output in the transform
-        HRESULT ec = S_OK;
-        for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
-            if (auto hr = check_sample(output_sample))
-                FAIL(hr);
-            ++count;
-        }
-        switch (ec) {
-        case S_OK:
-        case MF_E_TRANSFORM_NEED_MORE_INPUT:
-            break;
-        default:
-            FAIL(ec);
-        }
-        REQUIRE(count == 0); // CLSID_CResizerDMO won't have leftover
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
+        // CLSID_CResizerDMO won't have leftover
+        REQUIRE(consume(source_reader, transform, istream, ostream) == S_OK);
     }
 }
 
 // see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft#remarks
 // see https://docs.microsoft.com/en-us/windows/win32/medfound/basic-mft-processing-model
-TEST_CASE("MFTransform - Video Processor MFT", "[dsp]") {
+SCENARIO("MFTransform - Video Processor MFT", "[dsp]") {
     auto on_return = media_startup();
 
     com_ptr<IMFMediaSourceEx> source{};
@@ -535,7 +498,8 @@ TEST_CASE("MFTransform - Video Processor MFT", "[dsp]") {
     REQUIRE(make_transform_video(transform.put(), CLSID_VideoProcessorMFT) == S_OK);
     com_ptr<IMFVideoProcessorControl> control{};
     REQUIRE(transform->QueryInterface(control.put()) == S_OK);
-    {
+
+    WHEN("MIRROR_HORIZONTAL/ROTAION_NORMAL") {
         REQUIRE(configure_rectangle(control.get(), source_type.get()) == S_OK);
 
         // H mirror, corrects the orientation, letterboxes the output as needed
@@ -546,119 +510,14 @@ TEST_CASE("MFTransform - Video Processor MFT", "[dsp]") {
         // https://docs.microsoft.com/en-us/windows/win32/medfound/media-foundation-work-queue-and-threading-improvements
         com_ptr<IMFRealTimeClientEx> realtime{};
         REQUIRE(transform->QueryInterface(realtime.put()) == S_OK);
-    }
 
-    DWORD istream = 0, ostream = 0;
-    REQUIRE(configure_type_bypass(transform, source_type, istream, ostream) == S_OK);
-    print(transform.get(), CLSID_VideoProcessorMFT);
+        DWORD istream = 0, ostream = 0;
+        REQUIRE(configure_type_bypass(transform, source_type, istream, ostream) == S_OK);
+        print(transform.get(), CLSID_VideoProcessorMFT);
 
-    REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
-    REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
-    {
-        spdlog::warn("testing synchronous read/transform with simplified code");
-        com_ptr<IMFMediaType> output_type{};
-        if (auto hr = transform->GetOutputCurrentType(ostream, output_type.put()))
-            FAIL(hr);
-        size_t count = 0;
-        DWORD index{};
-        DWORD flags{};
-        LONGLONG timestamp{}; // unit 100-nanosecond
-        LONGLONG duration{};
-        for (com_ptr<IMFSample> input_sample : read_samples(source_reader, //
-                                                            index, flags, timestamp, duration)) {
-            switch (auto hr = transform->ProcessInput(istream, input_sample.get(), 0)) {
-            case S_OK: // MF_E_TRANSFORM_TYPE_NOT_SET, MF_E_NO_SAMPLE_DURATION, MF_E_NO_SAMPLE_TIMESTAMP
-                break;
-            case MF_E_NOTACCEPTING:
-            case MF_E_UNSUPPORTED_D3D_TYPE:
-            case E_INVALIDARG:
-            default:
-                FAIL(hr);
-            }
-            HRESULT ec = S_OK;
-            for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
-                if (auto hr = check_sample(output_sample))
-                    FAIL(hr);
-                ++count;
-            }
-            switch (ec) {
-            case S_OK:
-            case MF_E_TRANSFORM_NEED_MORE_INPUT:
-                continue;
-            default:
-                FAIL(ec);
-            }
-        }
-        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL) == S_OK);
-        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL) == S_OK);
-        REQUIRE(count);
-        count = 0;
-        // fetch remaining output in the transform
-        HRESULT ec = S_OK;
-        for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
-            if (auto hr = check_sample(output_sample))
-                FAIL(hr);
-            ++count;
-        }
-        switch (ec) {
-        case S_OK:
-        case MF_E_TRANSFORM_NEED_MORE_INPUT:
-            break;
-        default:
-            FAIL(ec);
-        }
-        REQUIRE(count == 0); // CLSID_VideoProcessorMFT won't have leftover
-    }
-}
-
-HRESULT consume(com_ptr<IMFSourceReader> source_reader, com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream) {
-    com_ptr<IMFMediaType> output_type{};
-    if (auto hr = transform->GetOutputCurrentType(ostream, output_type.put()))
-        return hr;
-
-    DWORD index{};
-    DWORD flags{};
-    LONGLONG timestamp{}; // unit 100-nanosecond
-    LONGLONG duration{};
-    for (com_ptr<IMFSample> input_sample : read_samples(source_reader, //
-                                                        index, flags, timestamp, duration)) {
-        switch (auto hr = transform->ProcessInput(istream, input_sample.get(), 0)) {
-        case S_OK: // MF_E_TRANSFORM_TYPE_NOT_SET, MF_E_NO_SAMPLE_DURATION, MF_E_NO_SAMPLE_TIMESTAMP
-            break;
-        case MF_E_NOTACCEPTING:
-        case MF_E_UNSUPPORTED_D3D_TYPE:
-        case E_INVALIDARG:
-        default:
-            return hr;
-        }
-        HRESULT ec = S_OK;
-        for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
-            if (auto hr = check_sample(output_sample))
-                FAIL(hr);
-        }
-        switch (ec) {
-        case S_OK:
-        case MF_E_TRANSFORM_NEED_MORE_INPUT:
-            continue;
-        default:
-            return ec;
-        }
-    }
-    if (auto hr = transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL))
-        return hr;
-    if (auto hr = transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL))
-        return hr;
-    // fetch remaining output in the transform
-    HRESULT ec = S_OK;
-    for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
-        if (auto hr = check_sample(output_sample))
-            FAIL(hr);
-    }
-    switch (ec) {
-    case S_OK:
-    case MF_E_TRANSFORM_NEED_MORE_INPUT:
-        return S_OK;
-    default:
-        return ec;
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL) == S_OK);
+        REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
+        // CLSID_VideoProcessorMFT won't have leftover
+        REQUIRE(consume(source_reader, transform, istream, ostream) == S_OK);
     }
 }

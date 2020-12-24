@@ -31,7 +31,6 @@ TEST_CASE("IMFActivate(IMFMediaSourceEx,IMFMediaType)", "[!mayfail]") {
     REQUIRE(devices.size() > 0);
 
     spdlog::info("webcam:");
-
     for (com_ptr<IMFActivate> device : devices) {
         com_ptr<IMFMediaSourceEx> source{};
         // https://docs.microsoft.com/en-us/windows/win32/api/mfobjects/nf-mfobjects-imfactivate-activateobject
@@ -97,7 +96,7 @@ TEST_CASE("IMFActivate(IMFSourceReader)", "[!mayfail]") {
         UINT device_manager_token{};
         com_ptr<IMFDXGIDeviceManager> device_manager{};
         REQUIRE(MFCreateDXGIDeviceManager(&device_manager_token, device_manager.put()) == S_OK);
-        //device_manager->ResetDevice(nullptr, device_manager_token);
+        REQUIRE(device_manager->ResetDevice(nullptr, device_manager_token) == E_INVALIDARG);
 
         com_ptr<IMFAttributes> attrs{};
         REQUIRE(MFCreateAttributes(attrs.put(), 3) == S_OK);
@@ -116,71 +115,94 @@ TEST_CASE("IMFActivate(IMFSourceReader)", "[!mayfail]") {
     }
 }
 
-HRESULT create_source_reader(com_ptr<IMFMediaSource> source, com_ptr<IMFSourceReaderCallback> callback,
-                             IMFSourceReader** reader) {
-    com_ptr<IMFPresentationDescriptor> presentation{};
-    if (auto hr = source->CreatePresentationDescriptor(presentation.put()); FAILED(hr))
-        return hr;
-    com_ptr<IMFStreamDescriptor> stream{};
-    if (auto hr = get_stream_descriptor(presentation.get(), stream.put()); FAILED(hr))
-        return hr;
-    if (auto hr = configure(stream); FAILED(hr))
-        return hr;
-
-    com_ptr<IMFAttributes> attrs{};
-    if (auto hr = MFCreateAttributes(attrs.put(), 3); FAILED(hr))
-        return hr;
-    if (callback) {
-        if (auto hr = attrs->SetUnknown(MF_SOURCE_READER_ASYNC_CALLBACK, callback.get()); FAILED(hr))
-            return hr;
-    }
-    if (auto hr = attrs->SetUINT32(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING, TRUE); FAILED(hr))
-        return hr;
-    if (auto hr = attrs->SetUINT32(MF_READWRITE_DISABLE_CONVERTERS, FALSE); FAILED(hr))
-        return hr;
-    return MFCreateSourceReaderFromMediaSource(source.get(), attrs.get(), reader);
-}
-
-TEST_CASE("IMFActivate(IMFSourceReaderCallback)", "[!mayfail]") {
+TEST_CASE("IMFActivate(IMFSourceReaderCallback) - 1", "[!mayfail]") {
     auto on_return = media_startup();
 
     com_ptr<IMFActivate> device{};
     REQUIRE(get_test_device(device) == S_OK);
     com_ptr<IMFMediaSourceEx> source{};
     REQUIRE(device->ActivateObject(__uuidof(IMFMediaSourceEx), source.put_void()) == S_OK);
-    auto on_return2 = gsl::finally([source]() { source->Shutdown(); });
+    auto on_return2 = gsl::finally([device]() { device->ShutdownObject(); });
 
+    spdlog::info("async_source_reader_callback:");
     com_ptr<IMFSourceReaderCallback> callback{};
     REQUIRE(create_reader_callback(callback.put()) == S_OK);
+
     com_ptr<IMFSourceReader> reader{};
     REQUIRE(create_source_reader(source, callback, reader.put()) == S_OK);
 
-    DWORD const stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
-    SECTION("read before configuration won't fail") {
-        com_ptr<IUnknown> unknown{};
-        REQUIRE(callback->QueryInterface(unknown.put()) == S_OK);
-        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+    const DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
 
-        SleepEx(3'000, true); // this should be enough time for the async callback
+    com_ptr<IMFMediaType> source_type{};
+    REQUIRE(reader->GetNativeMediaType(stream, 0, source_type.put()) == S_OK);
+    print(source_type.get());
+
+    REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+    REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+    REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+    SleepEx(1'500, true);
+    REQUIRE(reader->Flush(stream) == S_OK);
+    SleepEx(500, true);
+}
+
+TEST_CASE("IMFActivate(IMFSourceReaderCallback) - 2", "[!mayfail]") {
+    auto on_return = media_startup();
+
+    com_ptr<IMFActivate> device{};
+    REQUIRE(get_test_device(device) == S_OK);
+    com_ptr<IMFMediaSourceEx> source{};
+    REQUIRE(device->ActivateObject(__uuidof(IMFMediaSourceEx), source.put_void()) == S_OK);
+    auto on_return2 = gsl::finally([device]() { device->ShutdownObject(); });
+
+    com_ptr<IMFSourceReaderCallback> callback{};
+    REQUIRE(create_reader_callback(callback.put()) == S_OK);
+
+    com_ptr<IMFSourceReader> reader{};
+    REQUIRE(create_source_reader(source, callback, reader.put()) == S_OK);
+
+    const DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
+
+    SECTION("Flush immediately") {
+        REQUIRE(reader->Flush(stream) == S_OK);
+        SleepEx(500, true);
     }
-    SECTION("MFVideoFormat_NV12(1920/1080 30)") {
+
+    SECTION("MFVideoFormat_NV12(1920/1080)") {
         com_ptr<IMFMediaType> native_type{};
         REQUIRE(reader->GetNativeMediaType(stream, 0, native_type.put()) == S_OK);
-        // make output from the native media type
+
         com_ptr<IMFMediaType> output_type{};
         REQUIRE(MFCreateMediaType(output_type.put()) == S_OK);
         REQUIRE(native_type->CopyAllItems(output_type.get()) == S_OK);
         REQUIRE(output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_NV12) == S_OK);
-        REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, 1920, 1080) == S_OK);
+        REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, 1920, 1080) == S_OK); // -> 3110400
         REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_FRAME_RATE, 30, 1) == S_OK);
-
         REQUIRE(reader->SetCurrentMediaType(stream, NULL, output_type.get()) == S_OK);
-        // multiple request should be successful
-        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
-        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
-        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
 
-        SleepEx(3'000, true); // this should be enough time for the async callback
+        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+        SleepEx(1'500, true);
+        REQUIRE(reader->Flush(stream) == S_OK);
+        SleepEx(500, true);
     }
-    //REQUIRE(device->ShutdownObject() == S_OK);
+    SECTION("MFVideoFormat_RGB32(1920/1080)") {
+        com_ptr<IMFMediaType> native_type{};
+        REQUIRE(reader->GetNativeMediaType(stream, 0, native_type.put()) == S_OK);
+
+        com_ptr<IMFMediaType> output_type{};
+        REQUIRE(MFCreateMediaType(output_type.put()) == S_OK);
+        REQUIRE(native_type->CopyAllItems(output_type.get()) == S_OK);
+        REQUIRE(output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32) == S_OK);
+        REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, 1920, 1080) == S_OK); // -> 3110400
+        REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_FRAME_RATE, 30, 1) == S_OK);
+        REQUIRE(reader->SetCurrentMediaType(stream, NULL, output_type.get()) == S_OK);
+
+        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+        SleepEx(1'500, true);
+        REQUIRE(reader->Flush(stream) == S_OK);
+        SleepEx(500, true);
+    }
 }
