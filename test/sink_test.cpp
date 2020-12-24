@@ -4,13 +4,10 @@
  * @see     https://docs.microsoft.com/en-us/windows/win32/medfound/sink-writer
  * @see     https://docs.microsoft.com/en-us/windows/win32/api/mfreadwrite/nn-mfreadwrite-imfsinkwriter
  */
+#include <media.hpp>
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
-#include <future>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.System.Threading.h>
-
-#include <media.hpp>
+#include <spdlog/spdlog.h>
 
 #include <d3d11.h>
 #include <d3d9.h>
@@ -20,7 +17,6 @@
 #include <Dxva2api.h>
 #include <evr.h>
 #include <mfplay.h>
-#include <mfreadwrite.h>
 
 #pragma comment(lib, "strmiids") // for MR_VIDEO_RENDER_SERVICE
 
@@ -236,7 +232,6 @@ TEST_CASE("Window with Win32 API", "[window][!mayfail]") {
 
     REQUIRE(PostMessageW(hwnd, WM_QUIT, NULL, NULL));
     REQUIRE(background.get() == S_OK);
-
 }
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/api/mfidl/nn-mfidl-imfmediatypehandler

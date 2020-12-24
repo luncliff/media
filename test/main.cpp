@@ -7,17 +7,12 @@
  * @see https://docs.microsoft.com/en-us/windows/win32/api/mfreadwrite/nf-mfreadwrite-imfsourcereadercallback-onreadsample
  * @see https://docs.microsoft.com/en-us/windows/win32/api/mfreadwrite/ne-mfreadwrite-mf_source_reader_flag
  */
+#include <media.hpp>
 #define CATCH_CONFIG_RUNNER
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
 #include <catch2/catch_reporter_sonarqube.hpp>
-
-#include <winrt/Windows.Foundation.h>
-
 #include <clocale>
-#include <filesystem>
-#include <media.hpp>
-
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 

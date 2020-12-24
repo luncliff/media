@@ -2,12 +2,9 @@
  * @file    source_test.cpp
  * @author  github.com/luncliff (luncliff@gmail.com)
  */
+#include <media.hpp>
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.System.Threading.h>
-
-#include <media.hpp>
 #include <spdlog/spdlog.h>
 
 using namespace std;
@@ -131,17 +128,17 @@ TEST_CASE("IMFActivate(IMFSourceReaderCallback) - 1", "[!mayfail]") {
     com_ptr<IMFSourceReader> reader{};
     REQUIRE(create_source_reader(source, callback, reader.put()) == S_OK);
 
-    const DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
+    const auto reader_stream = static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
 
     com_ptr<IMFMediaType> source_type{};
-    REQUIRE(reader->GetNativeMediaType(stream, 0, source_type.put()) == S_OK);
+    REQUIRE(reader->GetNativeMediaType(reader_stream, 0, source_type.put()) == S_OK);
     print(source_type.get());
 
-    REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
-    REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
-    REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+    REQUIRE(reader->ReadSample(reader_stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+    REQUIRE(reader->ReadSample(reader_stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+    REQUIRE(reader->ReadSample(reader_stream, 0, NULL, NULL, NULL, NULL) == S_OK);
     SleepEx(1'500, true);
-    REQUIRE(reader->Flush(stream) == S_OK);
+    REQUIRE(reader->Flush(reader_stream) == S_OK);
     SleepEx(500, true);
 }
 
@@ -160,16 +157,15 @@ TEST_CASE("IMFActivate(IMFSourceReaderCallback) - 2", "[!mayfail]") {
     com_ptr<IMFSourceReader> reader{};
     REQUIRE(create_source_reader(source, callback, reader.put()) == S_OK);
 
-    const DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
+    const auto reader_stream = static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
 
     SECTION("Flush immediately") {
-        REQUIRE(reader->Flush(stream) == S_OK);
+        REQUIRE(reader->Flush(reader_stream) == S_OK);
         SleepEx(500, true);
     }
-
     SECTION("MFVideoFormat_NV12(1920/1080)") {
         com_ptr<IMFMediaType> native_type{};
-        REQUIRE(reader->GetNativeMediaType(stream, 0, native_type.put()) == S_OK);
+        REQUIRE(reader->GetNativeMediaType(reader_stream, 0, native_type.put()) == S_OK);
 
         com_ptr<IMFMediaType> output_type{};
         REQUIRE(MFCreateMediaType(output_type.put()) == S_OK);
@@ -177,18 +173,18 @@ TEST_CASE("IMFActivate(IMFSourceReaderCallback) - 2", "[!mayfail]") {
         REQUIRE(output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_NV12) == S_OK);
         REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, 1920, 1080) == S_OK); // -> 3110400
         REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_FRAME_RATE, 30, 1) == S_OK);
-        REQUIRE(reader->SetCurrentMediaType(stream, NULL, output_type.get()) == S_OK);
+        REQUIRE(reader->SetCurrentMediaType(reader_stream, NULL, output_type.get()) == S_OK);
 
-        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
-        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
-        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+        REQUIRE(reader->ReadSample(reader_stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+        REQUIRE(reader->ReadSample(reader_stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+        REQUIRE(reader->ReadSample(reader_stream, 0, NULL, NULL, NULL, NULL) == S_OK);
         SleepEx(1'500, true);
-        REQUIRE(reader->Flush(stream) == S_OK);
+        REQUIRE(reader->Flush(reader_stream) == S_OK);
         SleepEx(500, true);
     }
     SECTION("MFVideoFormat_RGB32(1920/1080)") {
         com_ptr<IMFMediaType> native_type{};
-        REQUIRE(reader->GetNativeMediaType(stream, 0, native_type.put()) == S_OK);
+        REQUIRE(reader->GetNativeMediaType(reader_stream, 0, native_type.put()) == S_OK);
 
         com_ptr<IMFMediaType> output_type{};
         REQUIRE(MFCreateMediaType(output_type.put()) == S_OK);
@@ -196,13 +192,13 @@ TEST_CASE("IMFActivate(IMFSourceReaderCallback) - 2", "[!mayfail]") {
         REQUIRE(output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32) == S_OK);
         REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, 1920, 1080) == S_OK); // -> 3110400
         REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_FRAME_RATE, 30, 1) == S_OK);
-        REQUIRE(reader->SetCurrentMediaType(stream, NULL, output_type.get()) == S_OK);
+        REQUIRE(reader->SetCurrentMediaType(reader_stream, NULL, output_type.get()) == S_OK);
 
-        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
-        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
-        REQUIRE(reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+        REQUIRE(reader->ReadSample(reader_stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+        REQUIRE(reader->ReadSample(reader_stream, 0, NULL, NULL, NULL, NULL) == S_OK);
+        REQUIRE(reader->ReadSample(reader_stream, 0, NULL, NULL, NULL, NULL) == S_OK);
         SleepEx(1'500, true);
-        REQUIRE(reader->Flush(stream) == S_OK);
+        REQUIRE(reader->Flush(reader_stream) == S_OK);
         SleepEx(500, true);
     }
 }

@@ -1,6 +1,3 @@
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.System.Threading.h>
-
 #include <media.hpp>
 #include <spdlog/spdlog.h>
 
@@ -139,17 +136,110 @@ class verbose_callback_t : public IMFSourceReaderCallback {
     }
 };
 
-HRESULT create_reader_callback(IMFSourceReaderCallback** callback) noexcept {
+HRESULT create_reader_callback(IMFSourceReaderCallback** ptr) noexcept {
     auto report_failure = [](HRESULT code, string&& message) {
         spdlog::error("create_reader_callback: {}", message);
         return code;
     };
 
-    if (callback == nullptr)
+    if (ptr == nullptr)
         return E_INVALIDARG;
     try {
-        IUnknown* unknown = *callback = new (nothrow) verbose_callback_t{};
-        if (unknown)
+        if (IUnknown* unknown = *ptr = new (nothrow) verbose_callback_t{})
+            unknown->AddRef();
+        return S_OK;
+    } catch (const winrt::hresult_error& ex) {
+        return report_failure(ex.code(), winrt::to_string(ex.message()));
+    } catch (...) {
+        return report_failure(E_FAIL, "unknown");
+    }
+}
+
+class save_image_sink_t : public IMFMediaSink {
+    LONG ref_count = 0;
+
+  public:
+    STDMETHODIMP QueryInterface(REFIID iid, void** ppv) {
+        const QITAB table[]{
+            QITABENT(save_image_sink_t, IMFMediaSink),
+            {},
+        };
+        return QISearch(this, table, iid, ppv);
+    }
+    STDMETHODIMP_(ULONG) AddRef() {
+        return InterlockedDecrement(&ref_count);
+    }
+    STDMETHODIMP_(ULONG) Release() {
+        const auto count = InterlockedDecrement(&ref_count);
+        if (count == 0)
+            delete this;
+        return count;
+    }
+
+    HRESULT STDMETHODCALLTYPE GetCharacteristics(DWORD* pdwCharacteristics) override {
+        UNREFERENCED_PARAMETER(pdwCharacteristics);
+        spdlog::trace("{}", __FUNCTION__);
+        return E_NOTIMPL;
+    }
+    HRESULT STDMETHODCALLTYPE AddStreamSink(DWORD dwStreamSinkIdentifier, IMFMediaType* pMediaType,
+                                            IMFStreamSink** ppStreamSink) override {
+        UNREFERENCED_PARAMETER(dwStreamSinkIdentifier);
+        UNREFERENCED_PARAMETER(pMediaType);
+        UNREFERENCED_PARAMETER(ppStreamSink);
+        spdlog::trace("{}", __FUNCTION__);
+        return E_NOTIMPL;
+    }
+    HRESULT STDMETHODCALLTYPE RemoveStreamSink(DWORD dwStreamSinkIdentifier) override {
+        UNREFERENCED_PARAMETER(dwStreamSinkIdentifier);
+        spdlog::trace("{}", __FUNCTION__);
+        return E_NOTIMPL;
+    }
+    HRESULT STDMETHODCALLTYPE GetStreamSinkCount(DWORD* pcStreamSinkCount) override {
+        UNREFERENCED_PARAMETER(pcStreamSinkCount);
+        spdlog::trace("{}", __FUNCTION__);
+        return E_NOTIMPL;
+    }
+    HRESULT STDMETHODCALLTYPE GetStreamSinkByIndex(DWORD dwIndex, IMFStreamSink** ppStreamSink) override {
+        UNREFERENCED_PARAMETER(dwIndex);
+        UNREFERENCED_PARAMETER(ppStreamSink);
+        spdlog::trace("{}", __FUNCTION__);
+        return E_NOTIMPL;
+    }
+    HRESULT STDMETHODCALLTYPE GetStreamSinkById(DWORD dwStreamSinkIdentifier, IMFStreamSink** ppStreamSink) override {
+        UNREFERENCED_PARAMETER(dwStreamSinkIdentifier);
+        UNREFERENCED_PARAMETER(ppStreamSink);
+        spdlog::trace("{}", __FUNCTION__);
+        return E_NOTIMPL;
+    }
+    HRESULT STDMETHODCALLTYPE SetPresentationClock(IMFPresentationClock* pPresentationClock) override {
+        UNREFERENCED_PARAMETER(pPresentationClock);
+        spdlog::trace("{}", __FUNCTION__);
+        return E_NOTIMPL;
+    }
+    HRESULT STDMETHODCALLTYPE GetPresentationClock(IMFPresentationClock** ppPresentationClock) override {
+        UNREFERENCED_PARAMETER(ppPresentationClock);
+        spdlog::trace("{}", __FUNCTION__);
+        return E_NOTIMPL;
+    }
+    HRESULT STDMETHODCALLTYPE Shutdown() override {
+        spdlog::trace("{}", __FUNCTION__);
+        return E_NOTIMPL;
+    }
+};
+
+HRESULT create_sink(const fs::path& dirpath, IMFMediaSink** ptr) {
+    if (fs::exists(dirpath) == false || fs::is_directory(dirpath) == false)
+        return E_INVALIDARG;
+    if (ptr == nullptr)
+        return E_INVALIDARG;
+
+    auto report_failure = [](HRESULT code, string&& message) {
+        spdlog::error("create_sink: {}", message);
+        return code;
+    };
+
+    try {
+        if (IUnknown* unknown = *ptr = new (nothrow) save_image_sink_t{})
             unknown->AddRef();
         return S_OK;
     } catch (const winrt::hresult_error& ex) {

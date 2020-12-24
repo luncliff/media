@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.16)
 project(media VERSION 0.0 LANGUAGES CXX)
 if(NOT WIN32)
     message(FATAL_ERROR "the project is only for Windows Platform")
@@ -8,7 +8,13 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
 endif()
 set(CMAKE_SUPPRESS_REGENERATION true) # no ZERO_CHECK
 set(CMAKE_VS_WINRT_BY_DEFAULT true)
+set(CMAKE_C_STANDARD 17)
+
 message(STATUS "using Windows: ${CMAKE_SYSTEM_VERSION}")
+
+add_compile_options(
+    /wd4819 # codepage warnings
+)
 
 find_package(Microsoft.GSL CONFIG)
 find_package(spdlog        CONFIG REQUIRED)
@@ -17,7 +23,7 @@ find_package(spdlog        CONFIG REQUIRED)
 include(CheckIncludeFileCXX)
 check_include_file_cxx("mfapi.h" found_mfapi)
 check_include_file_cxx("wincodecsdk.h" found_codecsdk)
-check_include_file_cxx("d3d11.h" found_direcx11)
+check_include_file_cxx("d3d11.h" found_d3d11)
 
 # see https://github.com/microsoft/wil
 find_path(WIL_INCLUDE_DIRS "wil/com.h")
@@ -26,28 +32,34 @@ message(STATUS "using WIL: ${WIL_INCLUDE_DIRS}")
 add_library(media STATIC
     src/media.hpp
     src/media.cpp
-    src/media_reader.cpp
+    src/media_impl.cpp
     src/media_print.cpp
 )
 
 set_target_properties(media
 PROPERTIES
-    PUBLIC_HEADER   "src/media.hpp"
+    PUBLIC_HEADER   src/media.hpp
     WINDOWS_EXPORT_ALL_SYMBOLS false
+)
+
+target_precompile_headers(media
+PUBLIC
+    src/media.hpp
 )
 
 target_include_directories(media
 PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+PRIVATE
+    ${WIL_INCLUDE_DIRS}
 )
 
 target_link_libraries(media
 PUBLIC
-    windowsapp
+    mf mfplat mfplay mfreadwrite mfuuid wmcodecdspuuid # for Media Foundation SDK
+    windowsapp shlwapi comctl32 # for WinRT / COM
 PRIVATE
-    dxva2 evr shlwapi comctl32 # for WinRT / COM
-    mf mfplat mfplay mfreadwrite mfuuid wmcodecdspuuid # for Media Foundation
-    dxva2 d3d9 d3d11 dxguid dxgi # for DXVA
+    dxva2 evr d3d9 d3d11 dxguid dxgi # for DXVA
     spdlog::spdlog
 )
 if(Microsoft.GSL_FOUND)
@@ -59,12 +71,6 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
     message(FATAL_ERROR "This project uses WinRT. clang-cl can't be used since <experimentatl/coroutine> is not supported anymore")
-    target_compile_options(media
-    PUBLIC
-        /std:c++17
-    PRIVATE
-        /W4
-    )
 elseif(MSVC)
     target_compile_options(media
     PUBLIC
@@ -113,6 +119,7 @@ include(Catch)
 
 add_executable(media_test_suite
     test/main.cpp
+    test/winrt_test.cpp
     test/webcam_test.cpp
     test/sink_test.cpp
     test/dxva_test.cpp
@@ -120,9 +127,17 @@ add_executable(media_test_suite
     test/source_test.cpp
 )
 
+target_precompile_headers(media_test_suite REUSE_FROM media)
+
+# see https://github.com/microsoft/cppwinrt/releases
 set_target_properties(media_test_suite
 PROPERTIES
-    CXX_STANDARD 17
+    VS_PACKAGE_REFERENCES "Microsoft.Windows.CppWinRT_2.0.201217.4"
+)
+
+target_compile_options(media_test_suite
+PRIVATE
+    /W4
 )
 
 find_package(Catch2 CONFIG REQUIRED)
@@ -135,6 +150,7 @@ get_filename_component(asset_path ${PROJECT_SOURCE_DIR}/test ABSOLUTE)
 target_compile_definitions(media_test_suite
 PRIVATE
     ASSET_DIR="${asset_path}"
+    CATCH_CONFIG_WCHAR
 )
 
 catch_discover_tests(media_test_suite)

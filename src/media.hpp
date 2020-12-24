@@ -1,10 +1,18 @@
+/**
+ * @file    media.hpp
+ * @author  github.com/luncliff (luncliff@gmail.com)
+ * @brief   pch.h for this project
+ */
 #pragma once
-#include <winrt/base.h>
-
 #include <experimental/generator>
 #include <filesystem>
 #include <future>
 #include <gsl/gsl>
+
+#include <pplawait.h>
+#include <ppltasks.h>
+#include <winrt/Windows.Foundation.h> // namespace winrt::Windows::Foundation
+#include <winrt/Windows.System.h>     // namespace winrt::Windows::System
 
 #include <mfapi.h>
 #include <mferror.h>
@@ -13,6 +21,7 @@
 #include <wmcodecdsp.h>
 
 // C++ 17 Coroutines TS
+using std::experimental::coroutine_handle;
 using std::experimental::generator;
 // replaces Microsoft::WRL::ComPtr. see https://docs.microsoft.com/en-us/windows/uwp/cpp-and-winrt-apis/move-to-winrt-from-wrl
 using winrt::com_ptr;

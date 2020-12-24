@@ -2,21 +2,17 @@
  * @file transform_test.cpp
  * @author github.com/luncliff (luncliff@gmail.com)
  */
-#define CATCH_CONFIG_WCHAR
+#include <media.hpp>
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.System.Threading.h>
+#include <spdlog/spdlog.h>
 
 #include <filesystem>
-#include <media.hpp>
 
 #include <codecapi.h> // for [codec]
 #include <mediaobj.h> // for [dsp]
 #include <mmdeviceapi.h>
 #include <wmsdkidl.h>
-
-#include <spdlog/spdlog.h>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -144,6 +140,8 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
     // all types are configured. prepare for upcoming processing
     REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL) == S_OK);
 
+    const auto reader_stream = static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
+
     SECTION("Synchronous(Simplified)") {
         INFO("testing synchronous read/transform with simplified code");
         com_ptr<IMFMediaType> output_type{};
@@ -202,16 +200,14 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
     }
 
     SECTION("Synchronous(Detailed)") {
-        INFO("testing synchronous read/transform");
         bool input_available = true;
         while (input_available) {
             DWORD stream_index{};
             DWORD sample_flags{};
             LONGLONG sample_timestamp = 0; // unit 100-nanosecond
-            LONGLONG sample_duration = 0;
             com_ptr<IMFSample> input_sample{};
-            if (auto hr = source_reader->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, &stream_index,
-                                                    &sample_flags, &sample_timestamp, input_sample.put())) {
+            if (auto hr = source_reader->ReadSample(reader_stream, 0, &stream_index, &sample_flags, &sample_timestamp,
+                                                    input_sample.put())) {
                 CAPTURE(sample_flags);
                 FAIL(hr);
             }
@@ -223,7 +219,6 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
             if (input_sample == nullptr)
                 continue;
 
-            constexpr DWORD istream = 0;
             switch (auto hr = transform->ProcessInput(istream, input_sample.get(), 0)) {
             case S_OK: // MF_E_TRANSFORM_TYPE_NOT_SET, MF_E_NO_SAMPLE_DURATION, MF_E_NO_SAMPLE_TIMESTAMP
                 break;
@@ -250,7 +245,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
                         FAIL(hr);
                     output.pSample = output_sample.get();
                 }
-                auto hr = transform->ProcessOutput(0, 1, &output, &status);
+                const auto hr = transform->ProcessOutput(0, 1, &output, &status);
                 if (hr == S_OK)
                     continue;
                 if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT)
@@ -328,13 +323,13 @@ SCENARIO("MFTransform - Color Converter DSP", "[dsp]") {
         REQUIRE(MFSetAttributeSize(output.get(), MF_MT_FRAME_RATE, num, denom) == S_OK);
         return output;
     };
+    const auto reader_stream = static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
 
     DWORD istream = 0, ostream = 0;
     WHEN("MP4(NV12) - RGB32") {
         spdlog::warn("IMFMediaSourceEx: MP4(NV12) -> RGB32");
         REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_NV12) == S_OK);
-        REQUIRE(source_reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, source_type.get()) ==
-                S_OK);
+        REQUIRE(source_reader->SetCurrentMediaType(reader_stream, NULL, source_type.get()) == S_OK);
         print(source_type.get());
         REQUIRE(transform->SetInputType(istream, source_type.get(), 0) == S_OK);
 
@@ -351,8 +346,7 @@ SCENARIO("MFTransform - Color Converter DSP", "[dsp]") {
     WHEN("MP4(I420) - RGB32") {
         spdlog::warn("IMFMediaSourceEx: MP4(I420) -> RGB32");
         REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_I420) == S_OK);
-        REQUIRE(source_reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, source_type.get()) ==
-                S_OK);
+        REQUIRE(source_reader->SetCurrentMediaType(reader_stream, NULL, source_type.get()) == S_OK);
         print(source_type.get());
         REQUIRE(transform->SetInputType(istream, source_type.get(), 0) == S_OK);
 
@@ -369,8 +363,7 @@ SCENARIO("MFTransform - Color Converter DSP", "[dsp]") {
     WHEN("MP4(IYUV) - RGB32") {
         spdlog::warn("IMFMediaSourceEx: MP4(IYUV) -> RGB32");
         REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_IYUV) == S_OK);
-        REQUIRE(source_reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, source_type.get()) ==
-                S_OK);
+        REQUIRE(source_reader->SetCurrentMediaType(reader_stream, NULL, source_type.get()) == S_OK);
         print(source_type.get());
         REQUIRE(transform->SetInputType(istream, source_type.get(), 0) == S_OK);
 
@@ -387,8 +380,7 @@ SCENARIO("MFTransform - Color Converter DSP", "[dsp]") {
     WHEN("MP4(I420) - RGB565") {
         spdlog::warn("IMFMediaSourceEx: MP4(I420) - RGB565");
         REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_I420) == S_OK);
-        REQUIRE(source_reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, source_type.get()) ==
-                S_OK);
+        REQUIRE(source_reader->SetCurrentMediaType(reader_stream, NULL, source_type.get()) == S_OK);
         print(source_type.get());
         REQUIRE(transform->SetInputType(istream, source_type.get(), 0) == S_OK);
 
@@ -434,9 +426,7 @@ HRESULT configure_type_bypass(com_ptr<IMFTransform> transform, com_ptr<IMFMediaT
             return hr;
         spdlog::debug("changinged output candidate frame size");
         print(candidate.get());
-        if (auto hr = transform->SetOutputType(ostream, candidate.get(), 0); FAILED(hr))
-            return hr;
-        return S_OK;
+        return transform->SetOutputType(ostream, candidate.get(), 0);
     }
     return E_FAIL; // there was no available type...
 }

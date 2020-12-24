@@ -2,12 +2,10 @@
  * @file    source_test.cpp
  * @author  github.com/luncliff (luncliff@gmail.com)
  */
+#include <media.hpp>
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.System.Threading.h>
-
-#include <media.hpp>
+#include <spdlog/spdlog.h>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -27,10 +25,10 @@ void make_test_source(com_ptr<IMFMediaSourceEx>& source, com_ptr<IMFSourceReader
         REQUIRE(attrs->SetUINT32(MF_READWRITE_DISABLE_CONVERTERS, FALSE) == S_OK);
         REQUIRE(MFCreateSourceReaderFromMediaSource(source.get(), attrs.get(), source_reader.put()) == S_OK);
     }
-    DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
-    REQUIRE(source_reader->GetCurrentMediaType(stream, source_type.put()) == S_OK);
+    const auto reader_stream = static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
+    REQUIRE(source_reader->GetCurrentMediaType(reader_stream, source_type.put()) == S_OK);
     REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, output_subtype) == S_OK);
-    switch (auto hr = source_reader->SetCurrentMediaType(stream, NULL, source_type.get())) {
+    switch (auto hr = source_reader->SetCurrentMediaType(reader_stream, NULL, source_type.get())) {
     case S_OK:
         break;
     case MF_E_INVALIDMEDIATYPE:
@@ -118,8 +116,8 @@ TEST_CASE("IMFSourceReaderEx(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING)"
 
     // https://docs.microsoft.com/en-us/windows/win32/medfound/mf-source-reader-enable-advanced-video-processing#remarks
     com_ptr<IMFMediaType> source_type{};
-    DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
-    REQUIRE(source_reader->GetCurrentMediaType(stream, source_type.put()) == S_OK);
+    const auto reader_stream = static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
+    REQUIRE(source_reader->GetCurrentMediaType(reader_stream, source_type.put()) == S_OK);
 
     // make a copy instead of modification
     com_ptr<IMFMediaType> output_type{};
@@ -128,23 +126,22 @@ TEST_CASE("IMFSourceReaderEx(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING)"
 
     SECTION("MF_MT_SUBTYPE(MFVideoFormat_NV12)") {
         REQUIRE(output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_NV12) == S_OK);
-        REQUIRE(source_reader->SetCurrentMediaType(stream, NULL, output_type.get()) == S_OK);
+        REQUIRE(source_reader->SetCurrentMediaType(reader_stream, NULL, output_type.get()) == S_OK);
     }
     SECTION("MF_MT_SUBTYPE(MFVideoFormat_RGB32)") {
         REQUIRE(output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32) == S_OK);
-        REQUIRE(source_reader->SetCurrentMediaType(stream, NULL, output_type.get()) == S_OK);
+        REQUIRE(source_reader->SetCurrentMediaType(reader_stream, NULL, output_type.get()) == S_OK);
     }
     // The followings may not pass. Will be resolved in future
     SECTION("MF_MT_INTERLACE_MODE") {
         REQUIRE(output_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Unknown) == S_OK);
-        const auto hr = source_reader->SetCurrentMediaType(stream, NULL, output_type.get());
+        const auto hr = source_reader->SetCurrentMediaType(reader_stream, NULL, output_type.get());
         REQUIRE(FAILED(hr));
     }
     SECTION("MF_MT_FRAME_RATE/MF_MT_FRAME_SIZE") {
         REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_FRAME_RATE, 30, 1) == S_OK);    // 30 fps
         REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, 1280, 720) == S_OK); // w 1280 h 720
-        const auto hr = source_reader->SetCurrentMediaType(stream, NULL, output_type.get());
+        const auto hr = source_reader->SetCurrentMediaType(reader_stream, NULL, output_type.get());
         REQUIRE(FAILED(hr));
     }
 }
-

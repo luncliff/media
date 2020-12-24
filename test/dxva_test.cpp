@@ -3,14 +3,10 @@
  * @author github.com/luncliff (luncliff@gmail.com)
  * @see https://docs.microsoft.com/en-us/windows/win32/medfound/supporting-direct3d-11-video-decoding-in-media-foundation
  */
+#include <media.hpp>
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.System.Threading.h>
-
-#include <filesystem>
-#include <iostream>
-#include <media.hpp>
+#include <spdlog/spdlog.h>
 
 #include <mmdeviceapi.h>
 #include <wincodecsdk.h>
@@ -25,8 +21,6 @@
 #pragma comment(lib, "dxgi.lib")
 #include <d3d9.h>
 #include <dxva2api.h>
-
-#include <spdlog/spdlog.h>
 
 using namespace std;
 

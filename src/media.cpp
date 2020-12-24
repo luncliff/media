@@ -1,6 +1,3 @@
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.System.Threading.h>
-
 #include <media.hpp>
 #include <spdlog/spdlog.h>
 

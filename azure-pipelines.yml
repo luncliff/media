@@ -1,3 +1,8 @@
+#
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/apps/windows/cpp?view=azure-devops
+# todo: reference azure-pipelines-samples.yml https://github.com/Microsoft/Windows-Machine-Learning
+#
+
 trigger:
   branches:
     exclude:
@@ -48,22 +53,24 @@ jobs:
           targetType: "inline"
           script: |
             Write-Output $(install_dir) ${env:vcpkg_target_triplet}
-            vcpkg install --triplet $env:vcpkg_target_triplet ms-gsl spdlog catch2 wil
+            vcpkg install --triplet $env:vcpkg_target_triplet ms-gsl spdlog catch2 wil directxtex directxtk
             vcpkg list
         env:
           platform: $(BuildPlatform)
 
       - task: CMake@1
         inputs:
-          cmakeArgs: .. -A $(cmake_arch) -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$(BuildPlatform)-windows" -DCMAKE_INSTALL_PREFIX=$(install_dir) -DCMAKE_BUILD_TYPE=$(BuildConfiguration) -DBUILD_TESTING=True
+          cmakeArgs: .. -A $(cmake_arch) -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$(BuildPlatform)-windows" -DCMAKE_INSTALL_PREFIX=$(install_dir) -DCMAKE_BUILD_TYPE=$(BuildConfiguration) -DBUILD_TESTING=True -DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION=10.0.19041.0
           workingDirectory: "build" # will create a directory
 
-      - task: MSBuild@1
+      - task: VSBuild@1
         inputs:
           solution: build/media.sln
           platform: "$(cmake_arch)" # x64|Win32
           configuration: "$(BuildConfiguration)" # Debug|Release
           clean: true
+          restoreNugetPackages: true
+          msbuildArchitecture: "x64"
           logFileVerbosity: detailed
 
         # condition: succeededOrFailed()
