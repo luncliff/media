@@ -11,6 +11,7 @@ Personal Practice project to learn [Windows Media Foundation](https://docs.micro
 #### Media Foundation SDK
 
 * [Media Foundation and DirectShow Media Types](https://gix.github.io/media-types/)
+* [Supported Media Formats in Media Foundation](https://docs.microsoft.com/en-us/windows/win32/medfound/supported-media-formats-in-media-foundation)
 * **https://github.com/microsoft/media-foundation**
 * https://github.com/sipsorcery/mediafoundationsamples
 * https://github.com/roman380/msdnblogsmfsamples
@@ -23,6 +24,7 @@ Personal Practice project to learn [Windows Media Foundation](https://docs.micro
 * https://social.msdn.microsoft.com/Forums/en-US/172e0d65-756a-4ab9-aef6-7cd80d15a66c/behavior-of-the-sink-writer-and-microsofts-h-264-encoder-when-it-comes-to-encoding-d3d-surfaces
 
 #### C++/WinRT
+
 * https://docs.microsoft.com/en-us/uwp/cpp-ref-for-winrt/winrt
 
 ## License

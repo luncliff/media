@@ -10,25 +10,6 @@
 
 using namespace std;
 
-struct critical_section_t final : public CRITICAL_SECTION {
-  public:
-    critical_section_t() noexcept : CRITICAL_SECTION{} {
-        InitializeCriticalSection(this);
-    }
-    ~critical_section_t() noexcept {
-        DeleteCriticalSection(this);
-    }
-    bool try_lock() noexcept {
-        return TryEnterCriticalSection(this);
-    }
-    void lock() noexcept {
-        return EnterCriticalSection(this);
-    }
-    void unlock() noexcept {
-        return LeaveCriticalSection(this);
-    }
-};
-
 auto media_startup() noexcept(false) -> gsl::final_action<HRESULT(WINAPI*)()> {
     if (auto hr = MFStartup(MF_VERSION))
         throw winrt::hresult_error{hr};
@@ -356,7 +337,6 @@ HRESULT configure(com_ptr<IMFStreamDescriptor> stream) noexcept {
             return hr;
         if (type == nullptr)
             type = current;
-
         print(current.get());
     }
     return handler->SetCurrentMediaType(type.get());

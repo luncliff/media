@@ -107,6 +107,9 @@ HRESULT create_single_buffer_sample(IMFSample** sample, DWORD bufsz);
 HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst);
 HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& flushed);
 
+/// @todo mock `CoCreateInstance`
+HRESULT create_reader_callback(IMFSourceReaderCallback** callback) noexcept;
+
 HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr);
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft

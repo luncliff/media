@@ -26,6 +26,7 @@ message(STATUS "using WIL: ${WIL_INCLUDE_DIRS}")
 add_library(media STATIC
     src/media.hpp
     src/media.cpp
+    src/media_reader.cpp
     src/media_print.cpp
 )
 

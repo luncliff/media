@@ -24,6 +24,9 @@
 
 #pragma comment(lib, "strmiids") // for MR_VIDEO_RENDER_SERVICE
 
+using namespace std;
+using namespace std::chrono_literals;
+
 TEST_CASE("MFCreateMPEG4MediaSink") {
     auto on_return = media_startup();
 
@@ -224,6 +227,10 @@ TEST_CASE("Window with Win32 API", "[window]") {
     std::promise<HWND> hwnd_promise{};
     std::future<DWORD> background = std::async(std::launch::async, create_test_window, &hwnd_promise);
     std::future<HWND> hwnd_future = hwnd_promise.get_future();
+    if (hwnd_future.wait_for(5s) != std::future_status::ready) {
+        WARN("probably failed to open window");
+        return;
+    }
     HWND hwnd = hwnd_future.get();
     REQUIRE(hwnd != NULL);
 
@@ -258,6 +265,10 @@ TEST_CASE("IMFMediaSink(MFVideoEVR) - IMFVideoSampleAllocator", "[window]") {
     std::promise<HWND> hwnd_promise{};
     std::future<DWORD> background = std::async(std::launch::async, create_test_window, &hwnd_promise);
     std::future<HWND> hwnd_future = hwnd_promise.get_future();
+    if (hwnd_future.wait_for(5s) != std::future_status::ready) {
+        WARN("probably failed to open window");
+        return;
+    }
     HWND hwnd = hwnd_future.get();
     REQUIRE(hwnd != NULL);
     auto on_return1 = gsl::finally([hwnd, &background]() {
@@ -364,7 +375,12 @@ TEST_CASE("IMFMediaSink(MFVideoEVR) - IMFVideoSampleAllocator", "[window]") {
 TEST_CASE("IMFMediaSink(MFVideoEVR) - Clock", "[window]") {
     std::promise<HWND> hwnd_promise{};
     std::future<DWORD> background = std::async(std::launch::async, create_test_window, &hwnd_promise);
-    HWND window = hwnd_promise.get_future().get();
+    std::future<HWND> hwnd_future = hwnd_promise.get_future();
+    if (hwnd_future.wait_for(5s) != std::future_status::ready) {
+        WARN("probably failed to open window");
+        return;
+    }
+    HWND window = hwnd_future.get();
     REQUIRE(window != NULL);
     auto on_return1 = gsl::finally([window, &background]() {
         PostMessageW(window, WM_QUIT, NULL, NULL);
