@@ -1,6 +1,6 @@
 # Media
 
-Personal Practice project to learn [Windows Media Foundation](https://docs.microsoft.com/en-us/windows/win32/medfound/microsoft-media-foundation-sdk)
+Personal Practice project to learn [Microsoft Media Foundation SDK](https://docs.microsoft.com/en-us/windows/win32/medfound/microsoft-media-foundation-sdk)
 
 [![Build Status](https://dev.azure.com/luncliff/personal/_apis/build/status/luncliff.media)](https://dev.azure.com/luncliff/personal/_build/latest?definitionId=43)
 [![Build status](https://ci.appveyor.com/api/projects/status/iq3dj6bxe1n0cml8?svg=true)](https://ci.appveyor.com/project/luncliff/media)
