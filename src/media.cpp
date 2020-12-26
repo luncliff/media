@@ -307,6 +307,10 @@ HRESULT create_source_reader(com_ptr<IMFMediaSource> source, com_ptr<IMFSourceRe
 }
 
 HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr) noexcept {
+    if (ptr == nullptr)
+        return E_INVALIDARG;
+    *ptr = nullptr;
+
     DWORD num_stream = 0;
     if (auto hr = presentation->GetStreamDescriptorCount(&num_stream); SUCCEEDED(hr) == false)
         return hr;
@@ -366,13 +370,14 @@ HRESULT configure(com_ptr<IMFStreamDescriptor> stream) noexcept {
     return handler->SetCurrentMediaType(type.get());
 }
 
-auto read_samples(com_ptr<IMFSourceReader> source_reader, //
-                  DWORD& index, DWORD& flags, LONGLONG& timestamp, LONGLONG& duration) noexcept(false)
-    -> generator<com_ptr<IMFSample>> {
-    const auto stream = static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
+auto read_samples(com_ptr<IMFSourceReader> source_reader, DWORD& stream_index, DWORD& flags,
+                  LONGLONG& timestamp) noexcept(false) -> generator<com_ptr<IMFSample>> {
+    const auto reader_stream = static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
     while (true) {
         com_ptr<IMFSample> input_sample{};
-        if (auto hr = source_reader->ReadSample(stream, 0, &index, &flags, &timestamp, input_sample.put()); FAILED(hr))
+        if (auto hr = source_reader->ReadSample(reader_stream, 0, //
+                                                &stream_index, &flags, &timestamp, input_sample.put());
+            FAILED(hr))
             throw winrt::hresult_error{hr};
 
         if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
@@ -438,7 +443,6 @@ auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, //
     DWORD index{};
     DWORD flags{};
     LONGLONG timestamp{}; // unit 100-nanosecond
-    LONGLONG duration{};
     if (ec = input_sample->SetSampleTime(timestamp); FAILED(ec))
         co_return;
 
@@ -469,9 +473,7 @@ auto process(com_ptr<IMFTransform> transform, DWORD istream, DWORD ostream, com_
     DWORD index{};
     DWORD flags{};
     LONGLONG timestamp{}; // unit 100-nanosecond
-    LONGLONG duration{};
-    for (com_ptr<IMFSample> input_sample : read_samples(source_reader, //
-                                                        index, flags, timestamp, duration)) {
+    for (com_ptr<IMFSample> input_sample : read_samples(source_reader, index, flags, timestamp)) {
         input_sample->SetSampleTime(timestamp);
         for (com_ptr<IMFSample> output_sample : process(transform, istream, ostream, input_sample, output_type, ec))
             co_yield output_sample;

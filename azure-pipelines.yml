@@ -57,11 +57,13 @@ jobs:
             vcpkg list
         env:
           platform: $(BuildPlatform)
+        displayName: "Install packages with VcPkg"
 
       - task: CMake@1
         inputs:
           cmakeArgs: .. -A $(cmake_arch) -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$(BuildPlatform)-windows" -DCMAKE_INSTALL_PREFIX=$(install_dir) -DCMAKE_BUILD_TYPE=$(BuildConfiguration) -DBUILD_TESTING=True -DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION=10.0.19041.0
           workingDirectory: "build" # will create a directory
+        displayName: "Configure/Generate VS solution"
 
       - task: VSBuild@1
         inputs:
@@ -73,29 +75,34 @@ jobs:
           msbuildArchitecture: "x64"
           logFileVerbosity: detailed
 
-        # condition: succeededOrFailed()
       - task: CMake@1
         inputs:
           cmakeArgs: --build . --config $(BuildConfiguration) --target install
           workingDirectory: "build"
+        displayName: "Install build artifacts"
+        condition: succeeded()
 
-      # copy DLL in VcPkg (for Debug build)
       - task: CopyFiles@2
         inputs:
-          sourceFolder: "C:/vcpkg/installed/$(vcpkg_target_triplet)/debug/bin"
-          contents: "*.dll"
-          targetFolder: "$(install_dir)/bin"
-          overWrite: true
+          SourceFolder: "C:/vcpkg/installed/$(vcpkg_target_triplet)/debug/bin"
+          Contents: |
+            ?(*.exe|*.dll)
+            *.pdb
+          TargetFolder: "$(install_dir)/bin"
+          OverWrite: true
         condition: in(variables['BuildConfiguration'], 'Debug')
+        displayName: "Copy DLL files from VcPkg (for Debug)"
 
-      # copy DLL in VcPkg (for Release build)
       - task: CopyFiles@2
         inputs:
-          sourceFolder: "C:/vcpkg/installed/$(vcpkg_target_triplet)/bin"
-          contents: "*.dll"
-          targetFolder: "$(install_dir)/bin"
-          overWrite: true
+          SourceFolder: "C:/vcpkg/installed/$(vcpkg_target_triplet)/bin"
+          Contents: |
+            ?(*.exe|*.dll)
+            *.pdb
+          TargetFolder: "$(install_dir)/bin"
+          OverWrite: true
         condition: in(variables['BuildConfiguration'], 'Release')
+        displayName: "Copy DLL files from VcPkg (for Release)"
 
       - task: PowerShell@2
         inputs:
@@ -103,6 +110,7 @@ jobs:
           script: ./media_test_suite.exe --success
           workingDirectory: "$(install_dir)/bin"
         condition: succeeded()
+        displayName: "Run Tests"
 
   - job: Analysis
     dependsOn: Build

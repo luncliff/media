@@ -89,8 +89,9 @@ TEST_CASE("MFCreateSinkWriterFromURL(MPEG4)") {
 
 HRESULT create_test_sink_writer(IMFSinkWriterEx** writer, const fs::path& fpath) {
     com_ptr<IMFAttributes> attrs{};
-    REQUIRE(MFCreateAttributes(attrs.put(), 1) == S_OK);
+    REQUIRE(MFCreateAttributes(attrs.put(), 2) == S_OK);
     REQUIRE(attrs->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE) == S_OK);
+    REQUIRE(attrs->SetUINT32(MF_SINK_WRITER_DISABLE_THROTTLING, TRUE) == S_OK); // this attribute is for test
 
     com_ptr<IMFSinkWriter> sink_writer{};
     REQUIRE(MFCreateSinkWriterFromURL(fpath.c_str(), NULL, attrs.get(), sink_writer.put()) == S_OK);
@@ -114,6 +115,7 @@ TEST_CASE("IMFSinkWriterEx(MPEG4)") {
     DWORD stream_index = 0;
     com_ptr<IMFMediaType> output_type{};
     {
+        // https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-encoder#output-types
         REQUIRE(MFCreateMediaType(output_type.put()) == S_OK);
         REQUIRE(output_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video) == S_OK);
         REQUIRE(output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264) == S_OK);
@@ -121,7 +123,7 @@ TEST_CASE("IMFSinkWriterEx(MPEG4)") {
         REQUIRE(output_type->SetUINT32(MF_MT_AVG_BITRATE, 800'000) == S_OK);
         REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_FRAME_RATE, fps, 1) == S_OK); // 30 fps
         REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, width, height) == S_OK);
-        REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1) == S_OK);
+        //REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1) == S_OK);
         REQUIRE(writer->AddStream(output_type.get(), &stream_index) == S_OK);
     }
 
@@ -133,13 +135,15 @@ TEST_CASE("IMFSinkWriterEx(MPEG4)") {
         REQUIRE(input_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) == S_OK);
         REQUIRE(MFSetAttributeSize(input_type.get(), MF_MT_FRAME_SIZE, width, height) == S_OK);
         REQUIRE(MFSetAttributeRatio(input_type.get(), MF_MT_FRAME_RATE, fps, 1) == S_OK);
-        REQUIRE(MFSetAttributeRatio(input_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1) == S_OK);
+        //REQUIRE(MFSetAttributeRatio(input_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1) == S_OK);
         REQUIRE(writer->SetInputMediaType(stream_index, input_type.get(), NULL) == S_OK);
     }
 
     SECTION("Begin / Flush without WriteSample") {
         REQUIRE(writer->BeginWriting() == S_OK);
         REQUIRE(writer->Flush(stream_index) == S_OK);
+        print(output_type.get());
+        print(input_type.get());
     }
     // todo: SendStreamTick
     SECTION("WriteSample / Finalize") {
@@ -234,15 +238,16 @@ TEST_CASE("Window with Win32 API", "[window][!mayfail]") {
     REQUIRE(background.get() == S_OK);
 }
 
-/// @see https://docs.microsoft.com/en-us/windows/win32/api/mfidl/nn-mfidl-imfmediatypehandler
+// https://docs.microsoft.com/en-us/windows/win32/api/mfidl/nn-mfidl-imfmediatypehandler
+// https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-encoder#output-types
 com_ptr<IMFMediaType> create_test_sink_type(const RECT& region) {
     com_ptr<IMFMediaType> media_type{};
     REQUIRE(MFCreateMediaType(media_type.put()) == S_OK);
     REQUIRE(media_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video) == S_OK);
     REQUIRE(media_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32) == S_OK);
     REQUIRE(media_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) == S_OK);
-    REQUIRE(media_type->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE) == S_OK);
-    REQUIRE(MFSetAttributeRatio(media_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 16, 9) == S_OK);              // 16, 9
+    //REQUIRE(media_type->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE) == S_OK);
+    //REQUIRE(MFSetAttributeRatio(media_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 16, 9) == S_OK);              // 16, 9
     REQUIRE(MFSetAttributeSize(media_type.get(), MF_MT_FRAME_SIZE, region.right, region.bottom) == S_OK); // 640, 360
     REQUIRE(MFSetAttributeRatio(media_type.get(), MF_MT_FRAME_RATE, 30, 1) == S_OK);
     return media_type;

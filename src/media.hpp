@@ -97,9 +97,14 @@ auto get_output_available_types(com_ptr<IMFTransform> transform, DWORD num_outpu
 auto try_input_available_types(com_ptr<IMFTransform> transform, DWORD stream_id, DWORD& type_index) noexcept(false)
     -> generator<com_ptr<IMFMediaType>>;
 
-/// @todo https://docs.microsoft.com/en-us/windows/win32/medfound/mf-source-reader-enable-advanced-video-processing#remarks
+/**
+ * @brief Read `IMFSample`s from `MF_SOURCE_READER_FIRST_VIDEO_STREAM` of the given `IMFSourceReader`
+ * @todo https://docs.microsoft.com/en-us/windows/win32/medfound/mf-source-reader-enable-advanced-video-processing#remarks
+ * 
+ * @note `co_yield`ed `IMFSample`s' timestamp values are already updated in the routine
+ */
 auto read_samples(com_ptr<IMFSourceReader> source_reader, //
-                  DWORD& index, DWORD& flags, LONGLONG& timestamp, LONGLONG& duration) noexcept(false)
+                  DWORD& stream_index, DWORD& flags, LONGLONG& timestamp) noexcept(false)
     -> generator<com_ptr<IMFSample>>;
 
 auto decode(com_ptr<IMFTransform> transform, DWORD ostream, com_ptr<IMFMediaType> output_type, //
@@ -119,14 +124,28 @@ HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& 
 /// @todo mock `CoCreateInstance`
 HRESULT create_reader_callback(IMFSourceReaderCallback** callback) noexcept;
 
+/**
+ * @note `MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING` is `TRUE`
+ * @note `MF_READWRITE_DISABLE_CONVERTERS` is `FALSE`
+ * 
+ * @param callback  if not `nullptr`, redirected to `MF_SOURCE_READER_ASYNC_CALLBACK`
+ * @return HRESULT  from `MFCreateSourceReaderFromMediaSource`
+ */
 HRESULT create_source_reader(com_ptr<IMFMediaSource> source, com_ptr<IMFSourceReaderCallback> callback,
                              IMFSourceReader** reader) noexcept;
 
+/**
+ * @brief Get the first available `IMFStreamDescriptor`
+ * 
+ * @param ptr   Will be reset to `nullptr` if there is no available stream descriptor
+ */
 HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr) noexcept;
 
-/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
-/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types
-/// @see https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video
+/**
+ * @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
+ * @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-media-types
+ * @see https://docs.microsoft.com/en-us/windows/win32/medfound/about-yuv-video
+ */
 HRESULT configure(com_ptr<IMFStreamDescriptor> stream) noexcept;
 
 std::string to_string(const GUID& guid) noexcept;

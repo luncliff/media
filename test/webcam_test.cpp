@@ -5,6 +5,7 @@
 #include <media.hpp>
 #define CATCH_CONFIG_WINDOWS_CRTDBG
 #include <catch2/catch.hpp>
+#include <fmt/chrono.h>
 #include <spdlog/spdlog.h>
 
 using namespace std;
@@ -201,4 +202,94 @@ TEST_CASE("IMFActivate(IMFSourceReaderCallback) - 2", "[!mayfail]") {
         REQUIRE(reader->Flush(reader_stream) == S_OK);
         SleepEx(500, true);
     }
+}
+
+// read https://stackoverflow.com/q/44402898
+TEST_CASE("Redirect IMFSamples from IMFActivate", "[!mayfail]") {
+    auto on_return = media_startup();
+
+    com_ptr<IMFSinkWriterEx> writer{};
+    REQUIRE(create_test_sink_writer(writer.put(), fs::current_path() / L"webcam1.mp4") == S_OK);
+    com_ptr<IMFActivate> device{};
+    REQUIRE(get_test_device(device) == S_OK);
+    com_ptr<IMFMediaSourceEx> source{};
+    REQUIRE(device->ActivateObject(__uuidof(IMFMediaSourceEx), source.put_void()) == S_OK);
+    auto on_return2 = gsl::finally([device]() { device->ShutdownObject(); });
+
+    const auto reader_stream = static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
+    com_ptr<IMFSourceReader> reader{};
+    REQUIRE(create_source_reader(source, nullptr, reader.put()) == S_OK);
+
+    com_ptr<IMFMediaType> source_type{};
+    REQUIRE(reader->GetNativeMediaType(reader_stream, 0, source_type.put()) == S_OK);
+    REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_I420) == S_OK);
+
+    // we want to be simple. there must be no dynamic format change
+    UINT32 fixed = FALSE;
+    REQUIRE(source_type->GetUINT32(MF_MT_FIXED_SIZE_SAMPLES, &fixed) == S_OK);
+    REQUIRE(fixed);
+
+    // https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-encoder#output-types
+    // https://toolstud.io/video/bitrate.php
+    com_ptr<IMFMediaType> output_type{};
+    REQUIRE(MFCreateMediaType(output_type.put()) == S_OK);
+    REQUIRE(output_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video) == S_OK);
+    REQUIRE(output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264) == S_OK);
+    REQUIRE(output_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) == S_OK);
+
+    UINT32 fps_num = 0, fps_denom = 1;
+    REQUIRE(MFGetAttributeRatio(source_type.get(), MF_MT_FRAME_RATE, &fps_num, &fps_denom) == S_OK);
+    REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_FRAME_RATE, fps_num, fps_denom) == S_OK);
+
+    UINT32 width = 0, height = 0;
+    REQUIRE(MFGetAttributeSize(source_type.get(), MF_MT_FRAME_SIZE, &width, &height) == S_OK);
+    REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, width, height) == S_OK);
+    //UINT32 image_size = 0;
+    //REQUIRE(MFCalculateImageSize(MFVideoFormat_I420, width, height, &image_size) == S_OK);
+    const auto fps = static_cast<float>(fps_num) / fps_denom;
+    CAPTURE(width, height, fps);
+    // todo: calculate min/max bitrate
+    REQUIRE(output_type->SetUINT32(MF_MT_AVG_BITRATE, 800'000) == S_OK);
+
+    print(output_type.get());
+    print(source_type.get());
+
+    DWORD writer_stream_index = 0;
+    REQUIRE(writer->AddStream(output_type.get(), &writer_stream_index) == S_OK);
+    REQUIRE(writer->SetInputMediaType(writer_stream_index, source_type.get(), NULL) == S_OK);
+
+    size_t count = 0;
+    REQUIRE(writer->BeginWriting() == S_OK);
+
+    DWORD stream_index = 0;
+    DWORD flags = 0;
+    LONGLONG timestamp0{}, timestamp{}; // 100-nanosecond unit
+    for (auto sample : read_samples(reader, stream_index, flags, timestamp)) {
+        if (++count == 100) // expect about 10 sec video output
+            break;
+        if (timestamp0 == 0)
+            timestamp0 = timestamp;
+
+        // todo: calculation of sample duration
+        //const auto duration = timestamp - timestamp0;
+        //timestamp0 = timestamp;
+        const auto duration = 0;
+        if (auto hr = sample->SetSampleDuration(duration)) {
+            CAPTURE(flags, timestamp);
+            CAPTURE(count);
+            FAIL(hr);
+        }
+        switch (auto hr = writer->WriteSample(writer_stream_index, sample.get())) {
+        case MF_E_BUFFERTOOSMALL:
+            spdlog::warn("MF_E_BUFFERTOOSMALL"); // todo: sleep + retry?
+        case S_OK:
+            continue;
+        default:
+            FAIL(hr);
+        }
+    }
+    const auto elapsed =
+        chrono::duration_cast<chrono::milliseconds>(chrono::nanoseconds{100} * (timestamp - timestamp0));
+    spdlog::debug("total elapsed: {}", elapsed);
+    REQUIRE(writer->Finalize() == S_OK);
 }

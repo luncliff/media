@@ -57,9 +57,7 @@ HRESULT consume(com_ptr<IMFSourceReader> source_reader, com_ptr<IMFTransform> tr
     DWORD index{};
     DWORD flags{};
     LONGLONG timestamp{}; // unit 100-nanosecond
-    LONGLONG duration{};
-    for (com_ptr<IMFSample> input_sample : read_samples(source_reader, //
-                                                        index, flags, timestamp, duration)) {
+    for (com_ptr<IMFSample> input_sample : read_samples(source_reader, index, flags, timestamp)) {
         switch (auto hr = transform->ProcessInput(istream, input_sample.get(), 0)) {
         case S_OK: // MF_E_TRANSFORM_TYPE_NOT_SET, MF_E_NO_SAMPLE_DURATION, MF_E_NO_SAMPLE_TIMESTAMP
             break;
@@ -152,9 +150,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
         DWORD index{};
         DWORD flags{};
         LONGLONG timestamp{}; // unit 100-nanosecond
-        LONGLONG duration{};
-        for (com_ptr<IMFSample> input_sample : read_samples(source_reader, //
-                                                            index, flags, timestamp, duration)) {
+        for (com_ptr<IMFSample> input_sample : read_samples(source_reader, index, flags, timestamp)) {
             switch (auto hr = transform->ProcessInput(istream, input_sample.get(), 0)) {
             case S_OK: // MF_E_TRANSFORM_TYPE_NOT_SET, MF_E_NO_SAMPLE_DURATION, MF_E_NO_SAMPLE_TIMESTAMP
                 break;
@@ -258,13 +254,13 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
                     }
                     // ...
                     output_type = nullptr;
-                    if (auto hr = transform->GetOutputAvailableType(output.dwStreamID, 0, output_type.put()))
-                        FAIL(hr);
+                    if (auto ec = transform->GetOutputAvailableType(output.dwStreamID, 0, output_type.put()))
+                        FAIL(ec);
                     // specify the format we want ...
-                    if (auto hr = output_type->SetGUID(MF_MT_SUBTYPE, desired_subtype))
+                    if (auto ec = output_type->SetGUID(MF_MT_SUBTYPE, desired_subtype))
                         FAIL(hr);
-                    if (auto hr = transform->SetOutputType(0, output_type.get(), 0))
-                        FAIL(hr);
+                    if (auto ec = transform->SetOutputType(0, output_type.get(), 0))
+                        FAIL(ec);
                     continue;
                 }
                 if (hr == E_FAIL)
@@ -420,15 +416,17 @@ HRESULT configure_type_bypass(com_ptr<IMFTransform> transform, com_ptr<IMFMediaT
     if (auto hr = MFGetAttributeSize(input_type.get(), MF_MT_FRAME_SIZE, &w, &h); FAILED(hr))
         return hr;
 
+    HRESULT hr = S_OK;
     DWORD otype{};
     for (auto candidate : try_output_available_types(transform, ostream, otype)) {
-        if (auto hr = MFSetAttributeSize(candidate.get(), MF_MT_FRAME_SIZE, w, h); FAILED(hr))
+        if (hr = MFSetAttributeSize(candidate.get(), MF_MT_FRAME_SIZE, w, h); FAILED(hr))
             return hr;
         spdlog::debug("changinged output candidate frame size");
         print(candidate.get());
-        return transform->SetOutputType(ostream, candidate.get(), 0);
+        hr = transform->SetOutputType(ostream, candidate.get(), 0);
+        break;
     }
-    return E_FAIL; // there was no available type...
+    return hr; // there can be no available type...?
 }
 
 // see https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer

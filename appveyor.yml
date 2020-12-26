@@ -47,7 +47,7 @@ build_script:
         -DCMAKE_BUILD_TYPE="$env:CONFIGURATION" `
         -DCMAKE_INSTALL_PREFIX="$env:INSTALL_PATH" `
         -DCMAKE_TOOLCHAIN_FILE="C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$env:VCPKG_TARGET_TRIPLET" `
-        -DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION=10.0.18362.0
+        -DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION="10.0.18362.0"
   - ps: cmake --build . --config $env:CONFIGURATION --target install
 
 test_script:

@@ -270,17 +270,43 @@ void print(gsl::not_null<IMFMediaType*> media_type) noexcept {
 
     if (major == MFMediaType_Video) {
         GUID subtype{};
-        if SUCCEEDED (media_type->GetGUID(MF_MT_SUBTYPE, &subtype)) {
+        if SUCCEEDED (media_type->GetGUID(MF_MT_SUBTYPE, &subtype))
             spdlog::info("  subtype: {}", to_readable(subtype));
+
+        UINT32 value = FALSE;
+        if SUCCEEDED (media_type->GetUINT32(MF_MT_COMPRESSED, &value))
+            spdlog::info("  compressed: {}", static_cast<bool>(value));
+        if SUCCEEDED (media_type->GetUINT32(MF_MT_FIXED_SIZE_SAMPLES, &value))
+            spdlog::info("  fixed_size: {}", static_cast<bool>(value));
+
+        if SUCCEEDED (media_type->GetUINT32(MF_MT_AVG_BITRATE, &value))
+            spdlog::info("  bitrate: {}", value);
+        if SUCCEEDED (media_type->GetUINT32(MF_MT_INTERLACE_MODE, &value)) {
+            auto report = [](gsl::czstring<> txt) { spdlog::info("  interlace: {}", txt); };
+            switch (value) {
+            case MFVideoInterlace_MixedInterlaceOrProgressive:
+                report("mixed_interlace_or_progressive");
+                break;
+            case MFVideoInterlace_Progressive:
+                report("progressive");
+                break;
+            case MFVideoInterlace_Unknown:
+            default:
+                report("unknown");
+                break;
+            }
         }
+
+        UINT32 num = 0, denom = 1;
+        if SUCCEEDED (MFGetAttributeRatio(media_type, MF_MT_FRAME_RATE, &num, &denom))
+            spdlog::info("  fps: {}", static_cast<float>(num) / denom);
+        if SUCCEEDED (MFGetAttributeRatio(media_type, MF_MT_PIXEL_ASPECT_RATIO, &num, &denom))
+            spdlog::info("  aspect_ratio: {}", static_cast<float>(num) / denom);
+
         UINT32 w = 0, h = 0;
         if SUCCEEDED (MFGetAttributeSize(media_type, MF_MT_FRAME_SIZE, &w, &h)) {
             spdlog::info("  width: {}", w);
             spdlog::info("  height: {}", h);
-        }
-        UINT32 num = 0, denom = 1;
-        if SUCCEEDED (MFGetAttributeRatio(media_type, MF_MT_FRAME_RATE, &num, &denom)) {
-            spdlog::info("  fps: {}", static_cast<float>(num) / denom);
         }
     }
 }
