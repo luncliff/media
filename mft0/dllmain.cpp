@@ -28,7 +28,7 @@
 #include "Mft0Impl.h"
 #include "Mft0clsid.h"
 #include "stdafx.h"
-#include <wrl\module.h>
+#include <wrl/module.h>
 
 using namespace Microsoft::WRL;
 
@@ -38,98 +38,105 @@ volatile ULONG g_cRefModule = 0;
 // Handle to the DLL's module
 HMODULE g_hModule = NULL;
 
-ULONG DllAddRef() { return InterlockedIncrement(&g_cRefModule); }
+ULONG DllAddRef() {
+    return InterlockedIncrement(&g_cRefModule);
+}
 
-ULONG DllRelease() { return InterlockedDecrement(&g_cRefModule); }
+ULONG DllRelease() {
+    return InterlockedDecrement(&g_cRefModule);
+}
 
 class CClassFactory : public IClassFactory {
-public:
-  static HRESULT CreateInstance(REFCLSID clsid, REFIID riid,
-                                _COM_Outptr_ void **ppv) {
-    *ppv = NULL;
+  public:
+    static HRESULT CreateInstance(REFCLSID clsid, REFIID riid, _COM_Outptr_ void** ppv) {
+        *ppv = NULL;
 
-    HRESULT hr = CLASS_E_CLASSNOTAVAILABLE;
+        HRESULT hr = CLASS_E_CLASSNOTAVAILABLE;
 
-    if (IsEqualGUID(clsid, CLSID_AvsCamMft0)) {
-      IClassFactory *pClassFactory = new (std::nothrow) CClassFactory();
-      if (!pClassFactory) {
-        return E_OUTOFMEMORY;
-      }
-      hr = pClassFactory->QueryInterface(riid, ppv);
-      pClassFactory->Release();
-    }
-    return hr;
-  }
-
-  // IUnknown methods
-  IFACEMETHODIMP QueryInterface(REFIID riid, void **ppvObject) {
-    HRESULT hr = S_OK;
-
-    if (ppvObject == NULL) {
-      return E_POINTER;
+        if (IsEqualGUID(clsid, CLSID_AvsCamMft0)) {
+            IClassFactory* pClassFactory = new (std::nothrow) CClassFactory();
+            if (!pClassFactory) {
+                return E_OUTOFMEMORY;
+            }
+            hr = pClassFactory->QueryInterface(riid, ppv);
+            pClassFactory->Release();
+        }
+        return hr;
     }
 
-    if (riid == IID_IUnknown) {
-      *ppvObject = (IUnknown *)this;
-    } else if (riid == IID_IClassFactory) {
-      *ppvObject = (IClassFactory *)this;
-    } else {
-      *ppvObject = NULL;
-      return E_NOINTERFACE;
+    // IUnknown methods
+    IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) {
+        HRESULT hr = S_OK;
+
+        if (ppvObject == NULL) {
+            return E_POINTER;
+        }
+
+        if (riid == IID_IUnknown) {
+            *ppvObject = (IUnknown*)this;
+        } else if (riid == IID_IClassFactory) {
+            *ppvObject = (IClassFactory*)this;
+        } else {
+            *ppvObject = NULL;
+            return E_NOINTERFACE;
+        }
+
+        AddRef();
+
+        return hr;
     }
 
-    AddRef();
-
-    return hr;
-  }
-
-  IFACEMETHODIMP_(ULONG) AddRef() { return InterlockedIncrement(&m_cRef); }
-
-  IFACEMETHODIMP_(ULONG) Release() {
-    long cRef = InterlockedDecrement(&m_cRef);
-    if (cRef == 0) {
-      delete this;
+    IFACEMETHODIMP_(ULONG) AddRef() {
+        return InterlockedIncrement(&m_cRef);
     }
-    return cRef;
-  }
 
-  // IClassFactory Methods
-  IFACEMETHODIMP CreateInstance(_In_ IUnknown *punkOuter, _In_ REFIID riid,
-                                _Outptr_ void **ppv) {
-    return punkOuter ? CLASS_E_NOAGGREGATION : MFT0CreateInstance(riid, ppv);
-  }
-
-  IFACEMETHODIMP LockServer(BOOL fLock) {
-    if (fLock) {
-      DllAddRef();
-    } else {
-      DllRelease();
+    IFACEMETHODIMP_(ULONG) Release() {
+        long cRef = InterlockedDecrement(&m_cRef);
+        if (cRef == 0) {
+            delete this;
+        }
+        return cRef;
     }
-    return S_OK;
-  }
 
-private:
-  CClassFactory() : m_cRef(1) { DllAddRef(); }
+    // IClassFactory Methods
+    IFACEMETHODIMP CreateInstance(_In_ IUnknown* punkOuter, _In_ REFIID riid, _Outptr_ void** ppv) {
+        return punkOuter ? CLASS_E_NOAGGREGATION : MFT0CreateInstance(riid, ppv);
+    }
 
-  ~CClassFactory() { DllRelease(); }
+    IFACEMETHODIMP LockServer(BOOL fLock) {
+        if (fLock) {
+            DllAddRef();
+        } else {
+            DllRelease();
+        }
+        return S_OK;
+    }
 
-  long m_cRef;
+  private:
+    CClassFactory() : m_cRef(1) {
+        DllAddRef();
+    }
+
+    ~CClassFactory() {
+        DllRelease();
+    }
+
+    long m_cRef;
 };
 
 STDAPI_(BOOL)
-DllMain(_In_ HINSTANCE hinst, DWORD reason, _In_opt_ void *) {
-  if (reason == DLL_PROCESS_ATTACH) {
-    g_hModule = (HMODULE)hinst;
-    DisableThreadLibraryCalls(hinst);
-  }
-  return TRUE;
+DllMain(_In_ HINSTANCE hinst, DWORD reason, _In_opt_ void*) {
+    if (reason == DLL_PROCESS_ATTACH) {
+        g_hModule = (HMODULE)hinst;
+        DisableThreadLibraryCalls(hinst);
+    }
+    return TRUE;
 }
 
 __control_entrypoint(DllExport) STDAPI DllCanUnloadNow() {
-  return (g_cRefModule == 0) ? S_OK : S_FALSE;
+    return (g_cRefModule == 0) ? S_OK : S_FALSE;
 }
 
-_Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid,
-                                        _Outptr_ LPVOID FAR *ppv) {
-  return CClassFactory::CreateInstance(rclsid, riid, ppv);
+_Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID FAR* ppv) {
+    return CClassFactory::CreateInstance(rclsid, riid, ppv);
 }

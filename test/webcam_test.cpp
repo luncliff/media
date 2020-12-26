@@ -12,7 +12,6 @@ using namespace std;
 namespace fs = std::filesystem;
 
 fs::path get_asset_dir() noexcept;
-HRESULT create_test_sink_writer(IMFSinkWriterEx** writer, const fs::path& fpath);
 
 // there might be no device in test environment. if the case, it's an expected failure
 TEST_CASE("IMFActivate(IMFMediaSourceEx,IMFMediaType)", "[!mayfail]") {
@@ -204,12 +203,12 @@ TEST_CASE("IMFActivate(IMFSourceReaderCallback) - 2", "[!mayfail]") {
     }
 }
 
-// read https://stackoverflow.com/q/44402898
-TEST_CASE("Redirect IMFSamples from IMFActivate", "[!mayfail]") {
+// todo: write a TC with https://stackoverflow.com/q/44402898
+TEST_CASE("IMFActivate to MP4", "[!mayfail]") {
     auto on_return = media_startup();
 
     com_ptr<IMFSinkWriterEx> writer{};
-    REQUIRE(create_test_sink_writer(writer.put(), fs::current_path() / L"webcam1.mp4") == S_OK);
+    REQUIRE(create_sink_writer(writer.put(), fs::current_path() / L"webcam1.mp4") == S_OK);
     com_ptr<IMFActivate> device{};
     REQUIRE(get_test_device(device) == S_OK);
     com_ptr<IMFMediaSourceEx> source{};
@@ -292,4 +291,45 @@ TEST_CASE("Redirect IMFSamples from IMFActivate", "[!mayfail]") {
         chrono::duration_cast<chrono::milliseconds>(chrono::nanoseconds{100} * (timestamp - timestamp0));
     spdlog::debug("total elapsed: {}", elapsed);
     REQUIRE(writer->Finalize() == S_OK);
+}
+
+// todo: write a TC with https://stackoverflow.com/q/44402898
+TEST_CASE("IMFActivate to MP4 (simplified)", "[!mayfail]") {
+    auto on_return = media_startup();
+
+    com_ptr<IMFActivate> device{};
+    REQUIRE(get_test_device(device) == S_OK);
+
+    capture_session_t session{device};
+    REQUIRE(session.open(nullptr, static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM)) == S_OK);
+
+    com_ptr<IMFMediaType> source_type = session.get_source_type();
+    REQUIRE(source_type);
+    REQUIRE(source_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_I420) == S_OK);
+
+    com_ptr<IMFSourceReader> reader = session.get_reader();
+    REQUIRE(reader);
+
+    h264_video_writer_t writer{fs::current_path() / L"webcam2.mp4"};
+    REQUIRE(writer.use_source(source_type) == S_OK);
+
+    size_t count = 0;
+    REQUIRE(writer.begin() == S_OK);
+
+    DWORD stream_index = 0;
+    DWORD flags = 0;
+    LONGLONG timestamp{}; // 100-nanosecond unit
+    for (auto sample : read_samples(reader, stream_index, flags, timestamp)) {
+        if (++count == 100) // expect about 10 sec video output
+            break;
+
+        switch (auto hr = writer.write(sample.get())) {
+        case S_OK:
+            continue;
+        case MF_E_BUFFERTOOSMALL:
+            spdlog::warn("MF_E_BUFFERTOOSMALL");
+        default:
+            FAIL(hr);
+        }
+    }
 }

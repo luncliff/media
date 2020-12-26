@@ -22,7 +22,7 @@
 
 #if (NTDDI_VERSION <= NTDDI_WIN7)
 // TODO: disable the MFT0 conditional to the target system version
-#pragma message(                                                               \
+#pragma message(                                                                                                       \
     "MFT0 is in not supported in this target Windows version - Change project settings to target a newer version of Windows")
 #endif
 #include <wrl.h>
@@ -35,5 +35,7 @@
 #include <mferror.h>
 #include <mfidl.h>
 #include <vector>
+
+#include <wil/resource.h>
 
 using namespace Microsoft::WRL;

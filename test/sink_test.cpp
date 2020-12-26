@@ -98,6 +98,16 @@ HRESULT create_test_sink_writer(IMFSinkWriterEx** writer, const fs::path& fpath)
     return sink_writer->QueryInterface(writer);
 }
 
+SCENARIO("IMFSinkWriterEx::Finalize") {
+    auto on_return = media_startup();
+    com_ptr<IMFSinkWriterEx> writer{};
+    REQUIRE(create_test_sink_writer(writer.put(), fs::current_path() / L"output4.mp4") == S_OK);
+
+    GIVEN("untouched") {
+        REQUIRE(writer->Finalize() == MF_E_INVALIDREQUEST);
+    }
+}
+
 // https://docs.microsoft.com/en-us/windows/win32/medfound/using-the-sink-writer
 // https://docs.microsoft.com/en-us/windows/win32/medfound/tutorial--using-the-sink-writer-to-encode-video#define-the-video-format
 // https://stackoverflow.com/a/24891959
@@ -105,7 +115,7 @@ TEST_CASE("IMFSinkWriterEx(MPEG4)") {
     auto on_return = media_startup();
 
     com_ptr<IMFSinkWriterEx> writer{};
-    REQUIRE(create_test_sink_writer(writer.put(), fs::current_path() / L"output4.mp4") == S_OK);
+    REQUIRE(create_test_sink_writer(writer.put(), fs::current_path() / L"output5.mp4") == S_OK);
 
     constexpr auto total_duration = 10'000'000;
     constexpr auto fps = 30;
@@ -124,8 +134,8 @@ TEST_CASE("IMFSinkWriterEx(MPEG4)") {
         REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_FRAME_RATE, fps, 1) == S_OK); // 30 fps
         REQUIRE(MFSetAttributeSize(output_type.get(), MF_MT_FRAME_SIZE, width, height) == S_OK);
         //REQUIRE(MFSetAttributeRatio(output_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1) == S_OK);
-        REQUIRE(writer->AddStream(output_type.get(), &stream_index) == S_OK);
     }
+    REQUIRE(writer->AddStream(output_type.get(), &stream_index) == S_OK);
 
     com_ptr<IMFMediaType> input_type{};
     {
@@ -136,17 +146,20 @@ TEST_CASE("IMFSinkWriterEx(MPEG4)") {
         REQUIRE(MFSetAttributeSize(input_type.get(), MF_MT_FRAME_SIZE, width, height) == S_OK);
         REQUIRE(MFSetAttributeRatio(input_type.get(), MF_MT_FRAME_RATE, fps, 1) == S_OK);
         //REQUIRE(MFSetAttributeRatio(input_type.get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1) == S_OK);
-        REQUIRE(writer->SetInputMediaType(stream_index, input_type.get(), NULL) == S_OK);
     }
+    REQUIRE(writer->SetInputMediaType(stream_index, input_type.get(), NULL) == S_OK);
 
     SECTION("Begin / Flush without WriteSample") {
         REQUIRE(writer->BeginWriting() == S_OK);
         REQUIRE(writer->Flush(stream_index) == S_OK);
-        print(output_type.get());
-        print(input_type.get());
+        REQUIRE(writer->Finalize() == MF_E_SINK_NO_SAMPLES_PROCESSED);
     }
+
     // todo: SendStreamTick
     SECTION("WriteSample / Finalize") {
+        print(output_type.get());
+        print(input_type.get());
+
         REQUIRE(writer->BeginWriting() == S_OK);
         auto bufsz = 4 * width * height;
         CAPTURE(bufsz);

@@ -299,7 +299,7 @@ SCENARIO("MFTransform - Color Converter DSP", "[dsp]") {
 
     auto make_output_RGB32 = [](com_ptr<IMFMediaType> input) -> com_ptr<IMFMediaType> {
         com_ptr<IMFMediaType> output{};
-        REQUIRE(make_video_output_RGB32(output.put()) == S_OK);
+        REQUIRE(make_video_RGB32(output.put()) == S_OK);
         UINT32 w = 0, h = 0;
         REQUIRE(MFGetAttributeSize(input.get(), MF_MT_FRAME_SIZE, &w, &h) == S_OK);
         REQUIRE(MFSetAttributeSize(output.get(), MF_MT_FRAME_SIZE, w, h) == S_OK);
@@ -310,7 +310,7 @@ SCENARIO("MFTransform - Color Converter DSP", "[dsp]") {
     };
     auto make_output_RGB565 = [](com_ptr<IMFMediaType> input) -> com_ptr<IMFMediaType> {
         com_ptr<IMFMediaType> output{};
-        REQUIRE(make_video_output_RGB565(output.put()) == S_OK);
+        REQUIRE(make_video_RGB565(output.put()) == S_OK);
         UINT32 w = 0, h = 0;
         REQUIRE(MFGetAttributeSize(input.get(), MF_MT_FRAME_SIZE, &w, &h) == S_OK);
         REQUIRE(MFSetAttributeSize(output.get(), MF_MT_FRAME_SIZE, w, h) == S_OK);

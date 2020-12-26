@@ -1,9 +1,13 @@
 #include <media.hpp>
+
+#include <fmt/format.h> // @todo FMT_COMPILE
 #include <spdlog/spdlog.h>
 
 #include <dshowasf.h>
 
 using namespace std;
+
+void print(const winrt::hresult_error& ex) noexcept;
 
 string w2mb(wstring_view in) noexcept(false) {
     string out{};
@@ -237,7 +241,7 @@ void print(gsl::not_null<IMFActivate*> device) noexcept {
     if SUCCEEDED (get_name(device, txt))
         spdlog::info("  name: {}", winrt::to_string(txt));
     if SUCCEEDED (get_string(device, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, txt))
-        spdlog::debug("  symlink: '{}'", winrt::to_string(txt));
+        spdlog::info("  symlink: '{}'", winrt::to_string(txt));
 
     UINT32 is_hardware = FALSE;
     if SUCCEEDED (device->GetUINT32(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_HW_SOURCE, &is_hardware))
@@ -245,7 +249,7 @@ void print(gsl::not_null<IMFActivate*> device) noexcept {
 
     UINT32 max_buffers = 0;
     if SUCCEEDED (device->GetUINT32(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_MAX_BUFFERS, &max_buffers))
-        spdlog::debug("  max_buffers: {}", max_buffers);
+        spdlog::info("  max_buffers: {}", max_buffers);
 
     //UINT32 count = 0;
     //if SUCCEEDED (device->GetBlobSize(MF_DEVSOURCE_ATTRIBUTE_MEDIA_TYPE, &count)) {
@@ -310,6 +314,8 @@ void print(gsl::not_null<IMFMediaType*> media_type) noexcept {
         }
     }
 }
+
+GSL_SUPPRESS(es .78)
 void print_CLSID_CResizerDMO(gsl::not_null<IMFTransform*> transform, const GUID& iid) noexcept {
     spdlog::info("- transform:");
     spdlog::info("  - iid: {}", to_readable(iid));
@@ -344,14 +350,14 @@ void print_CLSID_CResizerDMO(gsl::not_null<IMFTransform*> transform, const GUID&
         }
     };
     com_ptr<IMFMediaType> input{};
-    if (auto hr = transform->GetInputCurrentType(istream, input.put()))
+    if (auto hr = transform->GetInputCurrentType(istream, input.put()); FAILED(hr))
         spdlog::error("transform->GetInputCurrentType: {:#08x}", hr);
     else {
         spdlog::info("  - input_type:");
         print(input.get());
     }
     com_ptr<IMFMediaType> output{};
-    if (auto hr = transform->GetOutputCurrentType(ostream, output.put()))
+    if (auto hr = transform->GetOutputCurrentType(ostream, output.put()); FAILED(hr))
         spdlog::error("transform->GetOutputCurrentType: {:#08x}", hr);
     else {
         spdlog::info("  - output_type:");
@@ -382,7 +388,7 @@ void print_CLSID_CColorConvertDMO(gsl::not_null<IMFTransform*> transform, const 
                 spdlog::info("    size: {}", info.cbSize);
                 spdlog::info("    alignment: {}", info.cbAlignment);
                 spdlog::info("    flags: {}", info.dwFlags);
-                spdlog::debug("    max_latency: {}", info.hnsMaxLatency);
+                spdlog::info("    max_latency: {}", info.hnsMaxLatency);
             }
 
             DWORD ostream = ostreams[0];
@@ -391,10 +397,10 @@ void print_CLSID_CColorConvertDMO(gsl::not_null<IMFTransform*> transform, const 
             for (auto hr = transform->GetOutputAvailableType(ostream, output_index++, output_type.put()); SUCCEEDED(hr);
                  hr = transform->GetOutputAvailableType(ostream, output_index++, output_type.put())) {
                 if (output_index == 1)
-                    spdlog::debug("    output_available_type:");
+                    spdlog::info("    output_available_type:");
                 GUID subtype{};
                 output_type->GetGUID(MF_MT_SUBTYPE, &subtype);
-                spdlog::debug("    - {}", to_readable(subtype));
+                spdlog::info("    - {}", to_readable(subtype));
                 output_type = nullptr;
             }
         }
@@ -404,7 +410,7 @@ void print_CLSID_CColorConvertDMO(gsl::not_null<IMFTransform*> transform, const 
         for (auto i = 0u; i < num_output; ++i) {
             const auto ostream = ostreams[i];
             MFT_OUTPUT_STREAM_INFO info{};
-            if (auto hr = transform->GetOutputStreamInfo(ostream, &info)) {
+            if (auto hr = transform->GetOutputStreamInfo(ostream, &info); FAILED(hr)) {
                 spdlog::error("transform->GetOutputStreamInfo: {:#08x}", hr);
             } else {
                 spdlog::info("  - output_stream:");

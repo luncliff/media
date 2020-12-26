@@ -75,13 +75,9 @@ HRESULT configure_source_rectangle(gsl::not_null<IPropertyStore*> props, const R
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/videoresizer
 HRESULT configure_destination_rectangle(gsl::not_null<IPropertyStore*> props, const RECT& rect) noexcept;
 
-/**
- * @todo: configure MF_MT_FRAME_SIZE, MF_MT_FRAME_RATE
- * @todo: configure MF_MT_PIXEL_ASPECT_RATIO
- */
-HRESULT make_video_output_RGB32(IMFMediaType** ptr) noexcept;
-
-HRESULT make_video_output_RGB565(IMFMediaType** ptr) noexcept;
+HRESULT make_video_RGB32(gsl::not_null<IMFMediaType**> ptr) noexcept;
+HRESULT make_video_RGB565(gsl::not_null<IMFMediaType**> ptr) noexcept;
+HRESULT make_video_type(gsl::not_null<IMFMediaType**> ptr, const GUID& subtype) noexcept;
 
 HRESULT try_output_type(com_ptr<IMFTransform> transform, DWORD ostream, const GUID& desired,
                         IMFMediaType** output_type) noexcept;
@@ -121,12 +117,18 @@ HRESULT create_single_buffer_sample(IMFSample** sample, DWORD bufsz);
 HRESULT create_and_copy_single_buffer_sample(IMFSample* src, IMFSample** dst);
 HRESULT get_transform_output(IMFTransform* transform, IMFSample** sample, BOOL& flushed);
 
+/**
+ * @note `MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS` == `TRUE`
+ * @note `MF_SINK_WRITER_DISABLE_THROTTLING` == `FALSE`
+ */
+HRESULT create_sink_writer(IMFSinkWriterEx** writer, const fs::path& fpath) noexcept;
+
 /// @todo mock `CoCreateInstance`
 HRESULT create_reader_callback(IMFSourceReaderCallback** callback) noexcept;
 
 /**
- * @note `MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING` is `TRUE`
- * @note `MF_READWRITE_DISABLE_CONVERTERS` is `FALSE`
+ * @note `MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING` == `TRUE`
+ * @note `MF_READWRITE_DISABLE_CONVERTERS` == `FALSE`
  * 
  * @param callback  if not `nullptr`, redirected to `MF_SOURCE_READER_ASYNC_CALLBACK`
  * @return HRESULT  from `MFCreateSourceReaderFromMediaSource`
@@ -139,7 +141,8 @@ HRESULT create_source_reader(com_ptr<IMFMediaSource> source, com_ptr<IMFSourceRe
  * 
  * @param ptr   Will be reset to `nullptr` if there is no available stream descriptor
  */
-HRESULT get_stream_descriptor(IMFPresentationDescriptor* presentation, IMFStreamDescriptor** ptr) noexcept;
+HRESULT get_stream_descriptor(gsl::not_null<IMFPresentationDescriptor*> presentation,
+                              IMFStreamDescriptor** ptr) noexcept;
 
 /**
  * @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-processor-mft
@@ -170,3 +173,42 @@ void print(gsl::not_null<IMFMediaType*> media_type) noexcept;
  * @note the function may change modify input/output configuration
  */
 void print(gsl::not_null<IMFTransform*> transform, const GUID& iid) noexcept;
+
+class h264_video_writer_t final {
+    com_ptr<IMFSinkWriterEx> writer{}; // expose IMFTransform for each stream
+    com_ptr<IMFMediaType> output_type{};
+    DWORD stream_index = 0;
+
+  public:
+    explicit h264_video_writer_t(const fs::path& fpath) noexcept(false);
+    ~h264_video_writer_t() noexcept;
+    h264_video_writer_t(const h264_video_writer_t&) = delete;
+    h264_video_writer_t(h264_video_writer_t&&) = delete;
+    h264_video_writer_t& operator=(const h264_video_writer_t&) = delete;
+    h264_video_writer_t& operator=(h264_video_writer_t&&) = delete;
+
+    HRESULT use_source(com_ptr<IMFMediaType> input_type) noexcept;
+    HRESULT begin() noexcept;
+    HRESULT write(IMFSample* sample) noexcept;
+};
+
+class capture_session_t final {
+    com_ptr<IMFMediaSourceEx> source{}; // supports D3DManager
+    com_ptr<IMFMediaType> source_type{};
+    com_ptr<IMFSourceReaderEx> reader{}; // expose IMFTransform for each stream
+    com_ptr<IMFSourceReaderCallback> reader_callback{};
+    DWORD reader_stream = static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
+
+  public:
+    explicit capture_session_t(com_ptr<IMFActivate> device) noexcept(false);
+    ~capture_session_t() noexcept;
+    capture_session_t(const capture_session_t&) = delete;
+    capture_session_t(capture_session_t&&) = delete;
+    capture_session_t& operator=(const capture_session_t&) = delete;
+    capture_session_t& operator=(capture_session_t&&) = delete;
+
+    HRESULT open(com_ptr<IMFSourceReaderCallback> callback, DWORD stream) noexcept;
+
+    com_ptr<IMFSourceReader> get_reader() const noexcept;
+    com_ptr<IMFMediaType> get_source_type() const noexcept;
+};

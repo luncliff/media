@@ -25,7 +25,7 @@ check_include_file_cxx("mfapi.h" found_mfapi)
 check_include_file_cxx("wincodecsdk.h" found_codecsdk)
 check_include_file_cxx("d3d11.h" found_d3d11)
 
-# see https://github.com/microsoft/wil
+# see https://github.com/microsoft/wil/wiki/RAII-resource-wrappers
 find_path(WIL_INCLUDE_DIRS "wil/com.h")
 message(STATUS "using WIL: ${WIL_INCLUDE_DIRS}")
 
@@ -50,8 +50,6 @@ PUBLIC
 target_include_directories(media
 PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
-PRIVATE
-    ${WIL_INCLUDE_DIRS}
 )
 
 target_link_libraries(media

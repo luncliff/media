@@ -336,7 +336,7 @@ SCENARIO("MFTransform with ID3D11Device", "[dxva][!mayfail]") {
     REQUIRE(device_manager->ResetDevice(graphics_device.get(), device_manager_token) == S_OK);
 
     com_ptr<IMFMediaType> input_type{};
-    REQUIRE(make_video_output_RGB32(input_type.put()) == S_OK);
+    REQUIRE(make_video_RGB32(input_type.put()) == S_OK);
     REQUIRE(MFSetAttributeSize(input_type.get(), MF_MT_FRAME_SIZE, 1280, 720) == S_OK);
 
     GIVEN("CLSID_VideoProcessorMFT") {
