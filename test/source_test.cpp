@@ -34,7 +34,7 @@ void make_test_source(com_ptr<IMFMediaSourceEx>& source, com_ptr<IMFSourceReader
     case MF_E_INVALIDMEDIATYPE:
         FAIL("MF_E_INVALIDMEDIATYPE");
     default:
-        FAIL(hr);
+        FAIL(to_readable(hr));
     }
 }
 
@@ -51,7 +51,7 @@ TEST_CASE("IMFSourceResolver") {
     MF_OBJECT_TYPE media_object_type{};
     if (auto hr = resolver->CreateObjectFromURL(fpath.c_str(), MF_RESOLUTION_MEDIASOURCE | MF_RESOLUTION_READ, NULL,
                                                 &media_object_type, unknown.put()))
-        FAIL(hr); // MF_E_UNSUPPORTED_SCHEME, MF_E_SOURCERESOLVER_MUTUALLY_EXCLUSIVE_FLAGS
+        FAIL(to_readable(hr)); // MF_E_UNSUPPORTED_SCHEME, MF_E_SOURCERESOLVER_MUTUALLY_EXCLUSIVE_FLAGS
     REQUIRE(media_object_type == MF_OBJECT_MEDIASOURCE);
 
     SECTION("IMFMediaSource") {
@@ -89,7 +89,7 @@ TEST_CASE("MFCreateSourceReader", "[!mayfail]") {
         com_ptr<IMFByteStream> byte_stream{};
         if (auto ec = MFCreateFile(MF_ACCESSMODE_READ, MF_OPENMODE_FAIL_IF_NOT_EXIST, MF_FILEFLAGS_NONE, fpath.c_str(),
                                    byte_stream.put()))
-            FAIL(ec);
+            FAIL(to_readable(ec));
 
         com_ptr<IMFSourceReader> reader{};
         REQUIRE(MFCreateSourceReaderFromByteStream(byte_stream.get(), nullptr, reader.put()) == S_OK);

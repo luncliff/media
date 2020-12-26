@@ -51,12 +51,8 @@ struct critical_section_t final : public CRITICAL_SECTION {
     }
 };
 
-void print(const winrt::hresult_error& ex) noexcept {
-    spdlog::error("hresult {:#x}: {}", static_cast<uint32_t>(ex.code()), winrt::to_string(ex.message()));
-}
-void print(const std::exception& ex) noexcept {
-    spdlog::error(ex.what());
-}
+void print_error(const winrt::hresult_error& ex) noexcept;
+void print_error(const std::exception& ex) noexcept;
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/processing-media-data-with-the-source-reader
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/using-the-source-reader-in-asynchronous-mode
@@ -115,12 +111,12 @@ class verbose_callback_t final : public IMFSourceReaderCallback {
             winrt::check_hresult(sample->GetBufferByIndex(0, buffer.put()));
             DWORD buflen = 0;
             winrt::check_hresult(buffer->GetCurrentLength(&buflen));
-            spdlog::trace("  buflen: {}", buflen);
+            spdlog::debug("  buflen: {}", buflen);
         }
 
-        if (reader == nullptr)
-            return status;
-        return reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL);
+        if (reader)
+            return reader->ReadSample(stream, 0, NULL, NULL, NULL, NULL);
+        return status;
     }
 
   public:
@@ -143,7 +139,6 @@ class verbose_callback_t final : public IMFSourceReaderCallback {
 };
 
 HRESULT create_reader_callback(IMFSourceReaderCallback** ptr) noexcept {
-
     if (ptr == nullptr)
         return E_INVALIDARG;
     try {
@@ -151,10 +146,10 @@ HRESULT create_reader_callback(IMFSourceReaderCallback** ptr) noexcept {
             unknown->AddRef();
         return S_OK;
     } catch (const winrt::hresult_error& ex) {
-        print(ex);
+        print_error(ex);
         return ex.code();
     } catch (const std::exception& ex) {
-        print(ex);
+        print_error(ex);
         return E_FAIL;
     }
 }
@@ -242,10 +237,10 @@ HRESULT create_sink(const fs::path& dirpath, IMFMediaSink** ptr) {
             unknown->AddRef();
         return S_OK;
     } catch (const winrt::hresult_error& ex) {
-        print(ex);
+        print_error(ex);
         return ex.code();
     } catch (const std::exception& ex) {
-        print(ex);
+        print_error(ex);
         return E_FAIL;
     }
 }
@@ -261,7 +256,7 @@ h264_video_writer_t::~h264_video_writer_t() noexcept {
     try {
         winrt::check_hresult(writer->Finalize());
     } catch (const winrt::hresult_error& ex) {
-        print(ex);
+        print_error(ex);
     }
 }
 
@@ -310,7 +305,7 @@ capture_session_t::~capture_session_t() noexcept {
     try {
         winrt::check_hresult(source->Shutdown());
     } catch (const winrt::hresult_error& ex) {
-        print(ex);
+        print_error(ex);
     }
 }
 

@@ -30,7 +30,7 @@ TEST_CASE("MFCreateMPEG4MediaSink") {
     auto fpath = fs::current_path() / "output1.mp4";
     if (auto ec = MFCreateFile(MF_ACCESSMODE_WRITE, MF_OPENMODE_DELETE_IF_EXIST, MF_FILEFLAGS_NOBUFFERING,
                                fpath.c_str(), byte_stream.put()))
-        FAIL(ec);
+        FAIL(to_readable(ec));
 
     // todo: add MF_MT_FRAME_SIZE, MF_MT_PIXEL_ASPECT_RATIO?
     com_ptr<IMFMediaType> video_type{};
@@ -168,22 +168,22 @@ TEST_CASE("IMFSinkWriterEx(MPEG4)") {
         for (LONGLONG time_point = 0; time_point < total_duration; time_point += frame_duration) {
             com_ptr<IMFSample> sample{};
             if (auto hr = create_single_buffer_sample(sample.put(), bufsz))
-                FAIL(hr);
+                FAIL(to_readable(hr));
 
             // The buffer is not touched, so it's current length must be 0.
             // change the value to its capacity so the IMFSinkWriter won't report E_INAVALIDARG
             com_ptr<IMFMediaBuffer> buffer{};
             if (auto hr = sample->GetBufferByIndex(0, buffer.put()))
-                FAIL(hr);
+                FAIL(to_readable(hr));
             if (auto hr = buffer->SetCurrentLength(bufsz))
-                FAIL(hr);
+                FAIL(to_readable(hr));
 
             if (auto hr = sample->SetSampleTime(time_point))
-                FAIL(hr);
+                FAIL(to_readable(hr));
             if (auto hr = sample->SetSampleDuration(frame_duration))
-                FAIL(hr);
+                FAIL(to_readable(hr));
             if (auto hr = writer->WriteSample(stream_index, sample.get()))
-                FAIL(hr);
+                FAIL(to_readable(hr));
             ++count;
         }
         CAPTURE(count == 31); // == fps + 1
@@ -451,7 +451,7 @@ TEST_CASE("IMFMediaSink(MFVideoEVR) - Clock", "[window][!mayfail]") {
         sample->SetSampleDuration(duration);
 
         if (auto ec = stream_sink->ProcessSample(sample.get()))
-            FAIL(ec);
+            FAIL(to_readable(ec));
     }
     REQUIRE(clock->Stop() == S_OK);
 }

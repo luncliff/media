@@ -63,7 +63,8 @@ HRESULT configure_acceleration_H264(gsl::not_null<IMFTransform*> transform) noex
 /// @brief configure D3D11 if the transform supports it
 /// @return E_NOTIMPL, E_FAIL ...
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/hardware-mfts
-HRESULT configure_D3D11_DXGI(gsl::not_null<IMFTransform*> transform, IMFDXGIDeviceManager* device_manager) noexcept;
+HRESULT configure_D3D11_DXGI(gsl::not_null<IMFTransform*> transform,
+                             gsl::not_null<IMFDXGIDeviceManager*> device_manager) noexcept;
 
 /// @brief exactly same sized src/dst rectangle;
 HRESULT configure_rectangle(gsl::not_null<IMFVideoProcessorControl*> control,
@@ -153,8 +154,12 @@ HRESULT configure(com_ptr<IMFStreamDescriptor> stream) noexcept;
 
 std::string to_string(const GUID& guid) noexcept;
 std::string to_readable(const GUID& guid) noexcept;
+std::string to_readable(HRESULT hr) noexcept;
 
 winrt::hstring to_hstring(const GUID& guid) noexcept;
+
+void print_error(winrt::hresult code, std::string&& message) noexcept;
+void print_error(const winrt::hresult_error& ex) noexcept;
 
 /**
  * @brief print description for the `media_type` with logging

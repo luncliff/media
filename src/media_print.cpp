@@ -7,7 +7,15 @@
 
 using namespace std;
 
-void print(const winrt::hresult_error& ex) noexcept;
+void print_error(winrt::hresult code, std::string&& message) noexcept {
+    spdlog::log(spdlog::level::err, "hresult {:#x}: {}", static_cast<uint32_t>(code), message);
+}
+void print_error(const winrt::hresult_error& ex) noexcept {
+    return print_error(ex.code(), winrt::to_string(ex.message()));
+}
+void print_error(const std::exception& ex) noexcept {
+    spdlog::error(ex.what());
+}
 
 string w2mb(wstring_view in) noexcept(false) {
     string out{};
@@ -39,6 +47,10 @@ wstring mb2w(string_view in) noexcept(false) {
         ptr += len; // advance [1...n]
     }
     return out;
+}
+
+std::string to_readable(HRESULT hr) noexcept {
+    return fmt::format("{:#x}", static_cast<uint32_t>(hr));
 }
 
 std::string to_string(const GUID& guid) noexcept {
@@ -266,12 +278,11 @@ void print(gsl::not_null<IMFActivate*> device) noexcept {
 /// @see https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids
 /// @see https://stackoverflow.com/a/9681384
 void print(gsl::not_null<IMFMediaType*> media_type) noexcept {
-    spdlog::info("- media_type:");
-
     GUID major{};
     if (auto hr = media_type->GetGUID(MF_MT_MAJOR_TYPE, &major); FAILED(hr))
-        return spdlog::error("type->GetGUID(MF_MT_MAJOR_TYPE): {:#08x}", hr);
+        return print_error(hr, "MF_MT_MAJOR_TYPE");
 
+    spdlog::info("- media_type:");
     if (major == MFMediaType_Video) {
         GUID subtype{};
         if SUCCEEDED (media_type->GetGUID(MF_MT_SUBTYPE, &subtype))
@@ -286,17 +297,17 @@ void print(gsl::not_null<IMFMediaType*> media_type) noexcept {
         if SUCCEEDED (media_type->GetUINT32(MF_MT_AVG_BITRATE, &value))
             spdlog::info("  bitrate: {}", value);
         if SUCCEEDED (media_type->GetUINT32(MF_MT_INTERLACE_MODE, &value)) {
-            auto report = [](gsl::czstring<> txt) { spdlog::info("  interlace: {}", txt); };
+            auto format = "  interlace: {}";
             switch (value) {
             case MFVideoInterlace_MixedInterlaceOrProgressive:
-                report("mixed_interlace_or_progressive");
+                spdlog::info(format, "mixed_interlace_or_progressive");
                 break;
             case MFVideoInterlace_Progressive:
-                report("progressive");
+                spdlog::info(format, "progressive");
                 break;
             case MFVideoInterlace_Unknown:
             default:
-                report("unknown");
+                spdlog::info(format, "unknown");
                 break;
             }
         }
@@ -312,6 +323,10 @@ void print(gsl::not_null<IMFMediaType*> media_type) noexcept {
             spdlog::info("  width: {}", w);
             spdlog::info("  height: {}", h);
         }
+    } else if (major == MFMediaType_Audio) {
+        GUID subtype{};
+        if SUCCEEDED (media_type->GetGUID(MF_MT_SUBTYPE, &subtype))
+            spdlog::info("  subtype: {}", to_readable(subtype));
     }
 }
 
@@ -322,7 +337,7 @@ void print_CLSID_CResizerDMO(gsl::not_null<IMFTransform*> transform, const GUID&
 
     DWORD num_input = 0, num_output = 0;
     if (auto hr = transform->GetStreamCount(&num_input, &num_output); FAILED(hr))
-        return spdlog::error("transform->GetStreamCount: {:#08x}", hr);
+        return print_error(hr, "IMFTransform::GetStreamCount");
 
     DWORD istream = 0, ostream = 0;
     switch (auto hr = transform->GetStreamIDs(1, &istream, 1, &ostream)) {
@@ -332,7 +347,7 @@ void print_CLSID_CResizerDMO(gsl::not_null<IMFTransform*> transform, const GUID&
     case S_OK:
         break;
     default:
-        return spdlog::error("transform->GetStreamIDs: {:#08x}", hr);
+        return print_error(hr, "IMFTransform::GetStreamIDs");
     }
 
     auto print = [](IMFMediaType* media_type) {
@@ -351,7 +366,7 @@ void print_CLSID_CResizerDMO(gsl::not_null<IMFTransform*> transform, const GUID&
     };
     com_ptr<IMFMediaType> input{};
     if (auto hr = transform->GetInputCurrentType(istream, input.put()); FAILED(hr))
-        spdlog::error("transform->GetInputCurrentType: {:#08x}", hr);
+        return print_error(hr, "IMFTransform::GetInputCurrentType");
     else {
         spdlog::info("  - input_type:");
         print(input.get());
@@ -370,7 +385,8 @@ void print_CLSID_CColorConvertDMO(gsl::not_null<IMFTransform*> transform, const 
     DWORD num_input = 0;
     DWORD num_output = 0;
     if (auto hr = transform->GetStreamCount(&num_input, &num_output); FAILED(hr))
-        return spdlog::error("transform->GetStreamCount: {:#08x}", hr);
+        return print_error(hr, "IMFTransform::GetStreamCount");
+
     auto istreams = std::make_unique<DWORD[]>(num_input);
     auto ostreams = std::make_unique<DWORD[]>(num_output);
     if (auto hr = transform->GetStreamIDs(num_input, istreams.get(), num_output, ostreams.get()); FAILED(hr))
@@ -381,15 +397,15 @@ void print_CLSID_CColorConvertDMO(gsl::not_null<IMFTransform*> transform, const 
         for (auto i = 0u; i < num_input; ++i) {
             const auto istream = istreams[i];
             MFT_INPUT_STREAM_INFO info{};
-            if (auto hr = transform->GetInputStreamInfo(istream, &info)) {
-                spdlog::error("transform->GetInputStreamInfo: {:#08x}", hr);
-            } else {
-                spdlog::info("  - input_stream:");
-                spdlog::info("    size: {}", info.cbSize);
-                spdlog::info("    alignment: {}", info.cbAlignment);
-                spdlog::info("    flags: {}", info.dwFlags);
-                spdlog::info("    max_latency: {}", info.hnsMaxLatency);
+            if (auto hr = transform->GetInputStreamInfo(istream, &info); FAILED(hr)) {
+                print_error(hr, "IMFTransform::GetInputStreamInfo");
+                continue;
             }
+            spdlog::info("  - input_stream:");
+            spdlog::info("    size: {}", info.cbSize);
+            spdlog::info("    alignment: {}", info.cbAlignment);
+            spdlog::info("    flags: {}", info.dwFlags);
+            spdlog::info("    max_latency: {}", info.hnsMaxLatency);
 
             DWORD ostream = ostreams[0];
             DWORD output_index = 0;
@@ -411,13 +427,13 @@ void print_CLSID_CColorConvertDMO(gsl::not_null<IMFTransform*> transform, const 
             const auto ostream = ostreams[i];
             MFT_OUTPUT_STREAM_INFO info{};
             if (auto hr = transform->GetOutputStreamInfo(ostream, &info); FAILED(hr)) {
-                spdlog::error("transform->GetOutputStreamInfo: {:#08x}", hr);
-            } else {
-                spdlog::info("  - output_stream:");
-                spdlog::info("    size: {}", info.cbSize);
-                spdlog::info("    alignment: {}", info.cbAlignment);
-                spdlog::info("    flags: {}", info.dwFlags);
+                print_error(hr, "IMFTransform::GetOutputStreamInfo");
+                continue;
             }
+            spdlog::info("  - output_stream:");
+            spdlog::info("    size: {}", info.cbSize);
+            spdlog::info("    alignment: {}", info.cbAlignment);
+            spdlog::info("    flags: {}", info.dwFlags);
         }
     }
 }

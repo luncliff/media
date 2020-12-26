@@ -55,8 +55,14 @@ int main(int argc, char* argv[]) {
         spdlog::warn("for CI environment, some tests will be marked 'failed as expected'");
 
     spdlog::info("media_foundation:");
-    spdlog::info("- version: {:x}", MF_VERSION);
+    spdlog::info("  version: {:x}", MF_VERSION);
 
     Catch::Session session{};
     return session.run(argc, argv);
+}
+
+TEST_CASE("HRESULT format", "[format]") {
+    const auto txt = fmt::format("{:#x}", static_cast<uint32_t>(E_FAIL));
+    CAPTURE(txt);
+    REQUIRE(txt == "0x80004005");
 }

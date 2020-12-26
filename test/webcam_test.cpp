@@ -32,22 +32,22 @@ TEST_CASE("IMFActivate(IMFMediaSourceEx,IMFMediaType)", "[!mayfail]") {
         com_ptr<IMFMediaSourceEx> source{};
         // https://docs.microsoft.com/en-us/windows/win32/api/mfobjects/nf-mfobjects-imfactivate-activateobject
         if (auto hr = device->ActivateObject(__uuidof(IMFMediaSourceEx), source.put_void()))
-            FAIL(hr);
+            FAIL(to_readable(hr));
         auto after_loop = gsl::finally([source]() { source->Shutdown(); });
 
         com_ptr<IMFAttributes> attrs{};
         if (auto hr = source->GetSourceAttributes(attrs.put()))
-            FAIL(hr);
+            FAIL(to_readable(hr));
 
         GUID capture{};
         if (auto hr = attrs->GetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &capture))
-            FAIL(hr);
+            FAIL(to_readable(hr));
         REQUIRE(capture == MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
 
         print(device.get());
         com_ptr<IMFSourceReader> reader{};
         if (auto ec = MFCreateSourceReaderFromMediaSource(source.get(), nullptr, reader.put()))
-            FAIL(ec);
+            FAIL(to_readable(ec));
 
         com_ptr<IMFMediaType> source_type{};
         REQUIRE(reader->GetNativeMediaType(0, 0, source_type.put()) == S_OK);
@@ -276,7 +276,7 @@ TEST_CASE("IMFActivate to MP4", "[!mayfail]") {
         if (auto hr = sample->SetSampleDuration(duration)) {
             CAPTURE(flags, timestamp);
             CAPTURE(count);
-            FAIL(hr);
+            FAIL(to_readable(hr));
         }
         switch (auto hr = writer->WriteSample(writer_stream_index, sample.get())) {
         case MF_E_BUFFERTOOSMALL:
@@ -284,7 +284,7 @@ TEST_CASE("IMFActivate to MP4", "[!mayfail]") {
         case S_OK:
             continue;
         default:
-            FAIL(hr);
+            FAIL(to_readable(hr));
         }
     }
     const auto elapsed =
@@ -329,7 +329,7 @@ TEST_CASE("IMFActivate to MP4 (simplified)", "[!mayfail]") {
         case MF_E_BUFFERTOOSMALL:
             spdlog::warn("MF_E_BUFFERTOOSMALL");
         default:
-            FAIL(hr);
+            FAIL(to_readable(hr));
         }
     }
 }

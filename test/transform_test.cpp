@@ -70,7 +70,7 @@ HRESULT consume(com_ptr<IMFSourceReader> source_reader, com_ptr<IMFTransform> tr
         HRESULT ec = S_OK;
         for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
             if (auto hr = check_sample(output_sample); FAILED(hr))
-                FAIL(hr);
+                FAIL(to_readable(hr));
         }
         switch (ec) {
         case S_OK:
@@ -88,7 +88,7 @@ HRESULT consume(com_ptr<IMFSourceReader> source_reader, com_ptr<IMFTransform> tr
     HRESULT ec = S_OK;
     for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
         if (auto hr = check_sample(output_sample); FAILED(hr))
-            FAIL(hr);
+            FAIL(to_readable(hr));
     }
     switch (ec) {
     case S_OK:
@@ -144,7 +144,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
         INFO("testing synchronous read/transform with simplified code");
         com_ptr<IMFMediaType> output_type{};
         if (auto hr = transform->GetOutputCurrentType(ostream, output_type.put()))
-            FAIL(hr);
+            FAIL(to_readable(hr));
 
         size_t count = 0;
         DWORD index{};
@@ -158,12 +158,12 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
             case MF_E_UNSUPPORTED_D3D_TYPE:
             case E_INVALIDARG:
             default:
-                FAIL(hr);
+                FAIL(to_readable(hr));
             }
             HRESULT ec = S_OK;
             for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
                 if (auto hr = check_sample(output_sample))
-                    FAIL(hr);
+                    FAIL(to_readable(hr));
                 ++count;
             }
             switch (ec) {
@@ -171,7 +171,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
             case MF_E_TRANSFORM_NEED_MORE_INPUT:
                 continue;
             default:
-                FAIL(ec);
+                FAIL(to_readable(ec));
             }
         }
         REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL) == S_OK);
@@ -182,7 +182,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
         HRESULT ec = S_OK;
         for (com_ptr<IMFSample> output_sample : decode(transform, ostream, output_type, ec)) {
             if (auto hr = check_sample(output_sample))
-                FAIL(hr);
+                FAIL(to_readable(hr));
             ++count;
         }
         switch (ec) {
@@ -190,7 +190,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
         case MF_E_TRANSFORM_NEED_MORE_INPUT:
             break;
         default:
-            FAIL(ec);
+            FAIL(to_readable(ec));
         }
         REQUIRE(count);
     }
@@ -205,7 +205,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
             if (auto hr = source_reader->ReadSample(reader_stream, 0, &stream_index, &sample_flags, &sample_timestamp,
                                                     input_sample.put())) {
                 CAPTURE(sample_flags);
-                FAIL(hr);
+                FAIL(to_readable(hr));
             }
             if (sample_flags & MF_SOURCE_READERF_ENDOFSTREAM) {
                 input_available = false;
@@ -222,7 +222,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
             case MF_E_UNSUPPORTED_D3D_TYPE:
             case E_INVALIDARG:
             default:
-                FAIL(hr);
+                FAIL(to_readable(hr));
             }
 
             MFT_OUTPUT_DATA_BUFFER output{};
@@ -231,14 +231,14 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
             while (true) {
                 DWORD status = 0; // MFT_OUTPUT_STATUS_SAMPLE_READY
                 if (auto hr = transform->GetOutputStreamInfo(output.dwStreamID, &stream))
-                    FAIL(hr);
+                    FAIL(to_readable(hr));
 
                 com_ptr<IMFSample> output_sample{};
                 if (stream.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES) {
                     // ...
                 } else {
                     if (auto hr = create_single_buffer_sample(output_sample.put(), stream.cbSize))
-                        FAIL(hr);
+                        FAIL(to_readable(hr));
                     output.pSample = output_sample.get();
                 }
                 const auto hr = transform->ProcessOutput(0, 1, &output, &status);
@@ -255,17 +255,15 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
                     // ...
                     output_type = nullptr;
                     if (auto ec = transform->GetOutputAvailableType(output.dwStreamID, 0, output_type.put()))
-                        FAIL(ec);
+                        FAIL(to_readable(ec));
                     // specify the format we want ...
                     if (auto ec = output_type->SetGUID(MF_MT_SUBTYPE, desired_subtype))
-                        FAIL(hr);
+                        FAIL(to_readable(ec));
                     if (auto ec = transform->SetOutputType(0, output_type.get(), 0))
-                        FAIL(ec);
+                        FAIL(to_readable(ec));
                     continue;
                 }
-                if (hr == E_FAIL)
-                    spdlog::error("transform->ProcessOutput");
-                FAIL(hr);
+                FAIL(to_readable(hr));
             }
         }
         REQUIRE(transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL) == S_OK);

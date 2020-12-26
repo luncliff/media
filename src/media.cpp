@@ -83,16 +83,16 @@ HRESULT resolve(const fs::path& fpath, IMFMediaSourceEx** source, MF_OBJECT_TYPE
     return unknown->QueryInterface(source);
 }
 
+// todo: allow process server
 HRESULT make_transform_video(IMFTransform** transform, const IID& iid) noexcept {
     com_ptr<IUnknown> unknown{};
-    if (auto hr = CoCreateInstance(iid, NULL, CLSCTX_INPROC_SERVER, // todo: allow process server
-                                   IID_PPV_ARGS(unknown.put()));
-        FAILED(hr))
+    if (auto hr = CoCreateInstance(iid, NULL, CLSCTX_ALL, IID_PPV_ARGS(unknown.put())); FAILED(hr))
         return hr;
     return unknown->QueryInterface(transform);
 }
 
-HRESULT configure_D3D11_DXGI(gsl::not_null<IMFTransform*> transform, IMFDXGIDeviceManager* device_manager) noexcept {
+HRESULT configure_D3D11_DXGI(gsl::not_null<IMFTransform*> transform,
+                             gsl::not_null<IMFDXGIDeviceManager*> device_manager) noexcept {
     com_ptr<IMFAttributes> attrs{};
     if (auto hr = transform->GetAttributes(attrs.put()); FAILED(hr)) // return can be E_NOTIMPL
         return hr;
