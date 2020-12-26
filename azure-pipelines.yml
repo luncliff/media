@@ -45,7 +45,7 @@ jobs:
     steps:
       - task: Cache@2
         inputs:
-          key: 'vcpkg-$(BuildPlatform) | "$(Agent.OS)"'
+          key: '2020.12 | vcpkg-$(BuildPlatform) | "$(Agent.OS)"'
           path: "c:/vcpkg/installed"
 
       - task: PowerShell@2
