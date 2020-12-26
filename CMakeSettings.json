@@ -32,6 +32,11 @@
           "name": "BUILD_DRIVER",
           "value": "true",
           "type": "BOOL"
+        },
+        {
+          "name": "TEST_WINRT",
+          "value": "true",
+          "type": "BOOL"
         }
       ]
     },

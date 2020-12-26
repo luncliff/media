@@ -119,13 +119,18 @@ include(Catch)
 
 add_executable(media_test_suite
     test/main.cpp
-    test/winrt_test.cpp
     test/webcam_test.cpp
     test/sink_test.cpp
     test/dxva_test.cpp
     test/transform_test.cpp
     test/source_test.cpp
 )
+if(TEST_WINRT)
+    target_sources(media_test_suite
+    PRIVATE
+        test/winrt_test.cpp
+    )
+endif()
 
 target_precompile_headers(media_test_suite REUSE_FROM media)
 
