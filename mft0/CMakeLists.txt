@@ -3,8 +3,7 @@
 #   https://github.com/GoogleCloudPlatform/compute-windows-drivers/blob/master/pvpanic/pvpanic/pvpanic.vcxproj
 #   https://gitlab.com/spice/win32/usbdk/-/blob/master/UsbDkInstHelper/UsbDkInstHelper.vcxproj
 #
-cmake_minimum_required(VERSION 3.18) # for target_precompile_headers
-
+cmake_minimum_required(VERSION 3.18)
 if(NOT CMAKE_GENERATOR MATCHES "Visual Studio")
     message(WARNING "CMAKE_GENERATOR must be \"Visual Studio\"")
     return()
@@ -26,7 +25,7 @@ PROPERTIES
     C_STANDARD      17
     CXX_STANDARD    17
     VERSION         "0.0"
-    VS_WINDOWS_TARGET_PLATFORM_MIN_VERSION  "10.0.17764.0"
+    VS_WINDOWS_TARGET_PLATFORM_MIN_VERSION  "10.0.18362.0"
     VS_PLATFORM_TOOLSET     "WindowsApplicationForDrivers10.0" # "WindowsKernelModeDriver10.0"
     # VS_CONFIGURATION_TYPE   "Driver"
     # VS_GLOBAL_DriverTargetPlatform "Universal"

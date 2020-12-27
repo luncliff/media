@@ -390,7 +390,7 @@ void print_CLSID_CColorConvertDMO(gsl::not_null<IMFTransform*> transform, const 
     auto istreams = std::make_unique<DWORD[]>(num_input);
     auto ostreams = std::make_unique<DWORD[]>(num_output);
     if (auto hr = transform->GetStreamIDs(num_input, istreams.get(), num_output, ostreams.get()); FAILED(hr))
-        spdlog::warn("transform->GetStreamCount: {:#08x}", hr);
+        print_error(hr, "IMFTransform::GetStreamCount");
 
     if (num_input) {
         spdlog::info("  - num_input: {}", num_input);

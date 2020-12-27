@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.18)
 project(media VERSION 0.0 LANGUAGES CXX)
 if(NOT WIN32)
     message(FATAL_ERROR "the project is only for Windows Platform")
@@ -14,7 +14,11 @@ message(STATUS "using Windows: ${CMAKE_SYSTEM_VERSION}")
 
 add_compile_options(
     /wd4819 # codepage warnings
+    # /utf-8
 )
+# add_compile_definitions(
+#     SPDLOG_WCHAR_TO_UTF8_SUPPORT
+# )
 
 find_package(Microsoft.GSL CONFIG)
 find_package(spdlog        CONFIG REQUIRED)
@@ -39,7 +43,7 @@ add_library(media STATIC
 set_target_properties(media
 PROPERTIES
     PUBLIC_HEADER   src/media.hpp
-    WINDOWS_EXPORT_ALL_SYMBOLS false
+    CXX_STANDARD    17
 )
 
 target_precompile_headers(media
@@ -105,12 +109,20 @@ install(FILES           ${VERSION_FILE_PATH}
 # include(CPack)
 
 if(BUILD_DRIVER)
-    add_subdirectory(mft0)
-endif()
+    set(BUILD_TESTING false) # exclusive to executable for now ...
 
+    set_target_properties(media
+    PROPERTIES
+        VS_WINDOWS_TARGET_PLATFORM_MIN_VERSION  "10.0.18362.0"
+        VS_PLATFORM_TOOLSET     "WindowsApplicationForDrivers10.0"
+    )
+    add_subdirectory(mft0)
+    add_subdirectory(sample)
+endif()
 if(NOT BUILD_TESTING)
     return()
 endif()
+
 # see 'docs/cmake-integration.md' in https://github.com/catchorg/catch2
 find_package(Catch2 CONFIG REQUIRED)
 include(Catch)
@@ -130,17 +142,17 @@ if(TEST_WINRT)
     )
 endif()
 
-target_precompile_headers(media_test_suite REUSE_FROM media)
-
 # see https://github.com/microsoft/cppwinrt/releases
 set_target_properties(media_test_suite
 PROPERTIES
     VS_PACKAGE_REFERENCES "Microsoft.Windows.CppWinRT_2.0.201217.4"
 )
 
+target_precompile_headers(media_test_suite REUSE_FROM media)
+
 target_compile_options(media_test_suite
 PRIVATE
-    /W4
+    /W4 /WX-
 )
 
 find_package(Catch2 CONFIG REQUIRED)

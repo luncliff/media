@@ -140,10 +140,12 @@ class verbose_callback_t final : public IMFSourceReaderCallback {
 
 HRESULT create_reader_callback(IMFSourceReaderCallback** ptr) noexcept {
     if (ptr == nullptr)
-        return E_INVALIDARG;
+        return E_POINTER;
     try {
-        if (IUnknown* unknown = *ptr = new (nothrow) verbose_callback_t{})
-            unknown->AddRef();
+        IUnknown* unknown = *ptr = new (nothrow) verbose_callback_t{};
+        if (unknown == nullptr)
+            return E_OUTOFMEMORY;
+        unknown->AddRef();
         return S_OK;
     } catch (const winrt::hresult_error& ex) {
         print_error(ex);
@@ -230,11 +232,13 @@ HRESULT create_sink(const fs::path& dirpath, IMFMediaSink** ptr) {
     if (fs::exists(dirpath) == false || fs::is_directory(dirpath) == false)
         return E_INVALIDARG;
     if (ptr == nullptr)
-        return E_INVALIDARG;
+        return E_POINTER;
 
     try {
-        if (IUnknown* unknown = *ptr = new (nothrow) save_image_sink_t{})
-            unknown->AddRef();
+        IUnknown* unknown = *ptr = new (nothrow) save_image_sink_t{};
+        if (unknown == nullptr)
+            return E_OUTOFMEMORY;
+        unknown->AddRef();
         return S_OK;
     } catch (const winrt::hresult_error& ex) {
         print_error(ex);
@@ -262,7 +266,7 @@ h264_video_writer_t::~h264_video_writer_t() noexcept {
 
 HRESULT h264_video_writer_t::use_source(com_ptr<IMFMediaType> input_type) noexcept {
     if (input_type == nullptr)
-        return E_INVALIDARG;
+        return E_POINTER;
 
     UINT32 fps_num = 0, fps_denom = 1;
     if (auto hr = MFGetAttributeRatio(input_type.get(), MF_MT_FRAME_RATE, &fps_num, &fps_denom); FAILED(hr))
@@ -293,7 +297,7 @@ HRESULT h264_video_writer_t::begin() noexcept {
 
 HRESULT h264_video_writer_t::write(IMFSample* sample) noexcept {
     if (sample == nullptr)
-        return E_INVALIDARG;
+        return E_POINTER;
     return writer->WriteSample(stream_index, sample);
 }
 

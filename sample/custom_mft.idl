@@ -1,0 +1,16 @@
+import "oaidl.idl";
+import "ocidl.idl";
+import "inspectable.idl";
+import "mftransform.idl";
+[
+    object,
+    uuid(00000000-0000-0000-0000-000020170704),
+    version(0.0),
+    nonextensible,
+    pointer_default(unique)
+]
+
+interface ICustomMFT : IMFTransform {
+    [id(1)] HRESULT SetState([in] UINT32 state);
+    [id(2)] HRESULT GetState([out] UINT32* state);
+};

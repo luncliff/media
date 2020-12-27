@@ -61,7 +61,7 @@ jobs:
 
       - task: CMake@1
         inputs:
-          cmakeArgs: .. -A $(cmake_arch) -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$(BuildPlatform)-windows" -DCMAKE_INSTALL_PREFIX=$(install_dir) -DCMAKE_BUILD_TYPE=$(BuildConfiguration) -DBUILD_TESTING=True -DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION=10.0.19041.0
+          cmakeArgs: .. -A $(cmake_arch) -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$(BuildPlatform)-windows" -DCMAKE_INSTALL_PREFIX=$(install_dir) -DCMAKE_BUILD_TYPE=$(BuildConfiguration) -DBUILD_DRIVER=True -DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION=10.0.19041.0
           workingDirectory: "build" # will create a directory
         displayName: "Configure/Generate VS solution"
 
@@ -102,14 +102,6 @@ jobs:
           OverWrite: true
         condition: in(variables['BuildConfiguration'], 'Release')
         displayName: "Copy DLL files from VcPkg (for Release)"
-
-      - task: PowerShell@2
-        inputs:
-          targetType: "inline"
-          script: ./media_test_suite.exe --success
-          workingDirectory: "$(install_dir)/bin"
-        condition: succeeded()
-        displayName: "Run Tests"
 
   - job: Analysis
     dependsOn: Build

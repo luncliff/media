@@ -4,6 +4,8 @@
  * @brief   pch.h for this project
  */
 #pragma once
+#include <SDKDDKVer.h>
+
 #include <experimental/generator>
 #include <filesystem>
 #include <future>
@@ -154,6 +156,11 @@ HRESULT configure(com_ptr<IMFStreamDescriptor> stream) noexcept;
 
 std::string to_string(const GUID& guid) noexcept;
 std::string to_readable(const GUID& guid) noexcept;
+
+/**
+ * @brief   translate `HRESULT value. For example, `E_FAIL` will become "0x80004005"
+ * @see https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/0642cb2f-2075-4469-918c-4441e69c548a
+ */
 std::string to_readable(HRESULT hr) noexcept;
 
 winrt::hstring to_hstring(const GUID& guid) noexcept;

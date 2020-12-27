@@ -42,7 +42,6 @@ bool has_env(gsl::czstring<> key) noexcept {
 /// @todo catch `winrt::hresult_error`
 int main(int argc, char* argv[]) {
     std::setlocale(LC_ALL, ".65001");
-
     winrt::init_apartment();
     auto on_exit = gsl::finally(&winrt::uninit_apartment);
 
@@ -62,7 +61,7 @@ int main(int argc, char* argv[]) {
 }
 
 TEST_CASE("HRESULT format", "[format]") {
-    const auto txt = fmt::format("{:#x}", static_cast<uint32_t>(E_FAIL));
+    const auto txt = to_readable(E_FAIL);
     CAPTURE(txt);
     REQUIRE(txt == "0x80004005");
 }
