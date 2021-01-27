@@ -105,7 +105,7 @@ install(FILES           ${VERSION_FILE_PATH}
 # include(CPack)
 
 if(BUILD_DRIVER)
-    add_subdirectory(mft0)
+    # add_subdirectory(mft0)
 endif()
 
 if(NOT BUILD_TESTING)
@@ -135,6 +135,7 @@ target_precompile_headers(media_test_suite REUSE_FROM media)
 # see https://github.com/microsoft/cppwinrt/releases
 set_target_properties(media_test_suite
 PROPERTIES
+    VS_CPPWINRT true
     VS_PACKAGE_REFERENCES "Microsoft.Windows.CppWinRT_2.0.201217.4"
 )
 

@@ -15,6 +15,26 @@ using namespace winrt;
 using namespace winrt::Windows::System;
 using namespace winrt::Windows::Foundation;
 
+// https://devblogs.microsoft.com/oldnewthing/20191223-00/?p=103255
+auto resume_foreground(DispatcherQueue const& dispatcher) {
+    struct awaitable {
+        DispatcherQueue m_dispatcher;
+        bool m_queued = false;
+
+        bool await_ready() const noexcept {
+            return false;
+        }
+        bool await_suspend(coroutine_handle<> handle) noexcept {
+            m_queued = m_dispatcher.TryEnqueue([handle] { handle(); });
+            return m_queued;
+        }
+        bool await_resume() noexcept {
+            return m_queued;
+        }
+    };
+    return awaitable{dispatcher};
+}
+
 TEST_CASE("DispatcherQueueController(DQTYPE_THREAD_DEDICATED)") {
     using ABI::Windows::Foundation::IAsyncAction;
     using ABI::Windows::System::IDispatcherQueueController;
@@ -50,16 +70,17 @@ TEST_CASE("DispatcherQueueController(DQTYPE_THREAD_CURRENT)") {
     REQUIRE(CreateDispatcherQueueController(options, controller2.put()) == RPC_E_WRONG_THREAD);
 }
 
+/// @see https://gist.github.com/kennykerr/6490e1494449927147dc18616a5e601e
 auto create_controller(DISPATCHERQUEUE_THREAD_TYPE thread_type) noexcept(false)
     -> winrt::Windows::System::DispatcherQueueController {
     DispatcherQueueOptions options{};
     options.dwSize = sizeof(DispatcherQueueOptions);
     options.threadType = thread_type;
     options.apartmentType = DISPATCHERQUEUE_THREAD_APARTMENTTYPE::DQTAT_COM_ASTA;
-
-    ABI::Windows::System::IDispatcherQueueController* ptr{};
-    winrt::check_hresult(CreateDispatcherQueueController(options, &ptr));
-    return {ptr, take_ownership_from_abi};
+    DispatcherQueueController controller{nullptr};
+    winrt::check_hresult(CreateDispatcherQueueController(
+        options, reinterpret_cast<ABI::Windows::System::IDispatcherQueueController**>(put_abi(controller))));
+    return controller;
 }
 
 auto do_something(DispatcherQueue queue) -> IAsyncOperation<uint32_t> {
