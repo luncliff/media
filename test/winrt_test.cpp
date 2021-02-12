@@ -110,3 +110,128 @@ TEST_CASE("DispatcherQueue(IAsyncOperation)", "[WinRT]") {
     auto dedicated = query_thread_id(queue).get();
     REQUIRE(current != dedicated);
 }
+
+TEST_CASE("TimeZone", "[WinRT]") {
+    TIME_ZONE_INFORMATION timezone{};
+    auto id = GetTimeZoneInformation(&timezone);
+    if (id == TIME_ZONE_ID_INVALID)
+        winrt::throw_last_error();
+    spdlog::debug("timezone:");
+    spdlog::debug(" id: {}", id);
+    spdlog::debug(" name: {}", winrt::to_string(timezone.StandardName));
+    if (id == TIME_ZONE_ID_DAYLIGHT)
+        spdlog::debug(" daylight: {}", winrt::to_string(timezone.DaylightName));
+}
+
+TEST_CASE("GetProcessInformation", "[Win32][!mayfail]") {
+    HANDLE proc = GetCurrentProcess();
+    SECTION("PROCESS_POWER_THROTTLING_STATE") {
+        PROCESS_POWER_THROTTLING_STATE state{};
+        if (GetProcessInformation(proc, ProcessPowerThrottling, &state, sizeof(state)))
+            FAIL(GetLastError());
+    }
+    SECTION("APP_MEMORY_INFORMATION") {
+        APP_MEMORY_INFORMATION info{};
+        if (GetProcessInformation(proc, ProcessAppMemoryInfo, &info, sizeof(info)))
+            FAIL(GetLastError());
+    }
+    SECTION("PROCESS_PROTECTION_LEVEL_INFORMATION") {
+        PROCESS_PROTECTION_LEVEL_INFORMATION info{};
+        if (GetProcessInformation(proc, ProcessProtectionLevelInfo, &info, sizeof(info)))
+            FAIL(GetLastError());
+    }
+}
+
+/// @see https://docs.microsoft.com/en-us/windows/win32/sysinfo/structure-of-the-registry
+TEST_CASE("GetModuleFileName", "[Win32]") {
+    HMODULE mod = GetModuleHandleW(NULL); // name of the .exe
+    REQUIRE(mod);
+    WCHAR buf[MAX_PATH]{};
+    DWORD buflen = GetModuleFileNameW(mod, buf, MAX_PATH);
+    REQUIRE(buflen);
+    spdlog::debug("module: {}", winrt::to_string({buf, buflen})); // full path of the executable
+
+    fs::path fpath{buf};
+    REQUIRE(fs::is_regular_file(fpath));
+}
+
+void report_registry_operation_status(LSTATUS status) {
+    switch (status) {
+    case ERROR_SUCCESS: // 0
+        break;
+    case ERROR_ACCESS_DENIED: // 5
+        return spdlog::error("{}", "ERROR_ACCESS_DENIED");
+    case ERROR_INVALID_PARAMETER: // 87
+        return spdlog::error("{}", "ERROR_INVALID_PARAMETER");
+    default:
+        return spdlog::error("{}", status);
+    }
+}
+
+void set_value(HKEY hkey, winrt::hstring text) {
+    if (auto ec = RegSetValueExW(hkey, NULL, 0, REG_SZ, //
+                                 reinterpret_cast<const BYTE*>(text.data()),
+                                 sizeof(winrt::hstring::value_type) * text.size()))
+        spdlog::error("set(REG_SZ): {} {}", ec, winrt::to_string(text));
+}
+void set_value(HKEY hkey, DWORD value) {
+    if (auto ec = RegSetValueExW(hkey, NULL, 0, REG_DWORD, //
+                                 reinterpret_cast<const BYTE*>(&value), sizeof(value)))
+        spdlog::error("set(REG_DWORD): {} {}", ec, value);
+}
+
+/// @see https://docs.microsoft.com/en-us/windows/win32/sysinfo/structure-of-the-registry
+TEST_CASE("Registry(HKEY_CLASSES_ROOT)", "[Win32][!mayfail]") {
+    winrt::hstring subkey = L"keep.parctice.0";
+
+    HKEY hkey{};
+    if (auto ec = RegCreateKeyExW(HKEY_CLASSES_ROOT, subkey.c_str(), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS,
+                                  NULL, &hkey, NULL)) {
+        report_registry_operation_status(ec);
+        FAIL(ec);
+    }
+    REQUIRE(RegDeleteKeyExW(hkey, subkey.c_str(), KEY_WOW64_32KEY, 0) == ERROR_SUCCESS);
+}
+
+TEST_CASE("Registry(HKEY_LOCAL_MACHINE)", "[Win32][!mayfail]") {
+    winrt::hstring subkey = L"keep.parctice.1";
+    HKEY hkey{};
+    if (auto ec = RegCreateKeyExW(HKEY_LOCAL_MACHINE, subkey.c_str(), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS,
+                                  NULL, &hkey, NULL)) {
+        report_registry_operation_status(ec);
+        FAIL(ec);
+    }
+    REQUIRE(RegDeleteKeyExW(hkey, subkey.c_str(), KEY_WOW64_32KEY, 0) == ERROR_SUCCESS);
+}
+
+/// @see https://github.com/microsoft/cppwinrt/blob/master/cppwinrt/cmd_reader.h
+TEST_CASE("Registry(HKEY_CURRENT_USER) - close/delete", "[Win32]") {
+    winrt::hstring subkey = L"keep.parctice.2";
+    HKEY hkey{};
+    if (auto ec = RegCreateKeyExW(HKEY_CURRENT_USER, subkey.c_str(), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS,
+                                  NULL, &hkey, NULL)) {
+        report_registry_operation_status(ec);
+        FAIL(ec);
+    }
+    SECTION("DWORD") {
+        set_value(hkey, 0xBEAF);
+    }
+    REQUIRE(RegCloseKey(hkey) == ERROR_SUCCESS);
+    REQUIRE(RegDeleteKeyExW(hkey, subkey.c_str(), KEY_WOW64_32KEY, 0) == ERROR_INVALID_HANDLE); // already closed
+}
+
+TEST_CASE("Registry(HKEY_CURRENT_USER) - delete/close", "[Win32]") {
+    winrt::hstring subkey = L"keep.parctice.3";
+    HKEY hkey{};
+    if (auto ec = RegCreateKeyExW(HKEY_CURRENT_USER, subkey.c_str(), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS,
+                                  NULL, &hkey, NULL)) {
+        report_registry_operation_status(ec);
+        FAIL(ec);
+    }
+    SECTION("winrt::hstring") {
+        const auto txt = to_hstring(get_guid0());
+        set_value(hkey, txt);
+        REQUIRE(RegDeleteKeyExW(hkey, subkey.c_str(), KEY_WOW64_32KEY, 0) == ERROR_FILE_NOT_FOUND);
+    }
+    REQUIRE(RegCloseKey(hkey) == ERROR_SUCCESS);
+}

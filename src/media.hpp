@@ -33,6 +33,9 @@ namespace fs = std::filesystem;
 /// @throw winrt::hresult_error
 auto media_startup() noexcept(false) -> gsl::final_action<HRESULT(WINAPI*)()>;
 
+/// @see GUID
+const GUID& get_guid0() noexcept;
+
 /// @see MFEnumDeviceSources
 HRESULT get_devices(std::vector<com_ptr<IMFActivate>>& devices, IMFAttributes* attributes) noexcept;
 

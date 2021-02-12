@@ -7,6 +7,13 @@
 
 using namespace std;
 
+// {11790296-A926-45AB-96CB-A9CB187F37AD}
+const GUID module_guid_0 = {0x11790296, 0xa926, 0x45ab, {0x96, 0xcb, 0xa9, 0xcb, 0x18, 0x7f, 0x37, 0xad}};
+
+const GUID& get_guid0() noexcept {
+    return module_guid_0;
+}
+
 auto media_startup() noexcept(false) -> gsl::final_action<HRESULT(WINAPI*)()> {
     winrt::check_hresult(MFStartup(MF_VERSION));
     return gsl::finally(&MFShutdown);

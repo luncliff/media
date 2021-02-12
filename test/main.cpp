@@ -64,3 +64,8 @@ TEST_CASE("HRESULT format", "[format]") {
     CAPTURE(txt);
     REQUIRE(txt == "0x80004005");
 }
+
+TEST_CASE("GUID format", "[format]") {
+    const GUID& id = get_guid0();
+    REQUIRE(to_string(id) == "11790296-A926-45AB-96CB-A9CB187F37AD");
+}
