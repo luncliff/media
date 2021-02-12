@@ -14,6 +14,11 @@
       "ctestCommandArgs": "",
       "variables": [
         {
+          "name": "CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION",
+          "value": "10.0.18362.0",
+          "type": "STRING"
+        },
+        {
           "name": "CMAKE_TOOLCHAIN_FILE",
           "value": "C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake",
           "type": "PATH"
@@ -25,11 +30,6 @@
         },
         {
           "name": "BUILD_TESTING",
-          "value": "true",
-          "type": "BOOL"
-        },
-        {
-          "name": "BUILD_DRIVER",
           "value": "true",
           "type": "BOOL"
         },
@@ -53,6 +53,11 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
       "variables": [
+        {
+          "name": "CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION",
+          "value": "10.0.18362.0",
+          "type": "STRING"
+        },
         {
           "name": "CMAKE_TOOLCHAIN_FILE",
           "value": "C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake",

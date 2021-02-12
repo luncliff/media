@@ -53,15 +53,25 @@ int main(int argc, char* argv[]) {
     if (has_env("APPVEYOR"))
         spdlog::warn("for CI environment, some tests will be marked 'failed as expected'");
 
+    spdlog::info("cpp_winrt: {}", CPPWINRT_VERSION);
     spdlog::info("media_foundation:");
     spdlog::info("  version: {:x}", MF_VERSION);
-
-    Catch::Session session{};
-    return session.run(argc, argv);
+    return Catch::Session{}.run(argc, argv);
 }
 
 TEST_CASE("HRESULT format", "[format]") {
     const auto txt = to_readable(E_FAIL);
     CAPTURE(txt);
     REQUIRE(txt == "0x80004005");
+}
+
+TEST_CASE("GUID", "[format]") {
+    SECTION("internal") {
+        const GUID uuid0 = get_guid0();
+        REQUIRE(to_string(uuid0) == "11790296-A926-45AB-96CB-A9CB187F37AD");
+    }
+    SECTION("Media Foundation SDK") {
+        // search these values in Registry Editor
+        REQUIRE(to_string(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID) == "8AC3587A-4AE7-42D8-99E0-0A6013EEF90F");
+    }
 }

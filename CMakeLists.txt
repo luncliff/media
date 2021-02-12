@@ -29,10 +29,6 @@ check_include_file_cxx("mfapi.h" found_mfapi)
 check_include_file_cxx("wincodecsdk.h" found_codecsdk)
 check_include_file_cxx("d3d11.h" found_d3d11)
 
-# see https://github.com/microsoft/wil/wiki/RAII-resource-wrappers
-find_path(WIL_INCLUDE_DIRS "wil/com.h")
-message(STATUS "using WIL: ${WIL_INCLUDE_DIRS}")
-
 add_library(media STATIC
     src/media.hpp
     src/media.cpp
@@ -145,6 +141,7 @@ endif()
 # see https://github.com/microsoft/cppwinrt/releases
 set_target_properties(media_test_suite
 PROPERTIES
+    VS_CPPWINRT true
     VS_PACKAGE_REFERENCES "Microsoft.Windows.CppWinRT_2.0.201217.4"
 )
 

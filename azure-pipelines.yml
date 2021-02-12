@@ -53,7 +53,7 @@ jobs:
           targetType: "inline"
           script: |
             Write-Output $(install_dir) ${env:vcpkg_target_triplet}
-            vcpkg install --triplet $env:vcpkg_target_triplet ms-gsl spdlog catch2 wil directxtex directxtk
+            vcpkg install --triplet $env:vcpkg_target_triplet ms-gsl spdlog catch2 directxtex directxtk
             vcpkg list
         env:
           platform: $(BuildPlatform)
