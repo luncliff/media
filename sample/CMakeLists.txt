@@ -47,9 +47,11 @@ install(FILES   custom_mft.idl
                 $<$<CONFIG:Release>:${CMAKE_CURRENT_BINARY_DIR}/custom_mft.dir/Release/custom_mft.h>
         DESTINATION include/${PROJECT_NAME}
 )
-install(FILES   $<TARGET_PDB_FILE:custom_mft>
-        DESTINATION bin
-)
+if(EXISTS $<TARGET_PDB_FILE:custom_mft>)
+    install(FILES   $<TARGET_PDB_FILE:custom_mft>
+            DESTINATION bin
+    )
+endif()
 install(TARGETS custom_mft
         EXPORT  ${PROJECT_NAME}-config
         RUNTIME DESTINATION bin

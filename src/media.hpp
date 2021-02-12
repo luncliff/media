@@ -170,7 +170,10 @@ std::string to_readable(const GUID& guid) noexcept;
  */
 std::string to_readable(HRESULT hr) noexcept;
 
+/// @brief Make string from GUID with {}
 winrt::hstring to_hstring(const GUID& guid) noexcept;
+/// @brief Make string from GUID without {}
+winrt::hstring to_hstring_trim(const GUID& guid) noexcept;
 
 void print_error(winrt::hresult code, std::string&& message) noexcept;
 void print_error(const winrt::hresult_error& ex) noexcept;

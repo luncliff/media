@@ -64,7 +64,14 @@ winrt::hstring to_hstring(const GUID& guid) noexcept {
     constexpr auto bufsz = 40;
     wchar_t buf[bufsz]{};
     uint32_t buflen = StringFromGUID2(guid, buf, bufsz);
-    return {buf + 1, buflen - 3}; // GUID requires 36 characters
+    return {buf, buflen}; 
+}
+
+winrt::hstring to_hstring_trim(const GUID& guid) noexcept {
+    constexpr auto bufsz = 40;
+    wchar_t buf[bufsz]{};
+    uint32_t buflen = StringFromGUID2(guid, buf, bufsz);
+    return {buf + 1, buflen - 3}; // exactly 36 char
 }
 
 /// @see https://docs.microsoft.com/en-us/windows/win32/wmformat/media-type-identifiers

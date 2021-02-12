@@ -244,3 +244,80 @@ TEST_CASE("Registry(HKEY_CURRENT_USER) - delete/close", "[Win32]") {
     }
     REQUIRE(RegCloseKey(hkey) == ERROR_SUCCESS);
 }
+
+void registry_set_value(HKEY hkey, DWORD value) {
+    if (auto ec = RegSetValueExW(hkey, NULL, 0, REG_DWORD, //
+                                 reinterpret_cast<const BYTE*>(&value), sizeof(value)))
+        spdlog::error("set(REG_DWORD): {}", ec);
+}
+void registry_set_value(HKEY hkey, std::wstring text) {
+    if (auto ec = RegSetValueExW(hkey, NULL, 0, REG_SZ, //
+                                 reinterpret_cast<const BYTE*>(text.c_str()),
+                                 sizeof(std::wstring::value_type) * text.length()))
+        spdlog::error("set(REG_SZ): {}", ec);
+}
+
+template <typename T>
+bool registry_create_key(HKEY hkey, std::wstring subkey, T&& value) noexcept {
+    switch (auto status = RegCreateKeyExW(hkey, subkey.c_str(), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL,
+                                          &hkey, NULL)) {
+    case ERROR_SUCCESS:
+        break;
+    case ERROR_ACCESS_DENIED:     // 5
+    case ERROR_INVALID_PARAMETER: // 87
+    default:
+        return false;
+    }
+    registry_set_value(hkey, value);
+    return RegCloseKey(hkey) == ERROR_SUCCESS;
+}
+template <typename T>
+bool registry_create_key(std::wstring subkey, T&& value) noexcept {
+    return registry_create_key(HKEY_CURRENT_USER, std::move(subkey), std::forward<T&&>(value));
+}
+
+bool registry_delete_key(HKEY hkey, std::wstring subkey) noexcept {
+    switch (auto ec = RegDeleteKeyW(hkey, subkey.c_str())) {
+    case ERROR_FILE_NOT_FOUND:
+    case ERROR_SUCCESS:
+        return true;
+    default:
+        return false;
+    }
+}
+bool registry_delete_key(std::wstring subkey) noexcept {
+    return registry_delete_key(HKEY_CURRENT_USER, std::move(subkey));
+}
+
+std::wstring get_module_path(HMODULE mod) noexcept {
+    WCHAR buf[MAX_PATH]{};
+    DWORD buflen = GetModuleFileNameW(mod, buf, MAX_PATH);
+    return {buf, buflen};
+}
+std::wstring to_wstring(const GUID& guid) noexcept {
+    constexpr auto bufsz = 40;
+    wchar_t buf[bufsz]{};
+    uint32_t buflen = StringFromGUID2(guid, buf, bufsz);
+    return {buf, buflen};
+}
+
+TEST_CASE("Registry(HKEY_CURRENT_USER) - register", "[Win32][!mayfail]") {
+    const auto program_id = std::wstring{L"keep.test.1"};
+    const auto clsid_mft0 = to_wstring(get_CLSID_MFT());
+    SECTION("create key") {
+        const auto fpath = get_module_path(GetModuleHandleW(NULL));
+        const auto comment = __FUNCTIONW__;
+        REQUIRE(registry_create_key(program_id, comment));
+        REQUIRE(registry_create_key(program_id + L"\\CLSID", clsid_mft0));
+        REQUIRE(registry_create_key(HKEY_CLASSES_ROOT, clsid_mft0, comment));
+        REQUIRE(registry_create_key(HKEY_CLASSES_ROOT, clsid_mft0 + L"\\ProgID", program_id));
+        REQUIRE(registry_create_key(HKEY_CLASSES_ROOT, clsid_mft0 + L"\\InProcServer32", fpath));
+    }
+    SECTION("delete") {
+        REQUIRE(registry_delete_key(HKEY_CLASSES_ROOT, clsid_mft0 + L"\\InProcServer32"));
+        REQUIRE(registry_delete_key(HKEY_CLASSES_ROOT, clsid_mft0 + L"\\ProgID"));
+        REQUIRE(registry_delete_key(HKEY_CLASSES_ROOT, clsid_mft0));
+        REQUIRE(registry_delete_key(program_id + L"\\CLSID"));
+        REQUIRE(registry_delete_key(program_id));
+    }
+}

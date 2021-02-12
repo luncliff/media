@@ -20,22 +20,27 @@ namespace fs = std::filesystem;
 
 fs::path get_asset_dir() noexcept {
 #if defined(ASSET_DIR)
-    fs::path asset_dir{ASSET_DIR};
-    if (fs::exists(asset_dir))
-        return asset_dir;
+    fs::path dirpath{ASSET_DIR};
+    if (fs::exists(dirpath))
+        return dirpath;
 #endif
     return fs::current_path();
 }
 
-bool has_env(gsl::czstring<> key) noexcept {
-    size_t len = 0;
-    char buf[40]{};
-    if (auto ec = getenv_s(&len, buf, key)) {
-        spdlog::warn("getenv_s: {}", ec);
-        spdlog::debug("key: {}", key);
-        return false;
+void get_env(gsl::cwzstring<> key, std::wstring& buf) noexcept {
+    constexpr auto cap = MAX_PATH;
+    buf.resize(cap);
+    const DWORD len = GetEnvironmentVariableW(key, buf.data(), cap);
+    if (len == 0)
+        return buf.clear(); // ERROR_ENVVAR_NOT_FOUND
+    else if (len > cap) {
+        buf.resize(len);
+        GetEnvironmentVariableW(key, buf.data(), len);
     }
-    std::string_view value{buf, len};
+}
+bool has_env(gsl::cwzstring<> key) noexcept {
+    std::wstring value{};
+    get_env(key, value);
     return value.empty() == false;
 }
 
@@ -50,12 +55,11 @@ int main(int argc, char* argv[]) {
     spdlog::set_pattern("[%^%l%$] %v");
     spdlog::set_level(spdlog::level::level_enum::debug);
 
-    if (has_env("APPVEYOR"))
+    if (has_env(L"APPVEYOR"))
         spdlog::warn("for CI environment, some tests will be marked 'failed as expected'");
 
     spdlog::info("cpp_winrt: {}", CPPWINRT_VERSION);
-    spdlog::info("media_foundation:");
-    spdlog::info("  version: {:x}", MF_VERSION);
+    spdlog::info("media_foundation: {:x}", MF_VERSION);
     return Catch::Session{}.run(argc, argv);
 }
 
