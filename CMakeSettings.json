@@ -74,7 +74,7 @@
           "type": "BOOL"
         },
         {
-          "name": "BUILD_SHARED_LIBS",
+          "name": "TEST_WINRT",
           "value": "true",
           "type": "BOOL"
         }

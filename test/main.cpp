@@ -83,11 +83,13 @@ TEST_CASE("Custom MFT", "[COM]") {
     auto on_exit = gsl::finally([lib]() { FreeLibrary(lib); });
 
     SECTION("DLL life functions are not exported") {
-        REQUIRE_FALSE(GetProcAddress(lib, "DllGetClassObject"));
+        REQUIRE(GetProcAddress(lib, "get_current_count"));
         REQUIRE_FALSE(GetProcAddress(lib, "DllAddRef"));
         REQUIRE_FALSE(GetProcAddress(lib, "DllRelease"));
-        REQUIRE_FALSE(GetProcAddress(lib, "DllCanUnloadNow"));
-        REQUIRE(GetProcAddress(lib, "get_current_count"));
+        REQUIRE(GetProcAddress(lib, "DllGetClassObject"));
+        REQUIRE(GetProcAddress(lib, "DllCanUnloadNow"));
+        REQUIRE(GetProcAddress(lib, "DllRegisterServer"));
+        REQUIRE(GetProcAddress(lib, "DllUnregisterServer"));
     }
     SECTION("CoCreateInstance(CLSCTX_INPROC)") {
         const GUID CLSID = get_CLSID_MFT();

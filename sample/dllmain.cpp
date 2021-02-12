@@ -13,9 +13,6 @@ __declspec(dllexport) ULONG get_current_count() noexcept {
     return g_ref_count;
 }
 
-const GUID& CLSID_ICustomMFT = get_CLSID_MFT();
-const GUID IID_ICustomMFT = __uuidof(ICustomMFT);
-
 __control_entrypoint(DllExport) STDAPI DllCanUnloadNow() {
     if (g_ref_count == 0) {
         spdlog::warn("DLL can be unloaded");
@@ -24,10 +21,10 @@ __control_entrypoint(DllExport) STDAPI DllCanUnloadNow() {
     return S_FALSE;
 }
 
-__control_entrypoint(DllExport) ULONG WINAPI DllAddRef() {
+ULONG WINAPI DllAddRef() {
     return InterlockedIncrement(&g_ref_count);
 }
-__control_entrypoint(DllExport) ULONG WINAPI DllRelease() {
+ULONG WINAPI DllRelease() {
     return InterlockedDecrement(&g_ref_count);
 }
 } // extern "C"
@@ -39,8 +36,6 @@ class class_factory_t : public IClassFactory {
     class_factory_t() noexcept {
         spdlog::debug("ctor: class_factory_t");
         DllAddRef();
-        spdlog::info("supports:");
-        spdlog::info(" - IMFTransform: {}", to_string(IID_ICustomMFT));
     }
 
     ~class_factory_t() noexcept {
@@ -108,8 +103,8 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID) {
     return TRUE;
 }
 
-__control_entrypoint(DllExport) _Check_return_ STDAPI
-    DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID iid, _Outptr_ LPVOID FAR* ppv) {
+_Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID iid, _Outptr_ LPVOID FAR* ppv) {
+    const GUID& CLSID_ICustomMFT = get_CLSID_MFT();
     if (clsid != CLSID_ICustomMFT)
         return CLASS_E_CLASSNOTAVAILABLE;
 
@@ -118,6 +113,16 @@ __control_entrypoint(DllExport) _Check_return_ STDAPI
         return E_OUTOFMEMORY;
     auto on_return = gsl::finally([factory]() { factory->Release(); });
     return factory->QueryInterface(iid, ppv);
+}
+
+STDAPI DllRegisterServer() {
+    spdlog::info("register:");
+    spdlog::info(" - IMFTransform: {}", to_string(__uuidof(ICustomMFT)));
+    return E_NOTIMPL; // regsvr32 will report failure: 0x80004001L
+}
+STDAPI DllUnregisterServer() {
+    spdlog::warn("unregister:");
+    return E_NOTIMPL;
 }
 
 } // extern "C"

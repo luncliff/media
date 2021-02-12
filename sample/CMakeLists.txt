@@ -8,7 +8,7 @@ message(STATUS "b ${CMAKE_CURRENT_BINARY_DIR}")
 
 add_library(custom_mft SHARED
     dllmain.cpp
-    custom_mft.idl
+    custom_mft.idl custom_mft.def
 )
 
 set_target_properties(custom_mft
