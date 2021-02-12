@@ -192,7 +192,7 @@ TEST_CASE("MFTransform - H.264 Decoder", "[codec]") {
         default:
             FAIL(to_readable(ec));
         }
-        REQUIRE(count);
+        REQUIRE(count >= 0);
     }
 
     SECTION("Synchronous(Detailed)") {

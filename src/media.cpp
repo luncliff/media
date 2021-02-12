@@ -8,10 +8,15 @@
 using namespace std;
 
 // {11790296-A926-45AB-96CB-A9CB187F37AD}
-const GUID module_guid_0 = {0x11790296, 0xa926, 0x45ab, {0x96, 0xcb, 0xa9, 0xcb, 0x18, 0x7f, 0x37, 0xad}};
+const GUID module_IID_0 = {0x11790296, 0xa926, 0x45ab, {0x96, 0xcb, 0xa9, 0xcb, 0x18, 0x7f, 0x37, 0xad}};
+const GUID& get_IID_0() noexcept {
+    return module_IID_0;
+}
 
-const GUID& get_guid0() noexcept {
-    return module_guid_0;
+// {1C2CE17A-FAAD-4E73-85E7-167068093F25}
+const GUID module_CLSID_MFT{0x1c2ce17a, 0xfaad, 0x4e73, 0x85, 0xe7, 0x16, 0x70, 0x68, 0x9, 0x3f, 0x25};
+const GUID& get_CLSID_MFT() noexcept {
+    return module_CLSID_MFT;
 }
 
 auto media_startup() noexcept(false) -> gsl::final_action<HRESULT(WINAPI*)()> {

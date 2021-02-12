@@ -1,7 +1,7 @@
 #include <media.hpp>
 #include <spdlog/spdlog.h>
 
-#include <custom_mft.h> // see custom_mft.idl
+#include "custom_mft.h" // see custom_mft.idl
 #include <inspectable.h>
 
 HINSTANCE g_instance = NULL;
@@ -9,9 +9,11 @@ ULONG g_ref_count = 0;
 
 extern "C" {
 
-// CLSID of the MFT.
-// {1C2CE17A-FAAD-4E73-85E7-167068093F25}
-const GUID CLSID_ICustomMFT{0x1c2ce17a, 0xfaad, 0x4e73, 0x85, 0xe7, 0x16, 0x70, 0x68, 0x9, 0x3f, 0x25};
+__declspec(dllexport) ULONG get_current_count() noexcept {
+    return g_ref_count;
+}
+
+const GUID& CLSID_ICustomMFT = get_CLSID_MFT();
 const GUID IID_ICustomMFT = __uuidof(ICustomMFT);
 
 __control_entrypoint(DllExport) STDAPI DllCanUnloadNow() {
@@ -22,10 +24,10 @@ __control_entrypoint(DllExport) STDAPI DllCanUnloadNow() {
     return S_FALSE;
 }
 
-ULONG WINAPI DllAddRef() {
+__control_entrypoint(DllExport) ULONG WINAPI DllAddRef() {
     return InterlockedIncrement(&g_ref_count);
 }
-ULONG WINAPI DllRelease() {
+__control_entrypoint(DllExport) ULONG WINAPI DllRelease() {
     return InterlockedDecrement(&g_ref_count);
 }
 } // extern "C"
@@ -35,19 +37,21 @@ class class_factory_t : public IClassFactory {
 
   public:
     class_factory_t() noexcept {
+        spdlog::debug("ctor: class_factory_t");
         DllAddRef();
         spdlog::info("supports:");
         spdlog::info(" - IMFTransform: {}", to_string(IID_ICustomMFT));
     }
 
     ~class_factory_t() noexcept {
+        spdlog::warn("dtor: class_factory_t");
         DllRelease();
     }
 
   public:
     // IClassFactory Methods
     IFACEMETHODIMP CreateInstance(_In_ IUnknown* unknown, _In_ REFIID iid, _Outptr_ void** ppv) {
-        if (ppv = nullptr)
+        if (ppv == nullptr)
             return E_POINTER;
         UNREFERENCED_PARAMETER(unknown);
         UNREFERENCED_PARAMETER(iid);
@@ -104,7 +108,8 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID) {
     return TRUE;
 }
 
-_Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID iid, _Outptr_ LPVOID FAR* ppv) {
+__control_entrypoint(DllExport) _Check_return_ STDAPI
+    DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID iid, _Outptr_ LPVOID FAR* ppv) {
     if (clsid != CLSID_ICustomMFT)
         return CLASS_E_CLASSNOTAVAILABLE;
 

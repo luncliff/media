@@ -82,15 +82,18 @@ elseif(MSVC)
     )
 endif()
 
-install(TARGETS         media
-        EXPORT          ${PROJECT_NAME}-config
-        RUNTIME  DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-        LIBRARY  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-        ARCHIVE  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}
+# install(FILES       $<TARGET_PDB_FILE:media>
+#         DESTINATION bin
+# )
+install(TARGETS media
+        EXPORT  ${PROJECT_NAME}-config
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include/${PROJECT_NAME}
 )
 install(EXPORT      ${PROJECT_NAME}-config
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}
+        DESTINATION share/${PROJECT_NAME}
 )
 
 include(CMakePackageConfigHelpers)
@@ -100,10 +103,11 @@ write_basic_package_version_file(${VERSION_FILE_PATH}
     COMPATIBILITY       SameMajorVersion
 )
 install(FILES           ${VERSION_FILE_PATH} 
-        DESTINATION     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}
+        DESTINATION     share/${PROJECT_NAME}
 )
 # include(CPack)
 
+add_subdirectory(sample)
 if(BUILD_DRIVER)
     set(BUILD_TESTING false) # exclusive to executable for now ...
 
@@ -113,8 +117,9 @@ if(BUILD_DRIVER)
         VS_PLATFORM_TOOLSET     "WindowsApplicationForDrivers10.0"
     )
     add_subdirectory(mft0)
-    add_subdirectory(sample)
 endif()
+
+
 if(NOT BUILD_TESTING)
     return()
 endif()
@@ -125,10 +130,10 @@ include(Catch)
 
 add_executable(media_test_suite
     test/main.cpp
-    test/webcam_test.cpp
-    test/sink_test.cpp
-    test/dxva_test.cpp
-    test/transform_test.cpp
+    # test/webcam_test.cpp
+    # test/sink_test.cpp
+    # test/dxva_test.cpp
+    # test/transform_test.cpp
     test/source_test.cpp
 )
 if(TEST_WINRT)
@@ -157,6 +162,12 @@ target_link_libraries(media_test_suite
 PRIVATE
     media Catch2::Catch2 spdlog::spdlog
 )
+if(TARGET custom_mft)
+    target_link_libraries(media_test_suite
+    PRIVATE
+        custom_mft
+    )
+endif()
 
 get_filename_component(asset_path ${PROJECT_SOURCE_DIR}/test ABSOLUTE)
 target_compile_definitions(media_test_suite

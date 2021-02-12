@@ -67,11 +67,32 @@ TEST_CASE("HRESULT format", "[format]") {
 
 TEST_CASE("GUID", "[format]") {
     SECTION("internal") {
-        const GUID uuid0 = get_guid0();
-        REQUIRE(to_string(uuid0) == "11790296-A926-45AB-96CB-A9CB187F37AD");
+        REQUIRE(to_string(get_IID_0()) == "11790296-A926-45AB-96CB-A9CB187F37AD");
+        REQUIRE(to_string(get_CLSID_MFT()) == "1C2CE17A-FAAD-4E73-85E7-167068093F25");
     }
     SECTION("Media Foundation SDK") {
         // search these values in Registry Editor
         REQUIRE(to_string(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID) == "8AC3587A-4AE7-42D8-99E0-0A6013EEF90F");
+    }
+}
+
+TEST_CASE("Custom MFT", "[COM]") {
+    auto on_return = media_startup();
+    HMODULE lib = LoadLibraryW(L"custom_mft.dll");
+    REQUIRE(lib);
+    auto on_exit = gsl::finally([lib]() { FreeLibrary(lib); });
+
+    SECTION("DLL life functions are not exported") {
+        REQUIRE_FALSE(GetProcAddress(lib, "DllGetClassObject"));
+        REQUIRE_FALSE(GetProcAddress(lib, "DllAddRef"));
+        REQUIRE_FALSE(GetProcAddress(lib, "DllRelease"));
+        REQUIRE_FALSE(GetProcAddress(lib, "DllCanUnloadNow"));
+        REQUIRE(GetProcAddress(lib, "get_current_count"));
+    }
+    SECTION("CoCreateInstance(CLSCTX_INPROC)") {
+        const GUID CLSID = get_CLSID_MFT();
+        com_ptr<IUnknown> unknown{};
+        HRESULT hr = CoCreateInstance(CLSID, NULL, CLSCTX_INPROC, IID_PPV_ARGS(unknown.put()));
+        REQUIRE(hr == REGDB_E_CLASSNOTREG);
     }
 }

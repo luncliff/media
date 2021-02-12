@@ -238,7 +238,7 @@ TEST_CASE("Registry(HKEY_CURRENT_USER) - delete/close", "[Win32]") {
         FAIL(ec);
     }
     SECTION("winrt::hstring") {
-        const auto txt = to_hstring(get_guid0());
+        const auto txt = to_hstring(get_IID_0());
         set_value(hkey, txt);
         REQUIRE(RegDeleteKeyExW(hkey, subkey.c_str(), KEY_WOW64_32KEY, 0) == ERROR_FILE_NOT_FOUND);
     }
