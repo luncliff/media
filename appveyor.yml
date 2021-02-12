@@ -32,7 +32,7 @@ environment:
 install:
   - ps: if($env:PLATFORM -eq "x64"){ $env:VCPKG_TARGET_TRIPLET="x64-windows" }
   - ps: if($env:PLATFORM -eq "x86"){ $env:VCPKG_TARGET_TRIPLET="x86-windows" }
-  - ps: vcpkg install --triplet $env:VCPKG_TARGET_TRIPLET ms-gsl spdlog catch2 wil directxtex directxtk
+  - ps: vcpkg install --triplet $env:VCPKG_TARGET_TRIPLET ms-gsl spdlog catch2 directxtex directxtk
   - ps: vcpkg list
 
 before_build:

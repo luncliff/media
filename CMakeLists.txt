@@ -25,10 +25,6 @@ check_include_file_cxx("mfapi.h" found_mfapi)
 check_include_file_cxx("wincodecsdk.h" found_codecsdk)
 check_include_file_cxx("d3d11.h" found_d3d11)
 
-# see https://github.com/microsoft/wil/wiki/RAII-resource-wrappers
-find_path(WIL_INCLUDE_DIRS "wil/com.h")
-message(STATUS "using WIL: ${WIL_INCLUDE_DIRS}")
-
 add_library(media STATIC
     src/media.hpp
     src/media.cpp
@@ -117,11 +113,11 @@ include(Catch)
 
 add_executable(media_test_suite
     test/main.cpp
-    test/webcam_test.cpp
-    test/sink_test.cpp
+    # test/webcam_test.cpp
+    # test/sink_test.cpp
     test/dxva_test.cpp
-    test/transform_test.cpp
-    test/source_test.cpp
+    # test/transform_test.cpp
+    # test/source_test.cpp
 )
 if(TEST_WINRT)
     target_sources(media_test_suite

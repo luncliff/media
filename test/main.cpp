@@ -42,7 +42,6 @@ bool has_env(gsl::czstring<> key) noexcept {
 /// @todo catch `winrt::hresult_error`
 int main(int argc, char* argv[]) {
     std::setlocale(LC_ALL, ".65001");
-
     winrt::init_apartment();
     auto on_exit = gsl::finally(&winrt::uninit_apartment);
 
@@ -54,11 +53,10 @@ int main(int argc, char* argv[]) {
     if (has_env("APPVEYOR"))
         spdlog::warn("for CI environment, some tests will be marked 'failed as expected'");
 
+    spdlog::info("cpp_winrt: {}", CPPWINRT_VERSION);
     spdlog::info("media_foundation:");
     spdlog::info("  version: {:x}", MF_VERSION);
-
-    Catch::Session session{};
-    return session.run(argc, argv);
+    return Catch::Session{}.run(argc, argv);
 }
 
 TEST_CASE("HRESULT format", "[format]") {
