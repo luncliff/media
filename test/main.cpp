@@ -65,7 +65,13 @@ TEST_CASE("HRESULT format", "[format]") {
     REQUIRE(txt == "0x80004005");
 }
 
-TEST_CASE("GUID format", "[format]") {
-    const GUID& id = get_guid0();
-    REQUIRE(to_string(id) == "11790296-A926-45AB-96CB-A9CB187F37AD");
+TEST_CASE("GUID", "[format]") {
+    SECTION("internal") {
+        const GUID uuid0 = get_guid0();
+        REQUIRE(to_string(uuid0) == "11790296-A926-45AB-96CB-A9CB187F37AD");
+    }
+    SECTION("Media Foundation SDK") {
+        // search these values in Registry Editor
+        REQUIRE(to_string(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID) == "8AC3587A-4AE7-42D8-99E0-0A6013EEF90F");
+    }
 }

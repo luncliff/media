@@ -174,6 +174,15 @@ void set_value(HKEY hkey, winrt::hstring text) {
                                  sizeof(winrt::hstring::value_type) * text.size()))
         spdlog::error("set(REG_SZ): {} {}", ec, winrt::to_string(text));
 }
+
+/// @brief set HKEY. REG_SZ with GUID string(include {})
+void set_value(HKEY hkey, const GUID& guid) {
+    constexpr auto bufsz = 40;
+    wchar_t buf[bufsz]{};
+    const auto buflen = static_cast<winrt::hstring::size_type>(StringFromGUID2(guid, buf, bufsz));
+    return set_value(hkey, {buf, buflen});
+}
+
 void set_value(HKEY hkey, DWORD value) {
     if (auto ec = RegSetValueExW(hkey, NULL, 0, REG_DWORD, //
                                  reinterpret_cast<const BYTE*>(&value), sizeof(value)))
